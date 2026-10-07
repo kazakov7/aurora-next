@@ -1,0 +1,6 @@
+export enum TourStatus {
+	ACTIVE = 'ACTIVE',
+	INACTIVE = 'INACTIVE',
+	PENDING = 'PENDING',
+	REJECTED = 'REJECTED',
+}

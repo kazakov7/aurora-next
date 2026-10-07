@@ -1,0 +1,17 @@
+export enum PropertyType {
+	HOTEL = 'HOTEL',
+	MOTEL = 'MOTEL',
+	HOSTEL = 'HOSTEL',
+	RESORT = 'RESORT',
+	APARTMENT = 'APARTMENT',
+	VILLA = 'VILLA',
+	GUESTHOUSE = 'GUESTHOUSE',
+	OTHER = 'OTHER',
+}
+
+export enum PropertyStatus {
+	ACTIVE = 'ACTIVE',
+	INACTIVE = 'INACTIVE',
+	PENDING = 'PENDING',
+	REJECTED = 'REJECTED',
+}

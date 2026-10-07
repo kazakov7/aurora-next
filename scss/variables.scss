@@ -1,0 +1,64 @@
+/** VARIABLES & COLOR TOKENS **/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap');
+
+$font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+$font-display: 'Inter', sans-serif;
+
+// Palette
+$primary: #006194;
+$primary-container: #007bb9;
+$on-primary: #ffffff;
+$primary-fixed: #cce5ff;
+$primary-fixed-dim: #93ccff;
+$on-primary-fixed: #001d31;
+$on-primary-fixed-variant: #004b73;
+$on-primary-container: #fdfcff;
+$inverse-primary: #93ccff;
+
+$secondary: #006399;
+$secondary-container: #7bc2ff;
+$secondary-fixed: #cde5ff;
+$secondary-fixed-dim: #94ccff;
+$on-secondary: #ffffff;
+$on-secondary-fixed: #001d32;
+$on-secondary-fixed-variant: #004b74;
+$on-secondary-container: #004f7b;
+
+$tertiary: #545c72;
+$tertiary-container: #6c748b;
+$tertiary-fixed: #dae2fd;
+$tertiary-fixed-dim: #bec6e0;
+$on-tertiary: #ffffff;
+$on-tertiary-fixed: #131b2e;
+$on-tertiary-fixed-variant: #3f465c;
+$on-tertiary-container: #fefcff;
+
+$surface: #f9f9ff;
+$surface-bright: #f9f9ff;
+$surface-dim: #d3daef;
+$surface-variant: #dce2f7;
+$surface-tint: #006398;
+$surface-container-lowest: #ffffff;
+$surface-container-low: #f1f3ff;
+$surface-container: #e9edff;
+$surface-container-high: #e1e8fd;
+$surface-container-highest: #dce2f7;
+
+$on-surface: #141b2b;
+$on-surface-variant: #3f4850;
+$on-background: #141b2b;
+$background: #f9f9ff;
+
+$outline: #707881;
+$outline-variant: #bfc7d2;
+$inverse-surface: #293040;
+$inverse-on-surface: #edf0ff;
+
+$error: #ba1a1a;
+$error-container: #ffdad6;
+$on-error: #ffffff;
+$on-error-container: #93000a;
+
+// Layout
+$container-width: 1300px;

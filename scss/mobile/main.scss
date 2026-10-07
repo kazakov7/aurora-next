@@ -1,0 +1,22 @@
+@import '../variables.scss';
+@import './general.scss';
+
+#mobile-wrap {
+	width: 100%;
+	.top {
+		height: 80px;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-around;
+		align-items: center;
+	}
+	.container {
+		width: 100%;
+		padding: 0 10px;
+	}
+	#footer {
+		padding: 40px 10px 18px;
+		background: #181a20;
+		color: #fff;
+	}
+}

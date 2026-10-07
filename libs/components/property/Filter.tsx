@@ -241,7 +241,7 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 				<div className="price-display-row">
 					<div className="price-box-col">
 						<span className="box-tag">Min</span>
-						<span className="box-val">$50 (₩50k)</span>
+						<span className="box-val">₩50,000</span>
 					</div>
 					<span className="price-dash">—</span>
 					<div className="price-box-col">
@@ -249,7 +249,7 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 						<span className="box-val">
 							{maxPrice >= 500000
 								? 'Max (All)'
-								: `$${Math.round(maxPrice / 1000)} (₩${(maxPrice / 1000).toLocaleString()}k)`}
+								: `₩${maxPrice.toLocaleString()}`}
 						</span>
 					</div>
 				</div>

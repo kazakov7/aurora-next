@@ -228,3 +228,29 @@ export default ExampleComponent;
 - 600+ qatorli yagona monolit sahifa tuzmaslik; bo'limlarni `libs/components/[domain]/` ostiga ajratish.
 - `@ts-ignore` va `any` turlarini tartibsiz ishlatmaslik; aniq DTO turlarini `libs/types/`da belgilash.
 - Barcha sahifa stillarini bitta SCSS faylga yig'maslik; domen va seksiyalar bo'yicha ajratish.
+
+---
+
+## 9. QAT'IY QOIDALAR: REAL API INTEGRATSIYASI VA HARD CODING TAQIQLANISHI (STRICT POLICY)
+
+Ushbu bo'limdagi qoidalar buzilishi mutlaqo qabul qilinmaydi va har bir vazifada qat'iy tekshiriladi:
+
+1. **MUTLAQ ZERO-HARDCODING (MOCK MA'LUMOTLAR TAQIQLANADI)**:
+   - Bizda tayyor backend GraphQL API (`http://localhost:3007/graphql`) mavjud. Sahifa va komponentlarda **HECH QANDAY** soxta, mock yoki fallback massivlar (`sampleFallbackTours`, dummy cards, statik ro'yxatlar) yaratilmaydi va aralashtirilmaydi.
+   - Barcha ma'lumotlar (`list`, `metaCounter`, narxlar, rasmlar, sarlavhalar, sanalar) birinchi qadamdanoq **FAQAT va FAQAT real GraphQL API query'sidan** olinishi SHART.
+   - Agar bazada 1 ta element bo'lsa — aynan o'sha 1 ta real element ko'rsatiladi. Agar filtr bo'yicha 0 ta element bo'lsa — toza `No Data / Bo'sh holat` ko'rsatiladi. Gridni sun'iy to'ldirish TAQIQLANADI.
+
+2. **VALYUTA STANDARTI (KRW / ₩)**:
+   - Platformaning asosiy valyutasi **KRW (₩ - Janubiy Koreya Voni)** hisoblanadi (masalan, `₩75,000`, `₩155,000`, `₩450,000`).
+   - Narxlar, filtr slayderi oraliqlari (min: `₩50,000`, max: `₩1,000,000+`, step: `₩10,000`) va barcha ko'rsatkichlar USD ($) emas, **KRW (₩)** formatida bo'lishi SHART.
+
+3. **REAKTIV FILTRLASH VA SARALASH (APPLY TUGMASISIZ BIR ZUMDA ISHLASH)**:
+   - Har qanday filtr (kategoriya chiplari, narx slayderi, manzil pilllari, qidiruv matni, xonalar/odamlar soni) yoki saralash dropdown'i tanlanishi bilan hech qanday "Apply Filters" tugmasisiz, **BIR ZUMDA VA REAKTIV** ravishda API'ga so'rov yuborishi, URL query parametrini yangilashi va ro'yxatni yangilashi SHART.
+   - Ma'lumotlar qotib qolishiga ("malumotlar qotib turibdi") yo'l qo'yilmaydi.
+
+4. **GRAPHQL SCHEMA VA DTO CONTRACTLARINI AVVALDAN INTROSPECTION QILISH**:
+   - Backendga so'rov yozishdan oldin input maydonlari nomlarini taxmin qilmaslik; GraphQL schema (`introspection`) bilan 100% tekshirib, aniq tiplar bilan ishlash.
+
+5. **HAR BIR ISHDAN OLDIN AGENTS.MD NI QAYTA O'QISH**:
+   - Har bir yangi vazifa, sahifa yoki funksiya ishlab chiqilishidan oldin ushbu `AGENTS.md` fayli qayta o'qiladi va uning har bir bandiga 100% so'zsiz amal qilinadi.
+

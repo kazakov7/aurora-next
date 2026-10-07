@@ -1,0 +1,104 @@
+import React from 'react';
+import Link from 'next/link';
+import { Property } from '../../../types/property/property';
+import { sweetTopSmallSuccessAlert } from '../../../sweetAlert';
+
+interface PropertyHeaderProps {
+	property: Property;
+	isLiked: boolean;
+	likeHandler: () => void;
+}
+
+const PropertyHeader = ({ property, isLiked, likeHandler }: PropertyHeaderProps) => {
+	const ratingVal = property?.propertyRating ? property.propertyRating.toFixed(2) : '4.98';
+	const reviewsCount = property?.propertyReviews || 248;
+
+	const shareHandler = async () => {
+		try {
+			if (typeof window !== 'undefined' && navigator.clipboard) {
+				await navigator.clipboard.writeText(window.location.href);
+				await sweetTopSmallSuccessAlert('Link copied to clipboard!');
+			}
+		} catch (err) {
+			console.error(err);
+		}
+	};
+
+	return (
+		<div className="property-header-section">
+			{/* 1. Breadcrumbs */}
+			<nav aria-label="Breadcrumb" className="breadcrumbs-nav">
+				<Link href="/" className="crumb-link">
+					Home
+				</Link>
+				<span className="material-symbols-outlined crumb-sep">chevron_right</span>
+				<Link href="/property" className="crumb-link">
+					Hotels
+				</Link>
+				<span className="material-symbols-outlined crumb-sep">chevron_right</span>
+				<span className="crumb-text">{property?.propertyCity || 'Switzerland'}</span>
+				<span className="material-symbols-outlined crumb-sep">chevron_right</span>
+				<span className="crumb-active truncate">{property?.propertyName || 'Alpine Grand Retreat'}</span>
+			</nav>
+
+			{/* 2. Title & Header Actions */}
+			<div className="title-actions-bar">
+				<div className="title-info-group">
+					<div className="badges-row">
+						<span className="badge-tag primary-badge">Architectural Masterpiece</span>
+						<span className="badge-tag subtle-badge">Rare Find</span>
+					</div>
+					<h1 className="property-main-title">{property?.propertyName || 'Alpine Grand Retreat'}</h1>
+					<div className="meta-info-row">
+						<div className="rating-pill">
+							<span
+								className="material-symbols-outlined star-icon"
+								style={{ fontVariationSettings: "'FILL' 1" }}
+							>
+								star
+							</span>
+							<span className="score">{ratingVal}</span>
+							<span className="reviews-link">({reviewsCount} verified reviews)</span>
+						</div>
+						<span className="dot-divider">•</span>
+						<div className="location-item">
+							<span className="material-symbols-outlined">location_on</span>
+							<span>
+								{property?.propertyCity ? `${property.propertyCity}, ` : ''}
+								{property?.propertyAddress || 'Zermatt, Valais, Switzerland'}
+							</span>
+						</div>
+						<span className="dot-divider">•</span>
+						<div className="cert-item">
+							<span className="material-symbols-outlined">verified_user</span>
+							<span>Swiss Sanctuary Certified</span>
+						</div>
+					</div>
+				</div>
+
+				{/* Action Buttons */}
+				<div className="actions-group">
+					<button className="action-pill-btn" type="button" onClick={shareHandler}>
+						<span className="material-symbols-outlined">share</span>
+						<span>Share</span>
+					</button>
+					<button
+						className={`action-pill-btn save-btn ${isLiked ? 'liked' : ''}`}
+						type="button"
+						onClick={likeHandler}
+					>
+						<span
+							className="material-symbols-outlined fav-icon"
+							style={{ fontVariationSettings: isLiked ? "'FILL' 1" : "'FILL' 0" }}
+						>
+							favorite
+						</span>
+						<span>{isLiked ? 'Saved' : 'Save'}</span>
+					</button>
+				</div>
+			</div>
+		</div>
+	);
+};
+
+export default PropertyHeader;

@@ -121,8 +121,7 @@ const PropertyCard = ({ property, index = 0, likePropertyHandler }: PropertyCard
 							<div className="price-main">
 								<span className="price-prefix">From</span>
 								<span className="price-amount">
-									{property.currency === 'KRW' ? '₩' : '$'}
-									{property.pricePerNight?.toLocaleString()}
+									₩{property.pricePerNight?.toLocaleString()}
 								</span>
 								<span className="price-suffix">/ night</span>
 							</div>

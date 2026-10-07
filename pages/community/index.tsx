@@ -1,0 +1,431 @@
+import React, { useEffect, useState } from 'react';
+import { NextPage } from 'next';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { useQuery, useMutation, useReactiveVar } from '@apollo/client';
+import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
+import CommunityHeader from '../../libs/components/community/CommunityHeader';
+import CommunityFilter, { COMMUNITY_CATEGORIES } from '../../libs/components/community/CommunityFilter';
+import CommunityCard from '../../libs/components/community/CommunityCard';
+import CommunitySidebar, { HostItem, AgencyItem } from '../../libs/components/community/CommunitySidebar';
+import WriteStoryModal from '../../libs/components/community/WriteStoryModal';
+import { BoardArticlesInquiry } from '../../libs/types/board-article/board-article.input';
+import { BoardArticle } from '../../libs/types/board-article/board-article';
+import { BoardArticleCategory } from '../../libs/enums/board-article.enum';
+import { Direction, Message } from '../../libs/enums/common.enum';
+import { GET_BOARD_ARTICLES, GET_PROPERTIES, GET_TOURS } from '../../apollo/user/query';
+import { LIKE_TARGET_ARTICLE } from '../../apollo/user/mutation';
+import { userVar } from '../../apollo/store';
+import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import { getImageUrl } from '../../libs/config';
+
+const categoryParamMap: Record<string, BoardArticleCategory | undefined> = {
+	all: undefined,
+	itineraries: BoardArticleCategory.TOUR,
+	'hotel-reviews': BoardArticleCategory.HOTEL,
+	photography: BoardArticleCategory.DESTINATION,
+	expeditions: BoardArticleCategory.GUIDE,
+	insights: BoardArticleCategory.NEWS,
+};
+
+const sortFieldMap: Record<string, string> = {
+	Trending: 'articleViews',
+	Latest: 'createdAt',
+	'Top Rated': 'articleLikes',
+};
+
+const defaultInput: BoardArticlesInquiry = {
+	page: 1,
+	limit: 6,
+	sort: 'articleViews',
+	direction: Direction.DESC,
+	search: {},
+};
+
+const CommunityPage: NextPage = () => {
+	const router = useRouter();
+	const user = useReactiveVar(userVar);
+
+	const [selectedCategoryKey, setSelectedCategoryKey] = useState<string>('all');
+	const [selectedSort, setSelectedSort] = useState<string>('Trending');
+	const [currentPage, setCurrentPage] = useState<number>(1);
+	const [searchFilter, setSearchFilter] = useState<BoardArticlesInquiry>(defaultInput);
+
+	const [articles, setArticles] = useState<BoardArticle[]>([]);
+	const [total, setTotal] = useState<number>(0);
+	const [isWriteModalOpen, setIsWriteModalOpen] = useState<boolean>(false);
+
+	// Like state tracking for reactive updates
+	const [likedMap, setLikedMap] = useState<Record<string, boolean>>({});
+	const [likeCountMap, setLikeCountMap] = useState<Record<string, number>>({});
+
+	// Real owners and agencies for sidebar
+	const [realOwners, setRealOwners] = useState<HostItem[]>([]);
+	const [realAgencies, setRealAgencies] = useState<AgencyItem[]>([]);
+
+	/** APOLLO REQUESTS: ZERO MOCK / REAL GRAPHQL BACKEND DATA **/
+	const [likeTargetArticle] = useMutation(LIKE_TARGET_ARTICLE);
+
+	const { data, loading, refetch: refetchArticles } = useQuery(GET_BOARD_ARTICLES, {
+		fetchPolicy: 'network-only',
+		variables: { input: searchFilter },
+		notifyOnNetworkStatusChange: true,
+	});
+
+	// Query properties to extract real hotel hosts for sidebar
+	const { data: propData } = useQuery(GET_PROPERTIES, {
+		fetchPolicy: 'cache-first',
+		variables: { input: { page: 1, limit: 30, search: {} } },
+	});
+
+	// Query tours to extract real tour agencies for sidebar
+	const { data: tourData } = useQuery(GET_TOURS, {
+		fetchPolicy: 'cache-first',
+		variables: { input: { page: 1, limit: 30, search: {} } },
+	});
+
+	/** PROCESS REAL OWNERS & AGENCIES **/
+	useEffect(() => {
+		if (propData?.getProperties?.list) {
+			const memberCounts: Record<string, { member: any; count: number }> = {};
+			propData.getProperties.list.forEach((prop: any) => {
+				const m = prop.memberData;
+				if (m?._id) {
+					if (!memberCounts[m._id]) {
+						memberCounts[m._id] = { member: m, count: 0 };
+					}
+					memberCounts[m._id].count += 1;
+				}
+			});
+
+			const hosts: HostItem[] = Object.values(memberCounts).map(({ member, count }, idx) => ({
+				id: member._id,
+				name: member.memberFullName || member.memberNick || 'Host Explorer',
+				avatar: getImageUrl(
+					member.memberImage,
+					'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+				),
+				badge: count > 2 ? 'Superhost' : 'Verified Host',
+				ratingOrSub: `${count} Propert${count > 1 ? 'ies' : 'y'} · 4.95 ★`,
+			}));
+			setRealOwners(hosts);
+		}
+	}, [propData]);
+
+	useEffect(() => {
+		if (tourData?.getTours?.list) {
+			const memberTours: Record<string, { member: any; city: string; count: number }> = {};
+			tourData.getTours.list.forEach((tour: any) => {
+				const m = tour.memberData;
+				if (m?._id) {
+					if (!memberTours[m._id]) {
+						memberTours[m._id] = {
+							member: m,
+							city: tour.tourDestinationCity || 'Global',
+							count: 0,
+						};
+					}
+					memberTours[m._id].count += 1;
+				}
+			});
+
+			const agencies: AgencyItem[] = Object.values(memberTours).map(({ member, city, count }) => ({
+				id: member._id,
+				name: member.memberFullName || member.memberNick || 'Expedition Bureau',
+				icon: 'sailing',
+				locationOrSub: `${city} Expeditions · ${count} Tour${count > 1 ? 's' : ''}`,
+			}));
+			setRealAgencies(agencies);
+		}
+	}, [tourData]);
+
+	/** LIFECYCLES: SYNC ARTICLES **/
+	useEffect(() => {
+		const list: BoardArticle[] = data?.getBoardArticles?.list;
+		const meta = data?.getBoardArticles?.metaCounter?.[0]?.total;
+
+		if (list) {
+			setArticles(list);
+			const newLikedMap: Record<string, boolean> = {};
+			const newCountMap: Record<string, number> = {};
+			list.forEach((art) => {
+				const isLikedByMe =
+					art.meLiked && art.meLiked.length > 0 ? art.meLiked[0].myFavorite : false;
+				newLikedMap[art._id] = !!isLikedByMe;
+				newCountMap[art._id] = art.articleLikes || 0;
+			});
+			setLikedMap((prev) => ({ ...prev, ...newLikedMap }));
+			setLikeCountMap((prev) => ({ ...prev, ...newCountMap }));
+		}
+		if (meta !== undefined) {
+			setTotal(meta);
+		}
+	}, [data]);
+
+	// Sync with router query parameters if user visits with query params
+	useEffect(() => {
+		if (router.query.cat && typeof router.query.cat === 'string') {
+			const catKey = router.query.cat;
+			const categoryEnum = categoryParamMap[catKey];
+			setSelectedCategoryKey(catKey);
+			setSearchFilter((prev) => ({
+				...prev,
+				page: 1,
+				search: {
+					...prev.search,
+					articleCategory: categoryEnum,
+				},
+			}));
+		}
+		if (router.query.sort && typeof router.query.sort === 'string') {
+			const sortVal = router.query.sort;
+			const field = sortFieldMap[sortVal] || 'articleViews';
+			setSelectedSort(sortVal);
+			setSearchFilter((prev) => ({
+				...prev,
+				sort: field,
+			}));
+		}
+	}, [router.query.cat, router.query.sort]);
+
+	/** REAKTIV FILTRLASH & SARALASH (APPLY TUGMASISIZ BIR ZUMDA) **/
+	const handleCategoryChange = async (catKey: string, categoryValue?: string) => {
+		setSelectedCategoryKey(catKey);
+		setCurrentPage(1);
+
+		const updated: BoardArticlesInquiry = {
+			...searchFilter,
+			page: 1,
+			search: {
+				...searchFilter.search,
+				articleCategory: categoryValue as BoardArticleCategory | undefined,
+			},
+		};
+
+		setSearchFilter(updated);
+
+		router.push(
+			{
+				pathname: '/community',
+				query: {
+					...router.query,
+					cat: catKey !== 'all' ? catKey : undefined,
+				},
+			},
+			undefined,
+			{ shallow: true }
+		);
+	};
+
+	const handleSortChange = async (sortOption: string) => {
+		setSelectedSort(sortOption);
+		const field = sortFieldMap[sortOption] || 'articleViews';
+
+		const updated: BoardArticlesInquiry = {
+			...searchFilter,
+			sort: field,
+			direction: Direction.DESC,
+		};
+
+		setSearchFilter(updated);
+
+		router.push(
+			{
+				pathname: '/community',
+				query: {
+					...router.query,
+					sort: sortOption,
+				},
+			},
+			undefined,
+			{ shallow: true }
+		);
+	};
+
+	const handlePageChange = async (newPage: number) => {
+		if (newPage < 1 || (newPage - 1) * 6 >= total) return;
+		setCurrentPage(newPage);
+		setSearchFilter((prev) => ({
+			...prev,
+			page: newPage,
+		}));
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	};
+
+	/** LIKE INTERACTION WITH BACKEND GRAPHQL MUTATION **/
+	const handleLikeArticle = async (articleId: string) => {
+		if (!user?._id) {
+			sweetMixinErrorAlert(Message.SOMETHING_WENT_WRONG || 'Please login first to like articles!');
+			return;
+		}
+
+		try {
+			const wasLiked = !!likedMap[articleId];
+			const currentCount = likeCountMap[articleId] || 0;
+
+			// Optimistic UI update
+			setLikedMap((prev) => ({ ...prev, [articleId]: !wasLiked }));
+			setLikeCountMap((prev) => ({
+				...prev,
+				[articleId]: wasLiked ? Math.max(0, currentCount - 1) : currentCount + 1,
+			}));
+
+			const res = await likeTargetArticle({
+				variables: { input: articleId },
+			});
+
+			if (res?.data?.likeTargetArticle?.articleLikes !== undefined) {
+				setLikeCountMap((prev) => ({
+					...prev,
+					[articleId]: res.data.likeTargetArticle.articleLikes,
+				}));
+			}
+
+			sweetTopSmallSuccessAlert(wasLiked ? 'Unliked story' : 'Liked story!');
+		} catch (err: any) {
+			sweetMixinErrorAlert(err.message || 'Error occurred while liking');
+			refetchArticles();
+		}
+	};
+
+	const totalPages = Math.ceil(total / (searchFilter.limit || 6)) || 1;
+
+	return (
+		<div className="community-page-wrapper">
+			<Head>
+				<title>AURA — Travelers Community & Global Dispatches</title>
+				<meta
+					name="description"
+					content="Stories, itineraries, and insider dispatches from verified explorers and world-class hosts across six continents."
+				/>
+			</Head>
+
+			<main className="community-main-section">
+				<div className="community-main-container">
+					{/* Header Banner & Sort */}
+					<CommunityHeader
+						currentSort={selectedSort}
+						onSortChange={handleSortChange}
+						onOpenWriteModal={() => setIsWriteModalOpen(true)}
+					/>
+
+					{/* Category Filter Pills */}
+					<CommunityFilter
+						selectedCategoryKey={selectedCategoryKey}
+						onCategoryChange={handleCategoryChange}
+					/>
+
+					{/* Main Two-Column Structure */}
+					<div className="community-columns-layout">
+						{/* LEFT COLUMN: Main Community Feed */}
+						<section className="community-feed-column">
+							{loading && articles.length === 0 ? (
+								<div className="community-loading-box">
+									<div className="loading-spinner" />
+									<p>Retrieving dispatches from worldwide explorers...</p>
+								</div>
+							) : articles.length > 0 ? (
+								<div className="community-cards-stack">
+									{articles.map((article) => (
+										<CommunityCard
+											key={article._id}
+											article={article}
+											onLike={handleLikeArticle}
+											isLiked={!!likedMap[article._id]}
+											likeCount={likeCountMap[article._id] ?? article.articleLikes}
+										/>
+									))}
+								</div>
+							) : (
+								<div className="community-empty-state">
+									<div className="empty-icon-wrap">
+										<span className="material-symbols-outlined icon">auto_stories</span>
+									</div>
+									<h3 className="empty-title">No Dispatches Found</h3>
+									<p className="empty-desc">
+										There are currently no community dispatches published in this category. Be the first explorer to chronicle your journey!
+									</p>
+									<button
+										type="button"
+										className="empty-action-btn"
+										onClick={() => setIsWriteModalOpen(true)}
+									>
+										<span className="material-symbols-outlined">edit_note</span>
+										<span>Write First Story</span>
+									</button>
+								</div>
+							)}
+
+							{/* Pagination Controls */}
+							{total > 0 && (
+								<div className="community-pagination-bar">
+									<div className="pagination-info">
+										Showing{' '}
+										<span className="bold">
+											{Math.min((currentPage - 1) * 6 + 1, total)}-
+											{Math.min(currentPage * 6, total)}
+										</span>{' '}
+										of <span className="bold">{total}</span> stories
+									</div>
+
+									<div className="pagination-buttons">
+										<button
+											type="button"
+											className="page-nav-btn"
+											disabled={currentPage <= 1}
+											onClick={() => handlePageChange(currentPage - 1)}
+										>
+											<span className="material-symbols-outlined">chevron_left</span>
+											<span>Previous</span>
+										</button>
+
+										<div className="page-numbers">
+											{Array.from({ length: totalPages }).map((_, i) => {
+												const p = i + 1;
+												return (
+													<button
+														key={p}
+														type="button"
+														className={`page-num-pill ${currentPage === p ? 'active' : ''}`}
+														onClick={() => handlePageChange(p)}
+													>
+														{p}
+													</button>
+												);
+											})}
+										</div>
+
+										<button
+											type="button"
+											className="page-nav-btn"
+											disabled={currentPage >= totalPages}
+											onClick={() => handlePageChange(currentPage + 1)}
+										>
+											<span>Next</span>
+											<span className="material-symbols-outlined">chevron_right</span>
+										</button>
+									</div>
+								</div>
+							)}
+						</section>
+
+						{/* RIGHT COLUMN: 320px Sidebar */}
+						<CommunitySidebar
+							realOwners={realOwners}
+							realAgencies={realAgencies}
+						/>
+					</div>
+				</div>
+			</main>
+
+			{/* Write Story Modal */}
+			<WriteStoryModal
+				isOpen={isWriteModalOpen}
+				onClose={() => setIsWriteModalOpen(false)}
+				onCreated={() => refetchArticles()}
+			/>
+		</div>
+	);
+};
+
+export default withLayoutBasic(CommunityPage);

@@ -69,7 +69,6 @@ export const GET_MEMBER_FOLLOWINGS = gql`
 				followingId
 				followerId
 				createdAt
-				updatedAt
 				followingData {
 					_id
 					memberType
@@ -99,7 +98,6 @@ export const GET_MEMBER_FOLLOWERS = gql`
 				followingId
 				followerId
 				createdAt
-				updatedAt
 				followerData {
 					_id
 					memberType

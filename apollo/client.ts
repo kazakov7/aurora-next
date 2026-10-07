@@ -12,7 +12,9 @@ import { socketVar } from './store';
 let apolloClient: ApolloClient<NormalizedCacheObject>;
 
 function getHeaders() {
-	const headers: Record<string, string> = {};
+	const headers: Record<string, string> = {
+		'apollo-require-preflight': 'true',
+	};
 	const token = getJwtToken();
 	if (token) headers['Authorization'] = `Bearer ${token}`;
 	return headers;
@@ -56,6 +58,7 @@ function createIsomorphicLink() {
 		// @ts-ignore
 		const link = new createUploadLink({
 			uri: process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql',
+			headers: { 'apollo-require-preflight': 'true' },
 		});
 
 		const wsLink = new WebSocketLink({

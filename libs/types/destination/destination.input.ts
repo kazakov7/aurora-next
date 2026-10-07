@@ -2,8 +2,7 @@ import { DestinationStatus } from '../../enums/destination.enum';
 import { Direction } from '../../enums/common.enum';
 
 export interface DestinationSearch {
-	status?: DestinationStatus;
-	country?: string;
+	destinationCountry?: string;
 	text?: string;
 }
 

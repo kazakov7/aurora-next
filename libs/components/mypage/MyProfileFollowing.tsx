@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
+import { useRouter } from 'next/router';
 import { useQuery, useMutation, useReactiveVar } from '@apollo/client';
 import { GET_MEMBER_FOLLOWINGS } from '../../../apollo/user/query';
 import { SUBSCRIBE, UNSUBSCRIBE } from '../../../apollo/user/mutation';
 import { userVar } from '../../../apollo/store';
 import { Following } from '../../types/follow/follow';
-import { getImageUrl } from '../../config';
+import { DEFAULT_USER_AVATAR, getImageUrl } from '../../config';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import FollowButton from '../common/FollowButton';
 
 const MyProfileFollowing: React.FC = () => {
 	const user = useReactiveVar(userVar);
+	const router = useRouter();
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [sortOrder, setSortOrder] = useState<'recent' | 'name'>('recent');
 	// Map to track local toggle overrides: targetId -> isFollowing
@@ -18,7 +21,7 @@ const MyProfileFollowing: React.FC = () => {
 	const [subscribeMutation] = useMutation(SUBSCRIBE);
 	const [unsubscribeMutation] = useMutation(UNSUBSCRIBE);
 
-	const { data, loading, refetch } = useQuery(GET_MEMBER_FOLLOWINGS, {
+	const { data, loading, error, refetch } = useQuery(GET_MEMBER_FOLLOWINGS, {
 		fetchPolicy: 'network-only',
 		variables: {
 			input: {
@@ -46,11 +49,11 @@ const MyProfileFollowing: React.FC = () => {
 		try {
 			if (currentlyFollowing) {
 				setFollowStatusMap((prev) => ({ ...prev, [targetId]: false }));
-				await unsubscribeMutation({ variables: { input: targetId } });
+				await unsubscribeMutation({ variables: { input: targetId }, refetchQueries: ['GetMember'] });
 				sweetTopSmallSuccessAlert(`Unfollowed ${targetNick}`, 800);
 			} else {
 				setFollowStatusMap((prev) => ({ ...prev, [targetId]: true }));
-				await subscribeMutation({ variables: { input: targetId } });
+				await subscribeMutation({ variables: { input: targetId }, refetchQueries: ['GetMember'] });
 				sweetTopSmallSuccessAlert(`Following ${targetNick}`, 800);
 			}
 			await refetch();
@@ -115,15 +118,19 @@ const MyProfileFollowing: React.FC = () => {
 			</div>
 
 			{/* Wide List Panel */}
-			{processedList.length > 0 ? (
+			{loading && !data ? (
+				<div className="profile-empty-state"><div className="loading-spinner" /><p>Loading followed accounts...</p></div>
+			) : error ? (
+				<div className="profile-empty-state"><h3>Following list is unavailable</h3><p>{error.message}</p></div>
+			) : processedList.length > 0 ? (
 				<div className="list-panel-container">
 					{processedList.map((item: Following) => {
 						const target = item?.followingData;
 						const targetId = target?._id || item.followingId;
-						const targetNick = target?.memberFullName || target?.memberNick || 'Explorer';
-						const handle = `@${(target?.memberNick || 'user').toLowerCase().replace(/\s+/g, '')}`;
-						const targetLocation = target?.memberAddress || target?.memberType || 'Verified Partner';
-						const targetImg = getImageUrl(target?.memberImage, '/img/profile/defaultUser.svg');
+						const targetNick = target?.memberFullName || target?.memberNick || 'AURA member';
+						const handle = `@${(target?.memberNick || 'member').toLowerCase().replace(/\s+/g, '')}`;
+						const targetLocation = target?.memberAddress || target?.memberType || 'Location not provided';
+						const targetImg = getImageUrl(target?.memberImage, DEFAULT_USER_AVATAR);
 
 						// Determine following status: local override or default true (since they are in following list)
 						const isCurrentlyFollowing =
@@ -136,12 +143,6 @@ const MyProfileFollowing: React.FC = () => {
 									<div className="text-details">
 										<div className="name-badge-row">
 											<span className="user-name">{targetNick}</span>
-											<span
-												className="material-symbols-outlined"
-												style={{ fontVariationSettings: "'FILL' 1" }}
-											>
-												verified
-											</span>
 										</div>
 										<p className="handle-sub">
 											{handle} · {targetLocation}
@@ -150,27 +151,15 @@ const MyProfileFollowing: React.FC = () => {
 								</div>
 
 								<div className="actions-right">
-									<button
-										type="button"
-										className={`follow-state-btn ${
-											isCurrentlyFollowing ? 'is-following' : 'not-following'
-										}`}
-										onClick={() =>
-											handleToggleFollow(targetId, targetNick, isCurrentlyFollowing)
-										}
-									>
-										{isCurrentlyFollowing ? 'Following' : 'Follow'}
-									</button>
+									<FollowButton 
+										isFollowing={isCurrentlyFollowing} 
+										onClick={() => handleToggleFollow(targetId, targetNick, isCurrentlyFollowing)} 
+									/>
 									<button
 										type="button"
 										className="more-options-btn"
 										aria-label="Account options"
-										onClick={() =>
-											sweetTopSmallSuccessAlert(
-												`Options for ${targetNick}: Notifications enabled`,
-												800,
-											)
-										}
+										onClick={() => router.push(`/member?memberId=${targetId}`)}
 									>
 										<span className="material-symbols-outlined">more_horiz</span>
 									</button>

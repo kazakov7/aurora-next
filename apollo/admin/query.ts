@@ -46,10 +46,25 @@ export const GET_AGENT_APPLICATIONS_BY_ADMIN = gql`
 				_id
 				memberId
 				agentType
-				status
-				comment
+				companyName
+				businessNumber
+				companyAddress
+				companyDesc
+				verificationStatus
+				rejectionReason
 				createdAt
 				updatedAt
+				memberData {
+					_id
+					memberType
+					memberStatus
+					memberAuthType
+					memberPhone
+					memberNick
+					memberFullName
+					memberImage
+					memberEmail
+				}
 			}
 			metaCounter {
 				total

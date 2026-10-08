@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { NextPage } from 'next';
 import Head from 'next/head';
-import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../apollo/store';
@@ -18,21 +17,28 @@ import MyProfileNotifications from '../../libs/components/mypage/MyProfileNotifi
 import MyProfileSettings from '../../libs/components/mypage/MyProfileSettings';
 
 const MyPage: NextPage = () => {
-	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 
-	const category = (router.query?.category as string) || 'articles';
+	const allowedCategories = ['articles', 'followers', 'following', 'wishlist', 'bookings', 'history', 'notifications', 'settings'];
+	const requestedCategory = (router.query?.category as string) || 'articles';
+	const category = allowedCategories.includes(requestedCategory) ? requestedCategory : 'articles';
 
 	/** LIFECYCLES **/
 	useEffect(() => {
 		if (router.isReady && !user._id) {
 			const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 			if (!token) {
-				router.push('/account/join').then();
+				router.replace('/account/login').then();
 			}
 		}
 	}, [router.isReady, user._id]);
+
+	useEffect(() => {
+		if (router.isReady && requestedCategory !== category) {
+			router.replace({ pathname: '/mypage', query: { category } }, undefined, { shallow: true });
+		}
+	}, [category, requestedCategory, router]);
 
 	const handleCategoryChange = (newCategory: string) => {
 		router.push(

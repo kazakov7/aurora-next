@@ -7,19 +7,19 @@ import { Property } from "../../../types/property/property";
 import { Comment, Comments } from "../../../types/comment/comment";
 import { CommentGroup } from "../../../enums/comment.enum";
 import { Direction, Message } from "../../../enums/common.enum";
-import { getImageUrl } from "../../../config";
+import { DEFAULT_USER_AVATAR, getImageUrl } from "../../../config";
 import {
   sweetErrorAlert,
   sweetTopSmallSuccessAlert,
 } from "../../../sweetAlert";
+import { formatApiDate } from "../../../utils";
 
 interface PropertyCommentsProps {
   property: Property;
-  refetchProperty?: () => void;
+  refetchProperty?: () => Promise<unknown>;
 }
 
-const defaultAvatar =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCDNwjaJfe5FznXVWjC98idcDi4DqpVr_EpBIGfDhSYg4lqKlNMKynXtRV-ExppnYCoAK6aDg2F96vUPOaFl0g4HL3EYKtNIb9kv01AynkKtopQs5uMTQuHBLlOrye7Y50bsvg1SbzJgGsvNnVEj6WcNKUO8fzOiY7tYxFT92mJIl0ixlefWggq9cezxXRiV2U-ojBzAYHMkSAUFdvar1Wt5LIP3UDuh9GgQg8HmI8A8zOlLmZdX759";
+const defaultAvatar = DEFAULT_USER_AVATAR;
 
 const PropertyComments = ({
   property,
@@ -44,7 +44,7 @@ const PropertyComments = ({
       input: {
         page: currentPage,
         limit: 5,
-        sort: sortType === "highest" ? "commentRating" : "createdAt",
+        sort: sortType === "updated" ? "updatedAt" : "createdAt",
         direction: Direction.DESC,
         search: {
           commentRefId: property?._id || "",
@@ -88,17 +88,16 @@ const PropertyComments = ({
       setCommentText("");
       await sweetTopSmallSuccessAlert("Your evaluation has been posted!");
       await refetchComments();
-      if (refetchProperty) refetchProperty();
+      if (refetchProperty) await refetchProperty();
     } catch (err: any) {
       await sweetErrorAlert(err.message || "Failed to post comment.");
     }
   };
 
-  const ratingVal = property?.propertyRating
+  const ratingVal = typeof property?.propertyRating === "number"
     ? property.propertyRating.toFixed(2)
-    : "4.98";
-  const displayTotal =
-    totalComments > 0 ? totalComments : property?.propertyReviews || 248;
+    : "—";
+  const displayTotal = totalComments || property?.propertyReviews || 0;
 
   return (
     <section className="property-comments-section">
@@ -118,8 +117,7 @@ const PropertyComments = ({
             </div>
           </div>
           <p className="comments-subtext">
-            Authentic evaluations by {displayTotal} verified guests who stayed
-            at {property?.propertyName || "Alpine Grand Retreat"}
+            {displayTotal} evaluation{displayTotal === 1 ? "" : "s"} for {property.propertyName}
           </p>
         </div>
 
@@ -132,53 +130,12 @@ const PropertyComments = ({
               value={sortType}
               onChange={(e) => setSortType(e.target.value)}
             >
-              <option value="highest">Highest Rated</option>
               <option value="newest">Most Recent</option>
-              <option value="detailed">Detailed Feedback</option>
+              <option value="updated">Recently Updated</option>
             </select>
             <span className="material-symbols-outlined select-arrow">
               expand_more
             </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Category Rating Progress Bars */}
-      <div className="ratings-metrics-grid">
-        <div className="metric-bar-item">
-          <div className="metric-label-row">
-            <span>Cleanliness</span>
-            <span className="metric-score">5.0</span>
-          </div>
-          <div className="progress-track">
-            <div className="progress-fill" style={{ width: "100%" }}></div>
-          </div>
-        </div>
-        <div className="metric-bar-item">
-          <div className="metric-label-row">
-            <span>Architecture & Design</span>
-            <span className="metric-score">4.9</span>
-          </div>
-          <div className="progress-track">
-            <div className="progress-fill" style={{ width: "98%" }}></div>
-          </div>
-        </div>
-        <div className="metric-bar-item">
-          <div className="metric-label-row">
-            <span>Alpine Location</span>
-            <span className="metric-score">5.0</span>
-          </div>
-          <div className="progress-track">
-            <div className="progress-fill" style={{ width: "100%" }}></div>
-          </div>
-        </div>
-        <div className="metric-bar-item">
-          <div className="metric-label-row">
-            <span>White-Glove Service</span>
-            <span className="metric-score">4.9</span>
-          </div>
-          <div className="progress-track">
-            <div className="progress-fill" style={{ width: "98%" }}></div>
           </div>
         </div>
       </div>
@@ -195,17 +152,12 @@ const PropertyComments = ({
             const authorName =
               comment.memberData?.memberNick ||
               comment.memberData?.memberFullName ||
-              "Verified Voyager";
+              "Guest";
             const authorImg = getImageUrl(
               comment.memberData?.memberImage,
               defaultAvatar,
             );
-            const formattedDate = new Date(
-              comment.createdAt,
-            ).toLocaleDateString("en-US", {
-              month: "short",
-              year: "numeric",
-            });
+            const formattedDate = formatApiDate(comment.createdAt);
 
             return (
               <article key={comment._id || idx} className="review-card">
@@ -218,21 +170,8 @@ const PropertyComments = ({
                     />
                     <div className="author-meta">
                       <h3 className="author-name">{authorName}</h3>
-                      <p className="stay-date">
-                        Stayed {formattedDate} • Verified Stay
-                      </p>
+                      <p className="stay-date">Posted {formattedDate}</p>
                     </div>
-                  </div>
-                  <div className="stars-row">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <span
-                        key={star}
-                        className="material-symbols-outlined star-icon"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        star
-                      </span>
-                    ))}
                   </div>
                 </div>
                 <p className="review-content">{comment.commentContent}</p>
@@ -246,8 +185,7 @@ const PropertyComments = ({
             </span>
             <p className="empty-title">No evaluations posted yet</p>
             <p className="empty-desc">
-              Be the first verified voyager to share your experience staying at{" "}
-              {property?.propertyName || "this sanctuary"}.
+              Be the first to share your experience at {property.propertyName}.
             </p>
           </div>
         )}
@@ -300,7 +238,7 @@ const PropertyComments = ({
           <img
             src={getImageUrl(
               user?.memberImage,
-              "https://lh3.googleusercontent.com/aida-public/AB6AXuCK159XgBwM6kPjC2DqGvQ_X6ZqE_a8qR29oYd91hYd739m50f3A2nO6bYvB1m4qV9jZ7WvK6R9j_vC8xY2n_K8A2j_6N8bY4v-7",
+              defaultAvatar,
             )}
             alt="Current user"
             className="user-comment-avatar"

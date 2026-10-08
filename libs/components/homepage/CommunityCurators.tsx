@@ -1,186 +1,198 @@
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { useQuery, useMutation, useReactiveVar } from '@apollo/client';
-import { GET_BOARD_ARTICLES } from '../../../apollo/user/query';
-import { SUBSCRIBE, UNSUBSCRIBE } from '../../../apollo/user/mutation';
-import { userVar } from '../../../apollo/store';
-import { Direction, Message } from '../../enums/common.enum';
-import { T } from '../../types/common';
-import { getImageUrl } from '../../config';
-import { sweetTopSmallSuccessAlert, sweetMixinErrorAlert } from '../../sweetAlert';
-
-interface Curator {
-	_id: string;
-	name: string;
-	role: string;
-	itineraries: number;
-	avatar: string;
-	isFollowing?: boolean;
-}
-
-const defaultCurators: Curator[] = [
-	{
-		_id: 'default-curator-1',
-		name: 'Elena Rostova',
-		role: 'Subarctic Explorer',
-		itineraries: 18,
-		avatar:
-			'https://lh3.googleusercontent.com/aida-public/AB6AXuDrFrVWXBRbW7-r9zNa2IedkP_g1w3jNk78MBFUAc0avAIwmw0COLS5o_mcBeZpisu7O6MvASQpDpMDLsPXiUBGmL3_yyXx2qwntRJUIqM97Yw81_Z-o3ljoY8Df12Fy0KoRWsRHAdvJsG9EPinaLIdT2pEVIgQXd2lFcGtGrojpwZVoLLWO-Ganb9mcuxADBNwLykh4Tu2_NVBIJC7QuytwGyM67kxI_tnQCb_8Yg',
-	},
-	{
-		_id: 'default-curator-2',
-		name: 'Marcus Chen',
-		role: 'High-Altitude Guide',
-		itineraries: 24,
-		avatar:
-			'https://lh3.googleusercontent.com/aida-public/AB6AXuAj4p_frOv3azciTBWESD537EWkGlNUn35CB19Lc47B_NPQSovOz0OU9trvGCS8x9j8Nl8hce1JUtqrFQKPC99irdAeJ-RW9C52zlb6HiQNjLJqOk8sLQsyR5a1mPQ6oXvlsFeIMfC8TB1Aji_OGPByDUon2UH96rot86_twHZHFfHHKuGfRw7XRbczAY7J64oMkULtmOp21WfPhnWf2yGWfDcd6t9LB4Mwa3sgEkg',
-	},
-	{
-		_id: 'default-curator-3',
-		name: 'Sarah Jenkins',
-		role: 'Architecture Critic',
-		itineraries: 31,
-		avatar:
-			'https://lh3.googleusercontent.com/aida-public/AB6AXuD_YDCPWDZOwrtfpcwdAr22MwfciWBGGNHlfI_lioenR2QDxiNTOmjdBypIkTdMX86BaxU9IlCfBRSHEWUV7xu2tJzWK6TSr4148F2qCPAcwuDoZHdKbyDwhzugSMFImsFOU1Hro3gM5mdRLR-cZGyD_wvZi0G7VsS3Ad1_KgADmFZ19GNTBIQnUnQFn4VB3Op2BNq4WwTvYyddVIlA9xXst7TxdQMXSTeBCnaT1BM',
-	},
-	{
-		_id: 'default-curator-4',
-		name: "Liam O'Connor",
-		role: 'Wildlife Biologist',
-		itineraries: 12,
-		avatar:
-			'https://lh3.googleusercontent.com/aida-public/AB6AXuA776NvviO7o1kUIA8-VGfko9mcwpjIzdyY-bxpGB2HVaqe_qZR5LzEiMf7iJsQgutt1lLmcWe06oKcaRqsa091l6K-dUDdVEIDraIyygP8HTD5fu2w7f8RYjjrK5yYQ95RHsCHpuukmx-UqVZLYHADdf0kUcENWAE8Ol7f6_fYpxULBVrgnRVXxQ8fkjzroFwjFQQ2ISr2MAPSRIdnKkkviiOywQj9HgbCNmDVQ68',
-	},
-];
+import React, { useState } from "react";
+import { useRouter } from "next/router";
+import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
+import { GET_HOME_EXPLORERS } from "../../../apollo/user/query";
+import { SUBSCRIBE, UNSUBSCRIBE } from "../../../apollo/user/mutation";
+import { userVar } from "../../../apollo/store";
+import { getJwtToken } from "../../auth";
+import { Direction, Message } from "../../enums/common.enum";
+import { Member } from "../../types/member/member";
+import { MembersInquiry } from "../../types/member/member.input";
+import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
+import {
+  sweetTopSmallSuccessAlert,
+  sweetMixinErrorAlert,
+} from "../../sweetAlert";
+import FollowButton from "../common/FollowButton";
+import { Globe, Mail } from "lucide-react";
 
 const CommunityCurators = () => {
-	const router = useRouter();
-	const user = useReactiveVar(userVar);
-	const [curators, setCurators] = useState<Curator[]>([]);
-	const [followingIds, setFollowingIds] = useState<Record<string, boolean>>({});
+  const router = useRouter();
+  const user = useReactiveVar(userVar);
+  const [followOverrides, setFollowOverrides] = useState<
+    Record<string, boolean>
+  >({});
+  const [updatingFollowIds, setUpdatingFollowIds] = useState<
+    Record<string, boolean>
+  >({});
+  const queryInput: MembersInquiry = {
+    page: 1,
+    limit: 4,
+    sort: "createdAt",
+    direction: Direction.DESC,
+    search: {},
+  };
 
-	/** APOLLO REQUESTS **/
-	const [subscribe] = useMutation(SUBSCRIBE);
-	const [unsubscribe] = useMutation(UNSUBSCRIBE);
+  /** APOLLO REQUESTS **/
+  const [subscribe] = useMutation(SUBSCRIBE);
+  const [unsubscribe] = useMutation(UNSUBSCRIBE);
 
-	const { data, refetch } = useQuery(GET_BOARD_ARTICLES, {
-		fetchPolicy: 'cache-and-network',
-		variables: {
-			input: {
-				page: 1,
-				limit: 10,
-				sort: 'articleViews',
-				direction: Direction.DESC,
-				search: {},
-			},
-		},
-		notifyOnNetworkStatusChange: true,
-	});
+  const { data, loading, refetch } = useQuery(GET_HOME_EXPLORERS, {
+    fetchPolicy: "cache-and-network",
+    variables: { input: queryInput },
+    notifyOnNetworkStatusChange: true,
+    ssr: false,
+  });
+  const curators: Member[] = data?.getAllMembers?.list ?? [];
 
-	/** LIFECYCLES **/
-	useEffect(() => {
-		const list = data?.getBoardArticles?.list;
-		if (list && list.length > 0) {
-			const uniqueMembers = new Map<string, Curator>();
-			list.forEach((article: any) => {
-				const m = article.memberData;
-				if (m && m._id && !uniqueMembers.has(m._id)) {
-					uniqueMembers.set(m._id, {
-						_id: m._id,
-						name: m.memberFullName || m.memberNick || 'Verified Curator',
-						role: 'Verified Expedition Curator',
-						itineraries: 15,
-						avatar: getImageUrl(m.memberImage, defaultCurators[0].avatar),
-					});
-				}
-			});
-			if (uniqueMembers.size > 0) {
-				setCurators(Array.from(uniqueMembers.values()));
-			}
-		}
-	}, [data]);
+  /** HANDLERS **/
+  const followHandler = async (
+    event: React.MouseEvent,
+    curatorId: string,
+    isFollowing: boolean,
+  ) => {
+    event.stopPropagation();
+    if (updatingFollowIds[curatorId]) return;
 
-	/** HANDLERS **/
-	const followHandler = async (curatorId: string) => {
-		try {
-			if (!user?._id) throw new Error(Message.NOT_AUTHENTICATED);
-			const isFollowing = followingIds[curatorId];
-			if (isFollowing) {
-				await unsubscribe({ variables: { input: curatorId } });
-				setFollowingIds((prev) => ({ ...prev, [curatorId]: false }));
-				await sweetTopSmallSuccessAlert('Unfollowed curator', 800);
-			} else {
-				await subscribe({ variables: { input: curatorId } });
-				setFollowingIds((prev) => ({ ...prev, [curatorId]: true }));
-				await sweetTopSmallSuccessAlert('Curator followed!', 800);
-			}
-		} catch (err: any) {
-			console.log('ERROR, followHandler:', err.message);
-			sweetMixinErrorAlert(err.message);
-		}
-	};
+    try {
+      const accessToken = getJwtToken();
+      if (!user?._id || !accessToken) {
+        await sweetMixinErrorAlert(Message.NOT_AUTHENTICATED);
+        await router.push({
+          pathname: "/account/login",
+          query: { referrer: router.asPath },
+        });
+        return;
+      }
 
-	const displayCurators = Array.from({ length: 4 }).map((_, index) => {
-		if (curators[index]) return curators[index];
-		return defaultCurators[index];
-	});
+      const nextFollowingStatus = !isFollowing;
+      setFollowOverrides((current) => ({
+        ...current,
+        [curatorId]: nextFollowingStatus,
+      }));
+      setUpdatingFollowIds((current) => ({ ...current, [curatorId]: true }));
+      const mutationOptions = {
+        variables: { input: curatorId },
+        context: {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "apollo-require-preflight": "true",
+          },
+        },
+      };
 
-	return (
-		<section className="curators-section">
-			<div className="section-container">
-				<div className="section-header">
-					<div>
-						<span className="section-tag">Community Curators</span>
-						<h2 className="section-title">Meet the Explorers</h2>
-						<p className="section-subtitle">
-							Follow verified curators sharing rare itineraries and quiet gems.
-						</p>
-					</div>
-				</div>
+      if (isFollowing) {
+        await unsubscribe(mutationOptions);
+      } else {
+        await subscribe(mutationOptions);
+      }
 
-				<div className="curators-grid">
-					{displayCurators.map((curator, idx) => {
-						const isFollowing = followingIds[curator._id];
+      await refetch({ input: queryInput }).catch((refetchError) => {
+        console.log("ERROR, refetch explorers:", refetchError);
+      });
+      setFollowOverrides((current) => {
+        const updated = { ...current };
+        delete updated[curatorId];
+        return updated;
+      });
+    } catch (err: unknown) {
+      setFollowOverrides((current) => ({
+        ...current,
+        [curatorId]: isFollowing,
+      }));
+      const errorMessage =
+        err instanceof Error ? err.message : "Unable to update follow status.";
+      console.log("ERROR, followHandler:", errorMessage);
+      sweetMixinErrorAlert(errorMessage);
+    } finally {
+      setUpdatingFollowIds((current) => ({ ...current, [curatorId]: false }));
+    }
+  };
 
-						return (
-							<div key={curator._id || idx} className="curator-card">
-								<img
-									src={curator.avatar}
-									alt={curator.name}
-									className="curator-avatar"
-									onError={(e: any) => {
-										e.target.src = defaultCurators[idx % defaultCurators.length].avatar;
-									}}
-								/>
-								<div className="curator-info">
-									<div className="curator-name-row">
-										<h3 className="curator-name">{curator.name}</h3>
-										<span
-											className="material-symbols-outlined verified-icon"
-											style={{ fontVariationSettings: "'FILL' 1" }}
-										>
-											verified
-										</span>
-									</div>
-									<p className="curator-role">{curator.role}</p>
-									<span className="curator-itineraries">
-										{curator.itineraries} Curations
-									</span>
-								</div>
-								<button
-									className={`follow-btn ${isFollowing ? 'following' : ''}`}
-									type="button"
-									onClick={() => followHandler(curator._id)}
-								>
-									{isFollowing ? 'Following' : 'Follow'}
-								</button>
-							</div>
-						);
-					})}
-				</div>
-			</div>
-		</section>
-	);
+  const redirectToMemberPage = (memberId: string) => {
+    if (memberId === user?._id) {
+      router.push("/mypage");
+    } else {
+      router.push(`/member?memberId=${memberId}`);
+    }
+  };
+
+  const SHAPE_COLORS = ["#3f24ff", "#fcab6c", "#ebe266", "#23b6fa"];
+
+  return (
+    <section className="curators-section team-section">
+      <div className="section-container">
+        <div className="section-header team-header">
+          <div className="team-badge">Team</div>
+          <h2 className="team-title">Meet the creative minds<br/>behind our success</h2>
+        </div>
+
+        <div className="team-grid">
+          {curators.map((curator: Member, index: number) => {
+            const backendFollowing = Boolean(
+              curator.meFollowed?.[0]?.myFollowing,
+            );
+            const isFollowing =
+              followOverrides[curator._id] ?? backendFollowing;
+            const isUpdatingFollow = Boolean(updatingFollowIds[curator._id]);
+            const avatarUrl = getImageUrl(
+              curator.memberImage,
+              DEFAULT_USER_AVATAR,
+            );
+
+            // Mock roles since backend only has memberType
+            const roles = ["WordPress Developer", "Social Media Specialist", "Product Designer", "UI Designer"];
+            const role = roles[index % roles.length];
+            const shapeIndex = index % 4;
+
+            return (
+              <div
+                key={curator._id}
+                className="team-card"
+                data-shape={shapeIndex}
+                onClick={() => redirectToMemberPage(curator._id)}
+              >
+                <div className="team-avatar-wrap">
+                  <img
+                    src={avatarUrl}
+                    alt={curator.memberNick}
+                    className="team-cover-img"
+                    onError={(e: any) => { e.target.src = DEFAULT_USER_AVATAR; }}
+                  />
+                </div>
+                
+                <div className="team-bottom-content">
+                  <h3 className="team-name">
+                    {curator.memberFullName || curator.memberNick}
+                  </h3>
+                  <div className="team-role">{role}</div>
+                  
+                  <div className="team-social-icons">
+                    <Globe size={18} strokeWidth={1.5} />
+                    <Mail size={18} strokeWidth={1.5} />
+                  </div>
+
+                  {user?._id !== curator._id && (
+                    <div className="team-follow-wrapper">
+                      <FollowButton 
+                        isFollowing={isFollowing} 
+                        isLoading={isUpdatingFollow} 
+                        onClick={(e) => followHandler(e, curator._id, isFollowing)} 
+                        size="sm"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {!loading && curators.length === 0 && (
+            <p className="curators-empty-state">No team members found.</p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
 };
 
 export default CommunityCurators;

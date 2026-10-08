@@ -8,8 +8,6 @@ interface TourFilterProps {
 	initialInput: ToursInquiry;
 }
 
-const quickDestinations = ['Jeju', 'Busan', 'Seoul', 'Zermatt', 'Zurich', 'Munich'];
-
 const travelerOptions = [
 	{ label: '1 Traveler', value: 1 },
 	{ label: '2 Travelers', value: 2 },
@@ -17,19 +15,9 @@ const travelerOptions = [
 	{ label: '5+', value: 5 },
 ];
 
-const durationOptions = [
-	{ label: '1–3 days', value: '1-3', count: 14 },
-	{ label: '4–7 days', value: '4-7', count: 48 },
-	{ label: '8–14 days', value: '8-14', count: 32 },
-	{ label: '15+ days', value: '15+', count: 16 },
-];
-
 const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterProps) => {
 	const router = useRouter();
 	const [searchText, setSearchText] = useState(searchFilter?.search?.text || '');
-	const [selectedCity, setSelectedCity] = useState<string>(
-		searchFilter?.search?.tourDestinationCity || '',
-	);
 	const [selectedTravelers, setSelectedTravelers] = useState<number | null>(
 		searchFilter?.search?.minAvailableSeats ?? null,
 	);
@@ -42,12 +30,10 @@ const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterP
 	const [returnDate, setReturnDate] = useState<string>(
 		searchFilter?.search?.tourStartDateRange?.end || '',
 	);
-	const [selectedDurations, setSelectedDurations] = useState<string[]>(['4-7', '8-14']);
 
 	/** LIFECYCLES **/
 	useEffect(() => {
 		setSearchText(searchFilter?.search?.text || '');
-		setSelectedCity(searchFilter?.search?.tourDestinationCity || '');
 		setSelectedTravelers(searchFilter?.search?.minAvailableSeats ?? null);
 		if (searchFilter?.search?.tourPriceRange?.end) {
 			setMaxPrice(searchFilter.search.tourPriceRange.end);
@@ -89,20 +75,6 @@ const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterP
 		applyFilterImmediately(newFilter);
 	};
 
-	const destinationPillHandler = (dest: string) => {
-		const newCity = selectedCity === dest ? '' : dest;
-		setSelectedCity(newCity);
-		const newFilter: ToursInquiry = {
-			...searchFilter,
-			page: 1,
-			search: {
-				...searchFilter.search,
-				tourDestinationCity: newCity ? newCity : undefined,
-			},
-		};
-		applyFilterImmediately(newFilter);
-	};
-
 	const priceChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const val = Number(e.target.value);
 		setMaxPrice(val);
@@ -131,10 +103,7 @@ const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterP
 			page: 1,
 			search: {
 				...searchFilter.search,
-				tourStartDateRange: {
-					start: dateVal,
-					end: returnDate || '2030-12-31',
-				},
+					tourStartDateRange: dateVal ? { start: dateVal, end: returnDate || dateVal } : undefined,
 			},
 		};
 		applyFilterImmediately(newFilter);
@@ -148,27 +117,8 @@ const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterP
 			page: 1,
 			search: {
 				...searchFilter.search,
-				tourStartDateRange: {
-					start: departureDate || '2024-01-01',
-					end: dateVal,
-				},
+					tourStartDateRange: dateVal ? { start: departureDate || dateVal, end: dateVal } : undefined,
 			},
-		};
-		applyFilterImmediately(newFilter);
-	};
-
-	const durationToggleHandler = (val: string) => {
-		let updated: string[];
-		if (selectedDurations.includes(val)) {
-			updated = selectedDurations.filter((d) => d !== val);
-		} else {
-			updated = [...selectedDurations, val];
-		}
-		setSelectedDurations(updated);
-		// Instantly update inquiry
-		const newFilter: ToursInquiry = {
-			...searchFilter,
-			page: 1,
 		};
 		applyFilterImmediately(newFilter);
 	};
@@ -189,12 +139,10 @@ const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterP
 
 	const clearAllHandler = () => {
 		setSearchText('');
-		setSelectedCity('');
 		setSelectedTravelers(null);
-		setMaxPrice(5000);
+		setMaxPrice(1000000);
 		setDepartureDate('');
 		setReturnDate('');
-		setSelectedDurations(['4-7', '8-14']);
 		applyFilterImmediately(initialInput);
 	};
 
@@ -212,7 +160,7 @@ const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterP
 					</button>
 				</div>
 
-				{/* 1. Destination Search & Quick Pills */}
+				{/* 1. Destination Search */}
 				<div className="filter-section">
 					<label className="filter-section-label">Destination</label>
 					<div className="search-input-wrapper">
@@ -224,18 +172,6 @@ const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterP
 							value={searchText}
 							onChange={(e) => searchInputChangeHandler(e.target.value)}
 						/>
-					</div>
-					<div className="quick-destination-pills">
-						{quickDestinations.map((dest) => (
-							<button
-								key={dest}
-								type="button"
-								className={`dest-pill ${selectedCity === dest ? 'active' : ''}`}
-								onClick={() => destinationPillHandler(dest)}
-							>
-								{dest}
-							</button>
-						))}
 					</div>
 				</div>
 
@@ -302,30 +238,7 @@ const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterP
 					</div>
 				</div>
 
-				{/* 4. Duration */}
-				<div className="filter-section">
-					<label className="filter-section-label">Duration</label>
-					<div className="duration-list">
-						{durationOptions.map((opt) => {
-							const checked = selectedDurations.includes(opt.value);
-							return (
-								<label key={opt.value} className="duration-checkbox-item">
-									<div className="checkbox-text-pair">
-										<input
-											type="checkbox"
-											checked={checked}
-											onChange={() => durationToggleHandler(opt.value)}
-										/>
-										<span className={checked ? 'label-active' : ''}>{opt.label}</span>
-									</div>
-									<span className={`count-pill ${checked ? 'active' : ''}`}>{opt.count}</span>
-								</label>
-							);
-						})}
-					</div>
-				</div>
-
-				{/* 5. Travelers */}
+				{/* 4. Travelers */}
 				<div className="filter-section">
 					<label className="filter-section-label">Travelers</label>
 					<div className="travelers-grid">

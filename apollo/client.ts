@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ApolloClient, ApolloLink, InMemoryCache, split, from, NormalizedCacheObject } from '@apollo/client';
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, split, from, NormalizedCacheObject } from '@apollo/client';
 // @ts-ignore
 import createUploadLink from 'apollo-upload-client/public/createUploadLink.js';
 import { WebSocketLink } from '@apollo/client/link/ws';
@@ -44,6 +44,15 @@ class LoggingWebSocket {
 }
 
 function createIsomorphicLink() {
+	const graphqlUri = process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql';
+
+	if (typeof window === 'undefined') {
+		return new HttpLink({
+			uri: graphqlUri,
+			headers: { 'apollo-require-preflight': 'true' },
+		});
+	}
+
 	if (typeof window !== 'undefined') {
 		const authLink = new ApolloLink((operation, forward) => {
 			operation.setContext(({ headers = {} }) => ({
@@ -57,7 +66,7 @@ function createIsomorphicLink() {
 
 		// @ts-ignore
 		const link = new createUploadLink({
-			uri: process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql',
+			uri: graphqlUri,
 			headers: { 'apollo-require-preflight': 'true' },
 		});
 

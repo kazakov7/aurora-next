@@ -4,8 +4,12 @@ import { useQuery, useMutation, useReactiveVar } from '@apollo/client';
 import { GET_FAVORITES, GET_FAVORITE_TOURS } from '../../../apollo/user/query';
 import { LIKE_TARGET_PROPERTY, LIKE_TARGET_TOUR } from '../../../apollo/user/mutation';
 import { userVar } from '../../../apollo/store';
-import { getImageUrl } from '../../config';
+import { DEFAULT_PROPERTY_IMAGE, DEFAULT_TOUR_IMAGE, getImageUrl } from '../../config';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { Property } from '../../types/property/property';
+import { Tour } from '../../types/tour/tour';
+
+import WishlistPlaceCard from './WishlistPlaceCard';
 
 const MyProfileWishlist: React.FC = () => {
 	const router = useRouter();
@@ -16,7 +20,7 @@ const MyProfileWishlist: React.FC = () => {
 	const [likePropertyMutation] = useMutation(LIKE_TARGET_PROPERTY);
 	const [likeTourMutation] = useMutation(LIKE_TARGET_TOUR);
 
-	const { data: propData, refetch: refetchProps } = useQuery(GET_FAVORITES, {
+	const { data: propData, loading: propertiesLoading, error: propertiesError, refetch: refetchProps } = useQuery(GET_FAVORITES, {
 		fetchPolicy: 'network-only',
 		variables: {
 			input: {
@@ -28,7 +32,7 @@ const MyProfileWishlist: React.FC = () => {
 		notifyOnNetworkStatusChange: true,
 	});
 
-	const { data: tourData, refetch: refetchTours } = useQuery(GET_FAVORITE_TOURS, {
+	const { data: tourData, loading: toursLoading, error: toursError, refetch: refetchTours } = useQuery(GET_FAVORITE_TOURS, {
 		fetchPolicy: 'network-only',
 		variables: {
 			input: {
@@ -40,12 +44,12 @@ const MyProfileWishlist: React.FC = () => {
 		notifyOnNetworkStatusChange: true,
 	});
 
-	const favoriteProperties = propData?.getFavorites?.list || [];
-	const favoriteTours = tourData?.getFavoriteTours?.list || [];
+	const favoriteProperties: Property[] = propData?.getFavorites?.list || [];
+	const favoriteTours: Tour[] = tourData?.getFavoriteTours?.list || [];
 
 	const combinedList = [
-		...favoriteProperties.map((p: any) => ({ ...p, isTour: false })),
-		...favoriteTours.map((t: any) => ({ ...t, isTour: true })),
+		...favoriteProperties.map((property) => ({ ...property, isTour: false as const })),
+		...favoriteTours.map((tour) => ({ ...tour, isTour: true as const })),
 	];
 
 	const displayList = combinedList.filter((item) => {
@@ -57,14 +61,14 @@ const MyProfileWishlist: React.FC = () => {
 	const total = displayList.length;
 
 	/** HANDLERS **/
-	const handleRemoveFavorite = async (e: React.MouseEvent, item: any) => {
+	const handleRemoveFavorite = async (e: React.MouseEvent, item: (Property & { isTour: false }) | (Tour & { isTour: true })) => {
 		e.stopPropagation();
 		try {
 			if (item.isTour) {
-				await likeTourMutation({ variables: { input: item._id } });
+				await likeTourMutation({ variables: { tourId: item._id } });
 				await refetchTours();
 			} else {
-				await likePropertyMutation({ variables: { input: item._id } });
+				await likePropertyMutation({ variables: { propertyId: item._id } });
 				await refetchProps();
 			}
 			sweetTopSmallSuccessAlert('Removed from Wishlist.', 800);
@@ -109,59 +113,46 @@ const MyProfileWishlist: React.FC = () => {
 			</div>
 
 			{/* Wishlist Cards Grid */}
-			{displayList.length > 0 ? (
+			{(propertiesLoading || toursLoading) && !propData && !tourData ? (
+				<div className="profile-empty-state"><div className="loading-spinner" /><p>Loading your wishlist...</p></div>
+			) : propertiesError || toursError ? (
+				<div className="profile-empty-state"><h3>Wishlist is unavailable</h3><p>{propertiesError?.message || toursError?.message}</p></div>
+			) : displayList.length > 0 ? (
 				<div className="wishlist-cards-grid">
-					{displayList.map((item: any) => {
+					{displayList.map((item) => {
 						const isTour = item.isTour;
-						const title = isTour ? item.tourTitle || item.tourName : item.propertyTitle || item.propertyName;
-						const location = isTour ? item.tourLocation || 'Expedition' : item.propertyAddress || item.propertyLocation;
-						const price = isTour ? item.tourPrice : item.propertyPrice;
-						const img = getImageUrl(
-							isTour ? item.tourImages?.[0] : item.propertyImages?.[0],
-							'https://lh3.googleusercontent.com/aida-public/AB6AXuD8_BY-EVXIV7xo-yc9MYTb9NSoxhEi7EEv_XTCME9ZgfFw4tHp3r2MxvwZtjXUEnDFhGmRxFL45eq5LW-kSq3pfgKWZailt6pMXNLA7AILQwc6ni5OJlwUQwfaSoibHu1ciegz2OHO18tz_NErv3xXG3t7qtchAETDE-3q0qOCuiNxi1N43cAY-jINAZZJvIGhJEGSvz8a4onhCI47CfTAEJatfn0hxZHImOuDPkE7YYbavINRkHb6',
-						);
+						const title = isTour ? item.tourName : item.propertyName;
+						const location = isTour
+							? item.tourDestinationCity || item.tourDepartureCity || 'Location not provided'
+							: item.propertyAddress || item.propertyCity || 'Location not provided';
+						const price = isTour ? item.tourPrice : item.pricePerNight;
+						const currency = isTour ? item.tourCurrency : item.currency;
+						const images = isTour ? item.tourImages : item.propertyImages;
+						const mappedImages = images && images.length > 0 
+							? images.map((img: string) => getImageUrl(img)) 
+							: [isTour ? DEFAULT_TOUR_IMAGE : DEFAULT_PROPERTY_IMAGE];
+						const rating = isTour ? item.tourRating ?? 0 : item.propertyRating ?? 0;
+						const dateRange = isTour
+							? `${new Date(item.tourStartDate).toLocaleDateString()} – ${new Date(item.tourEndDate).toLocaleDateString()}`
+							: item.propertyType;
 
 						return (
-							<div
+							<WishlistPlaceCard
 								key={item._id}
-								className="wishlist-card-item"
-								style={{ cursor: 'pointer' }}
-								onClick={() =>
-									router.push(isTour ? `/tour/detail?id=${item._id}` : `/property/detail?id=${item._id}`)
-								}
-							>
-								<div className="card-thumb-box">
-									<img src={img} alt={title} />
-									<span className="type-badge">{isTour ? 'TOUR' : 'HOTEL'}</span>
-									<button
-										type="button"
-										className="remove-fav-btn"
-										aria-label="Remove from Wishlist"
-										onClick={(e) => handleRemoveFavorite(e, item)}
-									>
-										<span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-											favorite
-										</span>
-									</button>
-								</div>
-
-								<div className="card-content-box">
-									<h3 className="fav-title">{title}</h3>
-									<div className="fav-loc">
-										<span className="material-symbols-outlined">location_on</span>
-										<span>{location}</span>
-									</div>
-									<div className="fav-bottom-price">
-										<span className="price-val">₩{(price || 750000).toLocaleString()}</span>
-										<span className="rating-val">
-											<span className="material-symbols-outlined" style={{ fontSize: '15px', color: '#f59e0b', fontVariationSettings: "'FILL' 1" }}>
-												star
-											</span>
-											4.9
-										</span>
-									</div>
-								</div>
-							</div>
+								images={mappedImages}
+								tags={[isTour ? 'TOUR' : 'HOTEL', location]}
+								rating={rating}
+								title={title}
+								dateRange={dateRange}
+								hostType={location}
+								description={(isTour ? item.tourDesc : item.propertyDesc) || 'No description provided.'}
+								pricePerNight={price}
+								currency={currency}
+								priceUnit={isTour ? '/ person' : '/ night'}
+								isLiked={true}
+								onLikeToggle={(e) => handleRemoveFavorite(e, item)}
+								onClick={() => router.push(isTour ? `/tour/detail?id=${item._id}` : `/property/detail?id=${item._id}`)}
+							/>
 						);
 					})}
 				</div>

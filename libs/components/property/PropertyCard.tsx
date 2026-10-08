@@ -4,6 +4,7 @@ import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import { Property } from '../../types/property/property';
 import { getImageUrl } from '../../config';
+import LikeButton from '../common/LikeButton';
 
 interface PropertyCardProps {
 	property: Property;
@@ -31,7 +32,7 @@ const badges = ['Best Price', 'Rare Find', 'Curated', 'Popular'];
 const PropertyCard = ({ property, index = 0, likePropertyHandler }: PropertyCardProps) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
-	const isLiked = property?.meLiked && property?.meLiked[0]?.myFavorite;
+	const isLiked = Boolean(property?.meLiked?.[0]?.myFavorite);
 
 	const fallbackImg = fallbackCardImages[index % fallbackCardImages.length];
 	const imageSrc = getImageUrl(property.propertyImages?.[0], fallbackImg);
@@ -62,19 +63,13 @@ const PropertyCard = ({ property, index = 0, likePropertyHandler }: PropertyCard
 				<div className={`card-badge-pill ${badgeText.toLowerCase().replace(' ', '-')}`}>
 					{badgeText}
 				</div>
-				<button
-					aria-label="Save to favorites"
-					className={`card-favorite-btn ${isLiked ? 'liked' : ''}`}
-					type="button"
-					onClick={(e) => likePropertyHandler(e, property._id)}
-				>
-					<span
-						className="material-symbols-outlined"
-						style={{ fontVariationSettings: isLiked ? "'FILL' 1" : "'FILL' 0" }}
-					>
-						favorite
-					</span>
-				</button>
+				<div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10 }}>
+					<LikeButton 
+						isLiked={isLiked} 
+						onClick={(e) => likePropertyHandler(e, property._id)} 
+						style={{ backgroundColor: 'rgba(255,255,255,0.9)', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
+					/>
+				</div>
 			</div>
 
 			<div className="card-content">

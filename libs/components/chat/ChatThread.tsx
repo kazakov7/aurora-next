@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatConversation, ChatMessage } from './chat.types';
+import { DEFAULT_USER_AVATAR } from '../../config';
 
 interface ChatThreadProps {
 	conversation: ChatConversation;
@@ -139,7 +140,7 @@ const ChatThread: React.FC<ChatThreadProps> = ({ conversation, onSendMessage }) 
 						>
 							{!isMe && (
 								<img
-									src={msg.senderAvatar || conversation.avatar || '/img/profile/defaultUser.svg'}
+									src={msg.senderAvatar || conversation.avatar || DEFAULT_USER_AVATAR}
 									alt={msg.senderName}
 									className="msg-avatar"
 								/>

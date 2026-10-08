@@ -1,166 +1,28 @@
 import React, { useState } from 'react';
-import { Tour } from '../../../types/tour/tour';
 import { getImageUrl } from '../../../config';
+import { Tour } from '../../../types/tour/tour';
 
-interface TourGalleryProps {
-	tour: Tour;
-}
-
-const defaultTourGallery = [
-	{
-		url: 'https://lh3.googleusercontent.com/aida/AEtjO1VUw8gwH-UBiHOUk3H7ZHmQKS7N_AqBqtD05bfuw4T9hrfcyjqvPSQo3LQlN3_6YZaYZonh1U8DBuzuRmy_rQXcBZB_TNtDMGJLYTNrenP-CB8J7xZmKLt2si8EY6ilIR4OQkydpIXHuQ5pEL6YT7G9g65hXEaR7-27MzC0Gb9xbIzt2OZBSw14KQktxOPd1iz2xIALwniuHb1Xkz3DgqWZdcFcKUZhjnk7pJoZ2sRL9VLNbPW1uf5YkSo',
-		title: 'Swiss Alps Panoramic Expedition',
-		badge: 'Matterhorn & Stellisee Alpine Reflection',
-	},
-	{
-		url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDb6sNSrDzqp2ZVoIxWNorDPaWovfQWq7NKiDAgL1q0h5Lq_eoQIzRsTA4Y98bd7AmyRNbmwzxG1613Vw_1RDLNt-h77X8XMqOB5C_CjHL58BLFxDxSpz9iN_qglstNa_odvNy-xc7ZX4MJMTu_NvhHKj5rDmYaF5nmees3i0ZTeyH8d0M8Z-x_OI5jJWsHYulnD0sbEAx4Wp7CdH42bwlDe5HafmkQQU24a1Dvz1Swt-Wp0RPhrRoE',
-		title: 'Glacier Express',
-		badge: 'Panoramic Domed Carriage',
-	},
-	{
-		url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAsCBHB3vEewr28dCwWs12RQO5JKVizgb2pbTYUYQrCxMLEkNUbD_Izi-gZTMYRBYaEzpsl7T1D51_WTHUp1680bG4iJifsNTWQ0vdZAIJ-RWCkuLnFfgEq4TJpUQ3mMHhfX1EdujxY4SaSffh8QYgTNSvxDB_pWUnpNgbW13xoJCen3x3vVHQwqEEKxTpGNMv0H0sYygEhVXjdbRYYzUrBhBnZwwhlhSz2xretzkgkfzl3ElpJhVJx',
-		title: 'Lake Lucerne',
-		badge: 'Pristine Waters & Mountains',
-	},
-	{
-		url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAEud2Q0wvg4RjwpdPtOFNxGUUuVQmy8QD6ZEgRxMI44sLVrGtRPLH31hWGORdCJ2ErXxdg6EuTrw66IiCLobzHqlkgGrpHqMLtaxyoBJycvaKDpRDTBbcgVwF7gUjpJ6LAR6QhPAFn_UX89RZPZY1uIhjnEj5FhiymYrN2HL-k2xlViHUWgm9sPn_Up0p5DPbSuXSgf98s9grykamN9AFMHafl6s-cnxLtsECpDKOVYUlMH4Doro9P',
-		title: 'Jungfraujoch',
-		badge: 'Top of Europe 3,454m Observation Deck',
-	},
-	{
-		url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBeAsHdLhqbdJzYNM15ennjUYFqXrKH5TaGuuKXkvokKy_J3BSGRIAkuZxhNoRdUJBFxzSniqfVOmSFh3wE57pDdzkzQvK9F94kEubYeZqv4x8Aq-EtqJ1RMi_ZbiZHP9P64bpcEPjJePMnRAT3rrNyTS93Knn20N6KuYtSPPq86nVQxRRIRCGhT1Ll-9uImgCHXgQTxQx5xB8NAQuW3XRdh--FGIMu2L9lMla_OGRZiYMeGnKh57Og',
-		title: 'Zermatt',
-		badge: 'Alpine Sanctuary & Village View',
-	},
-];
+interface TourGalleryProps { tour: Tour; }
 
 const TourGallery = ({ tour }: TourGalleryProps) => {
-	const [activeModalIdx, setActiveModalIdx] = useState<number | null>(null);
+	const [activeIndex, setActiveIndex] = useState<number | null>(null);
+	const images = (tour.tourImages || []).map((image, index) => ({ url: getImageUrl(image), title: `${tour.tourName} · Photo ${index + 1}` })).filter((image) => Boolean(image.url));
+	const close = () => setActiveIndex(null);
+	const previous = (event: React.MouseEvent) => { event.stopPropagation(); if (activeIndex !== null) setActiveIndex((activeIndex - 1 + images.length) % images.length); };
+	const next = (event: React.MouseEvent) => { event.stopPropagation(); if (activeIndex !== null) setActiveIndex((activeIndex + 1) % images.length); };
 
-	const galleryImages = defaultTourGallery.map((item, idx) => {
-		const tourImg = tour?.tourImages?.[idx];
-		return {
-			url: tourImg ? getImageUrl(tourImg, item.url) : item.url,
-			title: idx === 0 ? tour?.tourName || item.title : item.title,
-			badge: idx === 0 ? `${tour?.tourDestinationCity || 'Alpine'} Discovery` : item.badge,
-		};
-	});
-
-	const openLightbox = (index: number) => {
-		setActiveModalIdx(index);
-	};
-
-	const closeLightbox = () => {
-		setActiveModalIdx(null);
-	};
-
-	const nextPhoto = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		if (activeModalIdx !== null) {
-			setActiveModalIdx((activeModalIdx + 1) % galleryImages.length);
-		}
-	};
-
-	const prevPhoto = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		if (activeModalIdx !== null) {
-			setActiveModalIdx((activeModalIdx - 1 + galleryImages.length) % galleryImages.length);
-		}
-	};
+	if (!images.length) return <div className="tour-gallery-empty-state"><span className="material-symbols-outlined">photo_library</span><p>Photos for this tour are not available yet.</p></div>;
 
 	return (
 		<>
 			<div className="tour-gallery-container">
 				<div className="gallery-layout-grid">
-					{/* Main Large Scenic Photo (col-span-7) */}
-					<div className="main-gallery-cell" onClick={() => openLightbox(0)}>
-						<img
-							src={galleryImages[0].url}
-							alt={galleryImages[0].title}
-							className="main-gallery-img"
-						/>
-						<div className="gallery-gradient-scrim"></div>
-						<div className="gallery-overlay-meta">
-							<span className="gallery-badge-pill">{galleryImages[0].badge}</span>
-							<p className="gallery-caption-title">{galleryImages[0].title}</p>
-						</div>
-					</div>
-
-					{/* 4 Photo 2x2 Grid (col-span-5) */}
-					<div className="side-gallery-grid">
-						{galleryImages.slice(1, 5).map((item, idx) => (
-							<div
-								key={idx}
-								className="side-gallery-cell"
-								onClick={() => openLightbox(idx + 1)}
-							>
-								<img
-									src={item.url}
-									alt={item.title}
-									className="side-gallery-img"
-								/>
-								<div className="side-gradient-scrim"></div>
-								<div className="side-caption-meta">
-									<span className="side-caption-pill">{item.title}</span>
-								</div>
-							</div>
-						))}
-					</div>
+					<div className="main-gallery-cell" onClick={() => setActiveIndex(0)}><img src={images[0].url} alt={images[0].title} className="main-gallery-img" /><div className="gallery-gradient-scrim" /><div className="gallery-overlay-meta"><p className="gallery-caption-title">{tour.tourName}</p></div></div>
+					<div className="side-gallery-grid">{images.slice(1, 5).map((image, index) => <div key={image.url} className="side-gallery-cell" onClick={() => setActiveIndex(index + 1)}><img src={image.url} alt={image.title} className="side-gallery-img" /><div className="side-gradient-scrim" /><div className="side-caption-meta"><p className="side-caption-text">Photo {index + 2}</p></div></div>)}</div>
 				</div>
-
-				{/* Floating "View All Photos" Button */}
-				<button
-					type="button"
-					className="view-all-photos-btn"
-					onClick={() => openLightbox(0)}
-				>
-					<span className="material-symbols-outlined">photo_library</span>
-					<span>View All {Math.max(galleryImages.length, tour?.tourImages?.length || 5)} Photos</span>
-				</button>
+				<button type="button" className="view-all-photos-btn" onClick={() => setActiveIndex(0)}><span className="material-symbols-outlined">photo_library</span><span>View all {images.length} photo{images.length === 1 ? '' : 's'}</span></button>
 			</div>
-
-			{/* Lightbox Modal */}
-			{activeModalIdx !== null && (
-				<div className="tour-lightbox-modal" onClick={closeLightbox}>
-					<div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
-						<button
-							className="lightbox-close-btn"
-							type="button"
-							onClick={closeLightbox}
-						>
-							<span className="material-symbols-outlined">close</span>
-						</button>
-						<button
-							className="lightbox-nav-btn prev"
-							type="button"
-							onClick={prevPhoto}
-						>
-							<span className="material-symbols-outlined">chevron_left</span>
-						</button>
-						<div className="lightbox-image-wrapper">
-							<img
-								src={galleryImages[activeModalIdx].url}
-								alt={galleryImages[activeModalIdx].title}
-								className="lightbox-img"
-							/>
-							<div className="lightbox-caption">
-								<span className="lightbox-counter">
-									{activeModalIdx + 1} / {galleryImages.length}
-								</span>
-								<h4>{galleryImages[activeModalIdx].title}</h4>
-								<p>{galleryImages[activeModalIdx].badge}</p>
-							</div>
-						</div>
-						<button
-							className="lightbox-nav-btn next"
-							type="button"
-							onClick={nextPhoto}
-						>
-							<span className="material-symbols-outlined">chevron_right</span>
-						</button>
-					</div>
-				</div>
-			)}
+			{activeIndex !== null ? <div className="tour-lightbox-modal" onClick={close} role="dialog" aria-modal="true" aria-label="Tour photos"><div className="lightbox-content" onClick={(event) => event.stopPropagation()}><button className="lightbox-close-btn" type="button" aria-label="Close photos" onClick={close}><span className="material-symbols-outlined">close</span></button>{images.length > 1 ? <button className="lightbox-nav-btn prev" type="button" aria-label="Previous photo" onClick={previous}><span className="material-symbols-outlined">chevron_left</span></button> : null}<div className="lightbox-image-wrapper"><img src={images[activeIndex].url} alt={images[activeIndex].title} className="lightbox-img" /><div className="lightbox-caption"><span className="lightbox-counter">{activeIndex + 1} / {images.length}</span><h4>{images[activeIndex].title}</h4></div></div>{images.length > 1 ? <button className="lightbox-nav-btn next" type="button" aria-label="Next photo" onClick={next}><span className="material-symbols-outlined">chevron_right</span></button> : null}</div></div> : null}
 		</>
 	);
 };

@@ -23,14 +23,6 @@ const defaultInput: ToursInquiry = {
 	search: {},
 };
 
-const quickCategories = [
-	{ label: 'All Tours', value: 'ALL' },
-	{ label: 'Adventure', value: 'Adventure' },
-	{ label: 'Jeju', value: 'Jeju' },
-	{ label: 'Expeditions', value: 'Expeditions' },
-	{ label: 'Cultural', value: 'Cultural' },
-];
-
 const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
@@ -50,7 +42,6 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 	const [total, setTotal] = useState<number>(0);
 	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [selectedSort, setSelectedSort] = useState<string>('Recommended');
-	const [activeCategory, setActiveCategory] = useState<string>('ALL');
 
 	/** APOLLO REQUESTS **/
 	const [likeTargetTour] = useMutation(LIKE_TARGET_TOUR);
@@ -94,13 +85,6 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 					setSelectedSort('Newest');
 				} else {
 					setSelectedSort('Recommended');
-				}
-
-				// Sync active category pill
-				if (parsed.search?.text) {
-					setActiveCategory(parsed.search.text);
-				} else {
-					setActiveCategory('ALL');
 				}
 
 				refetchTours({ input: parsed });
@@ -198,29 +182,6 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 		);
 	};
 
-	const categoryClickHandler = async (cat: string) => {
-		setActiveCategory(cat);
-		const updated: ToursInquiry = {
-			...searchFilter,
-			page: 1,
-			search: {
-				...searchFilter.search,
-				text: cat === 'ALL' ? undefined : cat,
-			},
-		};
-
-		setSearchFilter(updated);
-		setCurrentPage(1);
-		await router.push(
-			{
-				pathname: '/tour',
-				query: { input: JSON.stringify(updated) },
-			},
-			undefined,
-			{ scroll: false },
-		);
-	};
-
 	const totalPages = Math.max(1, Math.ceil(total / (searchFilter.limit || 12)));
 
 	return (
@@ -275,19 +236,6 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 								</div>
 							</div>
 
-							{/* Quick Category Filters */}
-							<div className="quick-category-row">
-								{quickCategories.map((cat) => (
-									<button
-										key={cat.value}
-										type="button"
-										className={`category-pill ${activeCategory === cat.value ? 'active' : ''}`}
-										onClick={() => categoryClickHandler(cat.value)}
-									>
-										{cat.label}
-									</button>
-								))}
-							</div>
 						</div>
 
 						{/* Tours Grid */}
@@ -299,11 +247,10 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 							</div>
 						) : (
 							<div className="tours-grid">
-								{tours.map((tour, idx) => (
+								{tours.map((tour) => (
 									<TourCard
-										key={tour._id || `tour-${idx}`}
+										key={tour._id}
 										tour={tour}
-										index={idx}
 										likeTourHandler={likeTourHandler}
 									/>
 								))}

@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useMutation, useReactiveVar } from '@apollo/client';
-import { CREATE_BOARD_ARTICLE } from '../../../apollo/user/mutation';
+import { CREATE_BOARD_ARTICLE, UPDATE_BOARD_ARTICLE } from '../../../apollo/user/mutation';
 import { userVar } from '../../../apollo/store';
-import { BoardArticleCategory } from '../../enums/board-article.enum';
-import { BoardArticleInput } from '../../types/board-article/board-article.input';
+import { BoardArticleCategory, BoardArticleStatus } from '../../enums/board-article.enum';
+import { BoardArticleInput, BoardArticleUpdate } from '../../types/board-article/board-article.input';
+import { BoardArticle } from '../../types/board-article/board-article';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import { Messages, getImageUrl } from '../../config';
 
@@ -11,12 +12,14 @@ interface WriteStoryModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	onCreated: () => void;
+	editArticle?: BoardArticle | null;
 }
 
 const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 	isOpen,
 	onClose,
 	onCreated,
+	editArticle,
 }) => {
 	const user = useReactiveVar(userVar);
 	const [category, setCategory] = useState<BoardArticleCategory>(BoardArticleCategory.TOUR);
@@ -28,6 +31,23 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const [createBoardArticle] = useMutation(CREATE_BOARD_ARTICLE);
+	const [updateBoardArticle] = useMutation(UPDATE_BOARD_ARTICLE);
+
+	useEffect(() => {
+		if (isOpen) {
+			if (editArticle) {
+				setCategory(editArticle.articleCategory);
+				setTitle(editArticle.articleTitle);
+				setContent(editArticle.articleContent);
+				setImageUrl(editArticle.articleImage || '');
+			} else {
+				setCategory(BoardArticleCategory.TOUR);
+				setTitle('');
+				setContent('');
+				setImageUrl('');
+			}
+		}
+	}, [isOpen, editArticle]);
 
 	if (!isOpen) return null;
 
@@ -100,18 +120,28 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 
 		try {
 			setSubmitting(true);
-			const input: BoardArticleInput = {
-				articleCategory: category,
-				articleTitle: title.trim(),
-				articleContent: content.trim(),
-				articleImage: imageUrl.trim() || undefined,
-			};
+			
+			if (editArticle) {
+				const updateInput: BoardArticleUpdate = {
+					_id: editArticle._id,
+					articleTitle: title.trim(),
+					articleContent: content.trim(),
+					articleImage: imageUrl.trim() || undefined,
+					articleStatus: BoardArticleStatus.PUBLISHED,
+				};
+				await updateBoardArticle({ variables: { input: updateInput }, refetchQueries: ['GetMember'] });
+				sweetTopSmallSuccessAlert('Your story has been updated successfully!');
+			} else {
+				const input: BoardArticleInput = {
+					articleCategory: category,
+					articleTitle: title.trim(),
+					articleContent: content.trim(),
+					articleImage: imageUrl.trim() || undefined,
+				};
+				await createBoardArticle({ variables: { input }, refetchQueries: ['GetMember'] });
+				sweetTopSmallSuccessAlert('Your story has been dispatched successfully!');
+			}
 
-			await createBoardArticle({
-				variables: { input },
-			});
-
-			sweetTopSmallSuccessAlert('Your story has been dispatched successfully!');
 			setTitle('');
 			setContent('');
 			setImageUrl('');
@@ -133,7 +163,7 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 				<div className="modal-header">
 					<div className="title-group">
 						<span className="material-symbols-outlined icon">edit_note</span>
-						<h2>Dispatch a New Story</h2>
+						<h2>{editArticle ? 'Edit Your Story' : 'Dispatch a New Story'}</h2>
 					</div>
 					<button
 						type="button"
@@ -153,6 +183,7 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 							value={category}
 							onChange={(e) => setCategory(e.target.value as BoardArticleCategory)}
 							className="form-select"
+							disabled={!!editArticle} // typically category is not edited
 						>
 							<option value={BoardArticleCategory.TOUR}>Itinerary & Expeditions (TOUR)</option>
 							<option value={BoardArticleCategory.HOTEL}>Hotel & Stay Reviews (HOTEL)</option>
@@ -233,7 +264,7 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 							className="publish-btn"
 							disabled={submitting}
 						>
-							{submitting ? 'Publishing...' : 'Publish Dispatch'}
+							{submitting ? 'Saving...' : (editArticle ? 'Save Changes' : 'Publish Dispatch')}
 						</button>
 					</div>
 				</form>

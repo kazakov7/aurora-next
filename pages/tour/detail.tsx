@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
@@ -11,7 +11,7 @@ import TourReservationWidget from '../../libs/components/tour/detail/TourReserva
 import TourComments from '../../libs/components/tour/detail/TourComments';
 import SimilarTours from '../../libs/components/tour/detail/SimilarTours';
 import { Tour } from '../../libs/types/tour/tour';
-import { GET_TOUR, GET_TOURS } from '../../apollo/user/query';
+import { GET_TOUR } from '../../apollo/user/query';
 import { LIKE_TARGET_TOUR } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
 import { sweetErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
@@ -20,33 +20,10 @@ import { Message } from '../../libs/enums/common.enum';
 const TourDetail: NextPage = () => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
-	const [tourId, setTourId] = useState<string>('');
-
-	/** LIFECYCLES **/
-	useEffect(() => {
-		if (router.isReady) {
-			const id = router.query.id as string;
-			if (id) {
-				setTourId(id);
-			}
-		}
-	}, [router.isReady, router.query.id]);
+	const tourId = router.isReady && typeof router.query.id === 'string' ? router.query.id : '';
 
 	/** APOLLO REQUESTS **/
 	const [likeTargetTour] = useMutation(LIKE_TARGET_TOUR);
-
-	// If no ID is provided in query, fetch first tour from list so direct visits work gracefully
-	const { data: initialListData } = useQuery(GET_TOURS, {
-		fetchPolicy: 'cache-first',
-		variables: { input: { page: 1, limit: 1, search: {} } },
-		skip: !!tourId,
-	});
-
-	useEffect(() => {
-		if (!tourId && initialListData?.getTours?.list?.[0]?._id) {
-			setTourId(initialListData.getTours.list[0]._id);
-		}
-	}, [tourId, initialListData]);
 
 	const {
 		data: tourData,
@@ -76,7 +53,7 @@ const TourDetail: NextPage = () => {
 		}
 	};
 
-	if (tourLoading || !tour) {
+	if (!router.isReady || tourLoading) {
 		return (
 			<div className="tour-detail-page">
 				<div className="detail-container">
@@ -104,6 +81,14 @@ const TourDetail: NextPage = () => {
 						<span>Loading expedition details...</span>
 					</div>
 				</div>
+			</div>
+		);
+	}
+
+	if (!tour) {
+		return (
+			<div className="tour-detail-page">
+				<div className="detail-container"><div className="detail-empty-state"><h1>Tour unavailable</h1><p>This tour could not be found or is no longer available.</p></div></div>
 			</div>
 		);
 	}
@@ -136,7 +121,7 @@ const TourDetail: NextPage = () => {
 						<TourOverview tour={tour} />
 
 						{/* Right Sticky Reservation Widget */}
-						<TourReservationWidget tour={tour} />
+						<TourReservationWidget tour={tour} refetchTour={refetchTour} />
 					</div>
 
 					{/* 5, 6, 7. Traveler Comments, Pagination & Leave a Comment */}

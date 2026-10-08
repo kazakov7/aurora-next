@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { BoardArticle } from '../../types/board-article/board-article';
 import { getImageUrl } from '../../config';
 import { sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import LikeButton from '../common/LikeButton';
+import SaveButton from '../common/SaveButton';
 
 interface CommunityCardProps {
 	article: BoardArticle;
@@ -40,6 +43,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 	isLiked,
 	likeCount,
 }) => {
+	const router = useRouter();
 	const [bookmarked, setBookmarked] = useState(false);
 
 	const authorName =
@@ -70,7 +74,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 		if (typeof window !== 'undefined') {
 			try {
 				await navigator.clipboard.writeText(
-					`${window.location.origin}/community?id=${article._id}`
+						`${window.location.origin}/community/detail?id=${article._id}`
 				);
 				sweetTopSmallSuccessAlert('Story link copied to clipboard!');
 			} catch {
@@ -86,8 +90,24 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 		sweetTopSmallSuccessAlert(bookmarked ? 'Removed from bookmarks' : 'Saved to bookmarks');
 	};
 
+	const openArticle = () => {
+		void router.push({ pathname: '/community/detail', query: { id: article._id } });
+	};
+
+	const handleCardClick = (event: React.MouseEvent<HTMLElement>) => {
+		if ((event.target as HTMLElement).closest('a, button')) return;
+		openArticle();
+	};
+
+	const handleCardKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
+		if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			openArticle();
+		}
+	};
+
 	return (
-		<article className="community-card-article">
+		<article className="community-card-article" role="link" tabIndex={0} onClick={handleCardClick} onKeyDown={handleCardKeyDown}>
 			{/* Author Header */}
 			<div className="card-author-row">
 				<div className="author-info-group">
@@ -115,16 +135,10 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 					</div>
 				</div>
 
-				<button
-					type="button"
-					aria-label="Bookmark post"
-					className={`bookmark-btn ${bookmarked ? 'bookmarked' : ''}`}
-					onClick={handleBookmarkToggle}
-				>
-					<span className="material-symbols-outlined">
-						{bookmarked ? 'bookmark' : 'bookmark_border'}
-					</span>
-				</button>
+				<SaveButton 
+					isSaved={bookmarked} 
+					onClick={handleBookmarkToggle} 
+				/>
 			</div>
 
 			{/* Post Body: Badges, Title & Content */}
@@ -134,7 +148,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 					<span className="read-time">{readTimeMinutes} min read</span>
 				</div>
 
-				<Link href={`/community?id=${article._id}`} className="title-link">
+				<Link href={`/community/detail?id=${article._id}`} className="title-link">
 					<h2 className="article-title">{article.articleTitle}</h2>
 				</Link>
 
@@ -158,22 +172,16 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 			<div className="card-footer-actions">
 				<div className="left-engagement-group">
 					{/* Like Button */}
-					<button
-						type="button"
-						className={`like-action-btn ${isLiked ? 'active' : ''}`}
-						onClick={(e) => {
-							e.preventDefault();
-							onLike(article._id);
-						}}
-					>
-						<span
-							className="material-symbols-outlined heart-icon"
-							style={isLiked ? { fontVariationSettings: "'FILL' 1" } : undefined}
-						>
-							{isLiked ? 'favorite' : 'favorite_border'}
-						</span>
-						<span className="count">{likeCount}</span>
-					</button>
+						<LikeButton
+							isLiked={isLiked}
+							onClick={(e) => {
+								e.preventDefault();
+								e.stopPropagation();
+								onLike(article._id);
+							}}
+							count={likeCount}
+							size="sm"
+					/>
 
 					{/* Comments Button */}
 					<button
@@ -181,6 +189,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 						className="comment-action-btn"
 						onClick={(e) => {
 							e.preventDefault();
+							e.stopPropagation();
 						}}
 					>
 						<span className="material-symbols-outlined icon">chat_bubble_outline</span>
@@ -198,7 +207,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 					</button>
 				</div>
 
-				<Link href={`/community?id=${article._id}`} className="read-dispatch-link">
+				<Link href={`/community/detail?id=${article._id}`} className="read-dispatch-link">
 					<span>Read Full Dispatch</span>
 					<span className="material-symbols-outlined icon">arrow_forward</span>
 				</Link>

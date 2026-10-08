@@ -10,8 +10,8 @@ export interface Property {
 	propertyName: string;
 	propertyDesc?: string;
 	propertyStatus: PropertyStatus;
-	propertyCity: string;
-	propertyAddress: string;
+	propertyCity?: string;
+	propertyAddress?: string;
 	pricePerNight: number;
 	currency: string;
 	maxGuests: number;
@@ -27,8 +27,8 @@ export interface Property {
 	propertyReviews: number;
 	propertyComments: number;
 	deletedAt?: Date;
-	createdAt: Date;
-	updatedAt: Date;
+	createdAt: Date | string;
+	updatedAt: Date | string;
 	accessToken?: string;
 	memberData?: Member;
 	meLiked?: MeLiked[];

@@ -18,8 +18,6 @@ export interface BoardArticlesInquiry {
 export interface ABAISearch {
 	articleCategory?: BoardArticleCategory;
 	articleStatus?: BoardArticleStatus;
-	text?: string;
-	memberId?: string;
 }
 
 export interface AllBoardArticlesInquiry {

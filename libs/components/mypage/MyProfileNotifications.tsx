@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Stack, Box, Pagination } from '@mui/material';
-import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { useQuery, useMutation, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import { GET_MY_NOTIFICATIONS, GET_UNREAD_NOTIFICATION_COUNT } from '../../../apollo/user/query';
-import { MARK_NOTIFICATION_AS_READ, MARK_ALL_NOTIFICATIONS_AS_READ } from '../../../apollo/user/mutation';
+import { MARK_NOTIFICATION_AS_READ, MARK_ALL_NOTIFICATIONS_AS_READ, SUBSCRIBE } from '../../../apollo/user/mutation';
 import { Notification, Notifications } from '../../types/notification/notification';
 import { NotificationStatus } from '../../enums/notification.enum';
 import { sweetErrorHandling } from '../../sweetAlert';
@@ -20,7 +19,6 @@ interface NotificationsInquiry {
 }
 
 const MyProfileNotifications = () => {
-	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 
@@ -39,30 +37,30 @@ const MyProfileNotifications = () => {
 		fetchPolicy: 'network-only',
 		variables: { input: inquiry },
 		notifyOnNetworkStatusChange: true,
-		onCompleted: (data) => {
-			setNotifications(data?.getMyNotifications?.list || []);
-			setTotal(data?.getMyNotifications?.metaCounter?.[0]?.total || 0);
-		},
+		skip: !user?._id,
 		onError: (err) => {
 			sweetErrorHandling(err).then();
 		},
 	});
 
-	const { refetch: refetchUnread } = useQuery(GET_UNREAD_NOTIFICATION_COUNT, {
+	const { data: unreadData, refetch: refetchUnread } = useQuery(GET_UNREAD_NOTIFICATION_COUNT, {
 		fetchPolicy: 'network-only',
 		notifyOnNetworkStatusChange: true,
-		onCompleted: (data) => {
-			setUnreadCount(data?.getUnreadNotificationCount || 0);
-		},
+		skip: !user?._id,
 	});
 
 	const [markNotificationAsRead] = useMutation(MARK_NOTIFICATION_AS_READ);
 	const [markAllNotificationsAsRead] = useMutation(MARK_ALL_NOTIFICATIONS_AS_READ);
+	const [subscribe] = useMutation(SUBSCRIBE);
 
-	/** LIFECYCLES **/
 	useEffect(() => {
-		refetch({ input: inquiry });
-	}, [inquiry]);
+		setNotifications(data?.getMyNotifications?.list || []);
+		setTotal(data?.getMyNotifications?.metaCounter?.[0]?.total || 0);
+	}, [data]);
+
+	useEffect(() => {
+		setUnreadCount(unreadData?.getUnreadNotificationCount || 0);
+	}, [unreadData]);
 
 	/** HANDLERS **/
 	const handleFilterChange = (status?: NotificationStatus) => {
@@ -80,12 +78,30 @@ const MyProfileNotifications = () => {
 	const handleMarkAsRead = async (id: string) => {
 		try {
 			await markNotificationAsRead({
-				variables: { input: { _id: id } },
+				variables: { input: { notificationId: id } },
 			});
 			await refetch();
 			await refetchUnread();
 		} catch (err) {
 			await sweetErrorHandling(err);
+		}
+	};
+
+	const handleNotificationAction = async (notification: Notification) => {
+		if (notification.notificationStatus === NotificationStatus.WAIT) {
+			await handleMarkAsRead(notification._id);
+		}
+		if (notification.notificationType === 'FOLLOW' && notification.authorId) {
+			try {
+				await subscribe({ variables: { input: notification.authorId }, refetchQueries: ['GetMember'] });
+				await refetch();
+			} catch (err) {
+				await sweetErrorHandling(err);
+			}
+			return;
+		}
+		if (notification.notificationType === 'BOOKING') {
+			await router.push({ pathname: '/mypage', query: { category: 'bookings' } });
 		}
 	};
 
@@ -109,8 +125,10 @@ const MyProfileNotifications = () => {
 				return 'person_add';
 			case 'BOOKING':
 				return 'hotel';
-			case 'TOUR':
+			case 'REVIEW':
 				return 'explore';
+			case 'MESSAGE':
+				return 'mail';
 			case 'SYSTEM':
 			default:
 				return 'auto_awesome';
@@ -127,17 +145,15 @@ const MyProfileNotifications = () => {
 				return 'follow-icon';
 			case 'BOOKING':
 				return 'booking-icon';
-			case 'TOUR':
+			case 'REVIEW':
 				return 'tour-icon';
+			case 'MESSAGE':
+				return 'comment-icon';
 			case 'SYSTEM':
 			default:
 				return 'system-icon';
 		}
 	};
-
-	if (device === 'mobile') {
-		return <Stack className="profile-notifications">Mobile View Not Implemented</Stack>;
-	}
 
 	return (
 		<Stack className="profile-notifications">
@@ -166,7 +182,7 @@ const MyProfileNotifications = () => {
 							Unread ({unreadCount})
 						</button>
 					</Stack>
-					<button className="mark-all-btn" onClick={handleMarkAllAsRead}>
+					<button className="mark-all-btn" onClick={handleMarkAllAsRead} disabled={unreadCount === 0}>
 						<span className="material-symbols-outlined">done_all</span>
 						Mark all as read
 					</button>
@@ -174,7 +190,9 @@ const MyProfileNotifications = () => {
 			</Stack>
 
 			<Stack className="notifications-list-container">
-				{notifications.length === 0 ? (
+				{loading && !data ? (
+					<Box className="empty-state"><span className="loading-spinner" /><p>Loading notifications...</p></Box>
+				) : notifications.length === 0 ? (
 					<Box className="empty-state">
 						<span className="material-symbols-outlined">notifications_off</span>
 						<p>No notifications found.</p>
@@ -196,7 +214,7 @@ const MyProfileNotifications = () => {
 								</Box>
 								<Stack className="item-content">
 									<div className="title">
-										<strong>{notif.authorId || 'AURA'}</strong> {notif.notificationTitle}
+									<strong>{notif.notificationTitle}</strong>
 									</div>
 									{notif.notificationDesc && <span className="desc">“{notif.notificationDesc}”</span>}
 									<span className="time">{moment(notif.createdAt).fromNow()}</span>
@@ -207,12 +225,12 @@ const MyProfileNotifications = () => {
 									<Box className="unread-dot" />
 								)}
 								{notif.notificationType === 'FOLLOW' && (
-									<button className="action-btn">Follow Back</button>
+									<button className="action-btn" onClick={() => void handleNotificationAction(notif)}>Follow Back</button>
 								)}
 								{notif.notificationType === 'BOOKING' && (
-									<button className="action-btn-primary">View Booking</button>
+									<button className="action-btn-primary" onClick={() => void handleNotificationAction(notif)}>View Booking</button>
 								)}
-								<button className="more-btn" onClick={() => handleMarkAsRead(notif._id)}>
+								<button className="more-btn" aria-label="Mark notification as read" disabled={notif.notificationStatus === NotificationStatus.READ} onClick={() => handleMarkAsRead(notif._id)}>
 									<span className="material-symbols-outlined">check</span>
 								</button>
 							</Stack>

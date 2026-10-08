@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useReactiveVar } from "@apollo/client";
 import { userVar } from "../../apollo/store";
 import { getJwtToken, updateUserInfo, logOut } from "../auth";
-import { getImageUrl } from "../config";
+import { DEFAULT_USER_AVATAR, getImageUrl } from "../config";
 
 const Top = () => {
   const router = useRouter();
@@ -124,7 +124,7 @@ const Top = () => {
               className="icon-btn"
               type="button"
             >
-              <span className="material-symbols-outlined">favorite</span>
+              <span className="material-symbols-outlined">bookmark</span>
             </button>
           </Link>
 
@@ -156,7 +156,7 @@ const Top = () => {
                 <img
                   src={getImageUrl(
                     user?.memberImage,
-                    "https://lh3.googleusercontent.com/aida-public/AB6AXuAIifsb8JN2LKRqZTER_hPU96n7R2XO4PNCfW122y_1bMUsLI0rC6oa5xTZUzzxRxT54eemqEHPhV4jIUhW-wFrpr3YHyIRRnrNRAvq3iq3p-H8q18_n0reQH4Z6-jJ3S5bTC6ST6pKSIQo_prbOMDq5Wvoa20BQgNu9d7fvA2gqL_Db2c7moEy2ebwQD3_fAoRy3fgBRLr0GH_laW8T1YxLHhu0K9BfdnSXQJuxvVK-P6AmjVIm9e5",
+					DEFAULT_USER_AVATAR,
                   )}
                   alt="Profile"
                   className="avatar-img"
@@ -166,7 +166,7 @@ const Top = () => {
           ) : (
             <Link href="/account/join" className="avatar-link">
               <img
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIifsb8JN2LKRqZTER_hPU96n7R2XO4PNCfW122y_1bMUsLI0rC6oa5xTZUzzxRxT54eemqEHPhV4jIUhW-wFrpr3YHyIRRnrNRAvq3iq3p-H8q18_n0reQH4Z6-jJ3S5bTC6ST6pKSIQo_prbOMDq5Wvoa20BQgNu9d7fvA2gqL_Db2c7moEy2ebwQD3_fAoRy3fgBRLr0GH_laW8T1YxLHhu0K9BfdnSXQJuxvVK-P6AmjVIm9e5"
+				src={DEFAULT_USER_AVATAR}
                 alt="Profile"
                 className="avatar-img"
               />

@@ -1,10 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useMutation, useReactiveVar } from "@apollo/client";
 import { UPDATE_MEMBER } from "../../../apollo/user/mutation";
 import { userVar } from "../../../apollo/store";
-import { logOut } from "../../auth";
 import {
-  sweetConfirmAlert,
   sweetMixinErrorAlert,
   sweetTopSmallSuccessAlert,
 } from "../../sweetAlert";
@@ -20,11 +18,18 @@ const MyProfileSettings: React.FC = () => {
   /** APOLLO REQUESTS **/
   const [updateMemberMutation, { loading }] = useMutation(UPDATE_MEMBER);
 
+  useEffect(() => {
+    setNick(user?.memberNick || "");
+    setPhone(user?.memberPhone || "");
+    setAddress(user?.memberAddress || "");
+    setDesc(user?.memberDesc || "");
+  }, [user?._id, user?.memberNick, user?.memberPhone, user?.memberAddress, user?.memberDesc]);
+
   /** HANDLERS **/
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await updateMemberMutation({
+      const result = await updateMemberMutation({
         variables: {
           input: {
             _id: user?._id,
@@ -36,13 +41,7 @@ const MyProfileSettings: React.FC = () => {
         },
       });
 
-      userVar({
-        ...user,
-        memberNick: nick.trim(),
-        memberPhone: phone.trim(),
-        memberAddress: address.trim(),
-        memberDesc: desc.trim(),
-      });
+      if (result.data?.updateMember) userVar({ ...userVar(), ...result.data.updateMember });
 
       sweetTopSmallSuccessAlert("Profile updated successfully!", 1000);
     } catch (err: any) {

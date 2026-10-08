@@ -10,8 +10,8 @@ interface PropertyHeaderProps {
 }
 
 const PropertyHeader = ({ property, isLiked, likeHandler }: PropertyHeaderProps) => {
-	const ratingVal = property?.propertyRating ? property.propertyRating.toFixed(2) : '4.98';
-	const reviewsCount = property?.propertyReviews || 248;
+	const ratingVal = typeof property.propertyRating === 'number' ? property.propertyRating.toFixed(2) : '—';
+	const reviewsCount = property.propertyReviews ?? 0;
 
 	const shareHandler = async () => {
 		try {
@@ -36,19 +36,19 @@ const PropertyHeader = ({ property, isLiked, likeHandler }: PropertyHeaderProps)
 					Hotels
 				</Link>
 				<span className="material-symbols-outlined crumb-sep">chevron_right</span>
-				<span className="crumb-text">{property?.propertyCity || 'Switzerland'}</span>
+				{property.propertyCity ? <span className="crumb-text">{property.propertyCity}</span> : null}
 				<span className="material-symbols-outlined crumb-sep">chevron_right</span>
-				<span className="crumb-active truncate">{property?.propertyName || 'Alpine Grand Retreat'}</span>
+				<span className="crumb-active truncate">{property.propertyName}</span>
 			</nav>
 
 			{/* 2. Title & Header Actions */}
 			<div className="title-actions-bar">
 				<div className="title-info-group">
 					<div className="badges-row">
-						<span className="badge-tag primary-badge">Architectural Masterpiece</span>
-						<span className="badge-tag subtle-badge">Rare Find</span>
+						<span className="badge-tag primary-badge">{property.propertyType}</span>
+						<span className="badge-tag">{property.propertyStatus}</span>
 					</div>
-					<h1 className="property-main-title">{property?.propertyName || 'Alpine Grand Retreat'}</h1>
+					<h1 className="property-main-title">{property.propertyName}</h1>
 					<div className="meta-info-row">
 						<div className="rating-pill">
 							<span
@@ -58,20 +58,14 @@ const PropertyHeader = ({ property, isLiked, likeHandler }: PropertyHeaderProps)
 								star
 							</span>
 							<span className="score">{ratingVal}</span>
-							<span className="reviews-link">({reviewsCount} verified reviews)</span>
+							<span className="reviews-link">({reviewsCount} reviews)</span>
 						</div>
 						<span className="dot-divider">•</span>
 						<div className="location-item">
 							<span className="material-symbols-outlined">location_on</span>
 							<span>
-								{property?.propertyCity ? `${property.propertyCity}, ` : ''}
-								{property?.propertyAddress || 'Zermatt, Valais, Switzerland'}
+								{[property.propertyCity, property.propertyAddress].filter(Boolean).join(', ')}
 							</span>
-						</div>
-						<span className="dot-divider">•</span>
-						<div className="cert-item">
-							<span className="material-symbols-outlined">verified_user</span>
-							<span>Swiss Sanctuary Certified</span>
 						</div>
 					</div>
 				</div>
@@ -83,7 +77,7 @@ const PropertyHeader = ({ property, isLiked, likeHandler }: PropertyHeaderProps)
 						<span>Share</span>
 					</button>
 					<button
-						className={`action-pill-btn save-btn ${isLiked ? 'liked' : ''}`}
+						className={`action-pill-btn like-btn ${isLiked ? 'liked' : ''}`}
 						type="button"
 						onClick={likeHandler}
 					>
@@ -93,7 +87,7 @@ const PropertyHeader = ({ property, isLiked, likeHandler }: PropertyHeaderProps)
 						>
 							favorite
 						</span>
-						<span>{isLiked ? 'Saved' : 'Save'}</span>
+						<span>{isLiked ? 'Liked' : 'Like'}</span>
 					</button>
 				</div>
 			</div>

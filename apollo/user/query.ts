@@ -4,6 +4,7 @@ import { gql } from '@apollo/client';
  *         MEMBER         *
  *************************/
 
+
 export const GET_MEMBER = gql`
 	query GetMember($input: String!) {
 		getMember(input: $input) {
@@ -37,6 +38,93 @@ export const GET_MEMBER = gql`
 				followingId
 				followerId
 				myFollowing
+			}
+		}
+	}
+`;
+
+export const GET_PROPERTY_HOST = gql`
+	query GetPropertyHost($input: String!) {
+		getMember(input: $input) {
+			_id
+			memberType
+			memberNick
+			memberFullName
+			memberImage
+			memberDesc
+			memberAddress
+			memberFollowers
+			memberProperties
+			memberTours
+			memberArticles
+			meFollowed {
+				followingId
+				followerId
+				myFollowing
+			}
+		}
+	}
+`;
+
+export const GET_ALL_MEMBERS = gql`
+	query GetAllMembers($input: MembersInquiry!) {
+		getAllMembers(input: $input) {
+			list {
+				_id
+				memberType
+				memberStatus
+				memberAuthType
+				memberPhone
+				memberEmail
+				memberNick
+				memberFullName
+				memberImage
+				memberDesc
+				memberAddress
+				memberFollowers
+				memberFollowings
+				memberLikes
+				memberViews
+				memberComments
+				memberProperties
+				memberTours
+				memberArticles
+				memberPoints
+				memberRank
+				createdAt
+				updatedAt
+				meFollowed {
+					followingId
+					followerId
+					myFollowing
+				}
+			}
+			metaCounter {
+				total
+			}
+		}
+	}
+`;
+
+export const GET_HOME_EXPLORERS = gql`
+	query GetHomeExplorers($input: MembersInquiry!) {
+		getAllMembers(input: $input) {
+			list {
+				_id
+				memberType
+				memberNick
+				memberFullName
+				memberImage
+				memberDesc
+				memberFollowers
+				memberProperties
+				memberTours
+				memberArticles
+				meFollowed {
+					followingId
+					followerId
+					myFollowing
+				}
 			}
 		}
 	}
@@ -76,6 +164,7 @@ export const GET_MEMBER_FOLLOWINGS = gql`
 					memberNick
 					memberFullName
 					memberImage
+					memberAddress
 				}
 				meFollowed {
 					followingId
@@ -105,6 +194,7 @@ export const GET_MEMBER_FOLLOWERS = gql`
 					memberNick
 					memberFullName
 					memberImage
+					memberAddress
 				}
 				meFollowed {
 					followingId
@@ -254,7 +344,6 @@ export const GET_PROPERTIES = gql`
 					memberNick
 					memberFullName
 					memberImage
-					memberPhone
 				}
 				meLiked {
 					memberId
@@ -302,8 +391,6 @@ export const GET_PROPERTY = gql`
 				memberNick
 				memberFullName
 				memberImage
-				memberPhone
-				memberEmail
 			}
 			meLiked {
 				memberId
@@ -321,12 +408,16 @@ export const GET_FAVORITES = gql`
 				_id
 				propertyType
 				propertyName
+				propertyDesc
 				propertyCity
+				propertyAddress
 				pricePerNight
 				currency
 				propertyImages
 				propertyViews
 				propertyLikes
+				propertyRating
+				propertyReviews
 				createdAt
 			}
 			metaCounter {
@@ -343,12 +434,16 @@ export const GET_VISITED = gql`
 				_id
 				propertyType
 				propertyName
+				propertyDesc
 				propertyCity
+				propertyAddress
 				pricePerNight
 				currency
 				propertyImages
 				propertyViews
 				propertyLikes
+				propertyRating
+				propertyReviews
 				createdAt
 			}
 			metaCounter {
@@ -469,7 +564,6 @@ export const GET_TOUR = gql`
 				memberNick
 				memberFullName
 				memberImage
-				memberPhone
 			}
 			meLiked {
 				memberId
@@ -486,11 +580,16 @@ export const GET_FAVORITE_TOURS = gql`
 			list {
 				_id
 				tourName
+				tourDesc
 				tourPrice
 				tourCurrency
 				tourImages
 				tourStartDate
 				tourEndDate
+				tourDepartureCity
+				tourDestinationCity
+				tourRating
+				tourReviews
 				createdAt
 			}
 			metaCounter {
@@ -506,11 +605,16 @@ export const GET_VISITED_TOURS = gql`
 			list {
 				_id
 				tourName
+				tourDesc
 				tourPrice
 				tourCurrency
 				tourImages
 				tourStartDate
 				tourEndDate
+				tourDepartureCity
+				tourDestinationCity
+				tourRating
+				tourReviews
 				createdAt
 			}
 			metaCounter {
@@ -570,13 +674,20 @@ export const GET_MY_BOOKINGS = gql`
 					propertyName
 					propertyImages
 					propertyCity
+					propertyAddress
 					pricePerNight
+					currency
+					propertyRating
 				}
 				tourData {
 					_id
 					tourName
 					tourImages
 					tourPrice
+					tourCurrency
+					tourDepartureCity
+					tourDestinationCity
+					tourRating
 				}
 			}
 			metaCounter {
@@ -918,6 +1029,51 @@ export const GET_MY_TRAVEL_HISTORIES = gql`
 				_id
 				memberId
 				bookingId
+				createdAt
+				updatedAt
+			}
+			metaCounter {
+				total
+			}
+		}
+	}
+`;
+
+export const GET_AGENTS = gql`
+	query GetAgents($input: AgentsInquiry!) {
+		getAgents(input: $input) {
+			list {
+				_id
+				memberType
+				memberStatus
+				memberAuthType
+				memberPhone
+				memberNick
+				memberFullName
+				memberImage
+				memberEmail
+				memberDesc
+				memberAddress
+				memberFollowers
+				memberFollowings
+				memberArticles
+				memberPoints
+				memberLikes
+				memberViews
+				memberComments
+				memberProperties
+				memberTours
+				memberRank
+				meLiked {
+					memberId
+					likeRefId
+					myFavorite
+				}
+				meFollowed {
+					followingId
+					followerId
+					myFollowing
+				}
 				createdAt
 				updatedAt
 			}

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { sweetTopSmallSuccessAlert } from '../../../sweetAlert';
+import SaveButton from '../../common/SaveButton';
+import LikeButton from '../../common/LikeButton';
 
 interface CommunityDetailEngagementBarProps {
 	isLiked: boolean;
@@ -54,19 +56,11 @@ const CommunityDetailEngagementBar: React.FC<CommunityDetailEngagementBarProps> 
 		<div className="community-detail-engagement-bar">
 			<div className="left-actions-group">
 				{/* Like Button */}
-				<button
-					type="button"
-					className={`engagement-like-btn ${isLiked ? 'liked' : ''}`}
-					onClick={onLike}
-				>
-					<span
-						className="material-symbols-outlined heart-icon"
-						style={isLiked ? { fontVariationSettings: "'FILL' 1" } : undefined}
-					>
-						favorite
-					</span>
-					<span className="label-count">{likeCount} Likes</span>
-				</button>
+				<LikeButton 
+					isLiked={isLiked} 
+					onClick={onLike} 
+					count={likeCount} 
+				/>
 
 				{/* Comments Button */}
 				<button
@@ -79,19 +73,10 @@ const CommunityDetailEngagementBar: React.FC<CommunityDetailEngagementBarProps> 
 				</button>
 
 				{/* Bookmark Button */}
-				<button
-					type="button"
-					aria-label="Bookmark this article"
-					className={`engagement-bookmark-btn ${bookmarked ? 'bookmarked' : ''}`}
-					onClick={handleBookmarkToggle}
-				>
-					<span
-						className="material-symbols-outlined"
-						style={bookmarked ? { fontVariationSettings: "'FILL' 1" } : undefined}
-					>
-						bookmark
-					</span>
-				</button>
+				<SaveButton 
+					isSaved={bookmarked} 
+					onClick={handleBookmarkToggle} 
+				/>
 			</div>
 
 			<div className="right-actions-group">

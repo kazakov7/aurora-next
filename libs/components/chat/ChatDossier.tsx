@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChatConversation } from './chat.types';
+import FollowButton from '../common/FollowButton';
 
 interface ChatDossierProps {
 	conversation: ChatConversation;
@@ -58,16 +59,11 @@ const ChatDossier: React.FC<ChatDossierProps> = ({ conversation }) => {
 					<button type="button" className="btn-view-profile" onClick={handleViewProfile}>
 						View Profile
 					</button>
-					<button
-						type="button"
-						className={`btn-follow-toggle ${isFollowing ? 'following' : ''}`}
-						onClick={() => setIsFollowing(!isFollowing)}
-					>
-						<span className="material-symbols-outlined">
-							{isFollowing ? 'check' : 'person_add'}
-						</span>
-						<span>{isFollowing ? 'Following' : 'Follow'}</span>
-					</button>
+					<FollowButton 
+						isFollowing={isFollowing} 
+						onClick={() => setIsFollowing(!isFollowing)} 
+						style={{ width: '100%', marginTop: '12px' }}
+					/>
 				</div>
 			</div>
 

@@ -1,6 +1,7 @@
 import decodeJWT from 'jwt-decode';
 import { userVar } from '../../apollo/store';
 import { CustomJwtPayload } from '../types/customJwtPayload';
+import { DEFAULT_USER_AVATAR } from '../config';
 
 export function getJwtToken(): string {
 	if (typeof window !== 'undefined') {
@@ -29,7 +30,7 @@ export const updateUserInfo = (jwtToken: string) => {
 			memberPhone: claims.memberPhone ?? '',
 			memberNick: claims.memberNick ?? '',
 			memberFullName: claims.memberFullName ?? '',
-			memberImage: claims.memberImage || '/img/profile/defaultUser.svg',
+			memberImage: claims.memberImage || DEFAULT_USER_AVATAR,
 			memberAddress: claims.memberAddress ?? '',
 			memberDesc: claims.memberDesc ?? '',
 		});

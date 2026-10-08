@@ -47,6 +47,8 @@ export interface AllToursInquiry {
 	direction?: Direction;
 	search: {
 		tourStatus?: TourStatus;
+		destinationId?: string;
+		tourDepartureCity?: string;
 	};
 }
 
@@ -64,5 +66,5 @@ export interface TourInput {
 	tourDeparturePlace?: string;
 	tourDestinationCity?: string;
 	tourImages: string[];
-	tourAdditionalInfo?: string[];
+	tourAdditionalInfo?: string;
 }

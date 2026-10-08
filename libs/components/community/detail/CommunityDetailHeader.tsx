@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BoardArticle } from '../../../types/board-article/board-article';
 import { getImageUrl } from '../../../config';
 import { sweetTopSmallSuccessAlert } from '../../../sweetAlert';
+import FollowButton from '../../common/FollowButton';
 
 interface CommunityDetailHeaderProps {
 	article: BoardArticle;
@@ -101,17 +102,11 @@ const CommunityDetailHeader: React.FC<CommunityDetailHeaderProps> = ({
 				</div>
 
 				<div className="author-actions-right">
-					<button
-						type="button"
-						className={`follow-author-btn ${following ? 'following' : ''}`}
-						onClick={handleFollowToggle}
-					>
-						<span className="material-symbols-outlined">
-							{following ? 'check' : 'add'}
-						</span>
-						<span>{following ? 'Following' : 'Follow'}</span>
-					</button>
-
+					<FollowButton 
+						isFollowing={following} 
+						onClick={handleFollowToggle} 
+						size="sm"
+					/>
 					<button
 						type="button"
 						className="share-icon-btn"

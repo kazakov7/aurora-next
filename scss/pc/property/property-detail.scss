@@ -15,6 +15,31 @@
 			gap: 32px;
 		}
 
+		.detail-empty-state,
+		.property-gallery-empty-state {
+			display: flex;
+			min-height: 240px;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+			border: 1px solid rgba(191, 199, 210, 0.45);
+			border-radius: 16px;
+			background: $surface-container-lowest;
+			color: $on-surface-variant;
+			text-align: center;
+
+			h1,
+			p {
+				margin: 0;
+			}
+
+			.material-symbols-outlined {
+				font-size: 36px;
+				color: $primary;
+			}
+		}
+
 		.property-header-section {
 			display: flex;
 			flex-direction: column;
@@ -206,7 +231,7 @@
 						transform: translateY(-1px);
 					}
 
-					&.save-btn {
+					&.like-btn {
 						.fav-icon {
 							color: $outline;
 							transition: transform 0.2s ease, color 0.2s ease;
@@ -784,6 +809,35 @@
 						overflow: hidden;
 						box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
 
+						.location-map-frame {
+							width: 100%;
+							height: 100%;
+							border: 0;
+						}
+
+						.map-open-link {
+							position: absolute;
+							right: 12px;
+							bottom: 12px;
+							z-index: 2;
+							display: inline-flex;
+							align-items: center;
+							gap: 6px;
+							padding: 8px 11px;
+							border-radius: 7px;
+							background: rgba(255, 255, 255, 0.94);
+							box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+							color: $on-surface;
+							font-size: 12px;
+							font-weight: 700;
+							text-decoration: none;
+
+							.material-symbols-outlined {
+								font-size: 16px;
+								color: $primary;
+							}
+						}
+
 						.map-overlay-tint {
 							position: absolute;
 							inset: 0;
@@ -896,6 +950,12 @@
 							}
 
 							.host-text-details {
+								.host-name-row {
+									display: flex;
+									align-items: center;
+									gap: 8px;
+								}
+
 								.host-name {
 									font-size: 18px;
 									font-weight: 700;
@@ -903,10 +963,34 @@
 									margin: 0;
 								}
 
+								.host-agent-badge {
+									display: inline-flex;
+									align-items: center;
+									gap: 3px;
+									padding: 4px 7px;
+									border-radius: 999px;
+									background: rgba(0, 97, 148, 0.1);
+									color: $primary;
+									font-size: 10px;
+									font-weight: 700;
+
+									.material-symbols-outlined {
+										font-size: 13px;
+									}
+								}
+
 								.host-title {
 									font-size: 13px;
 									color: $on-surface-variant;
 									margin: 2px 0 6px 0;
+								}
+
+								.host-description {
+									max-width: 520px;
+									margin: 0 0 8px;
+									color: $on-surface-variant;
+									font-size: 13px;
+									line-height: 1.5;
 								}
 
 								.host-metrics-row {
@@ -935,6 +1019,10 @@
 
 									.metric-text {
 										color: $on-surface-variant;
+
+										strong {
+											color: $on-surface;
+										}
 									}
 								}
 							}
@@ -946,12 +1034,21 @@
 							gap: 10px;
 
 							.host-btn {
+								display: inline-flex;
+								align-items: center;
+								justify-content: center;
+								gap: 6px;
 								padding: 10px 18px;
 								border-radius: 8px;
 								font-size: 13px;
 								font-weight: 600;
 								cursor: pointer;
 								transition: all 0.2s ease;
+								text-decoration: none;
+
+								.material-symbols-outlined {
+									font-size: 17px;
+								}
 
 								&.secondary-btn {
 									background: $surface-container-low;
@@ -971,6 +1068,33 @@
 
 									&:hover {
 										background: $primary-container;
+									}
+								}
+
+								&.chat-btn {
+									border: 1px solid $outline-variant;
+									background: $surface-container-low;
+									color: $on-surface-variant;
+									cursor: not-allowed;
+									opacity: 0.75;
+								}
+
+								&.follow-host-btn {
+									border: 1px solid $primary;
+									background: $primary;
+									color: #ffffff;
+									box-shadow: 0 2px 8px rgba(0, 97, 148, 0.24);
+
+									&.following {
+										border-color: $outline-variant;
+										background: $surface-container-low;
+										color: $on-surface;
+										box-shadow: none;
+									}
+
+									&:disabled {
+										cursor: not-allowed;
+										opacity: 0.7;
 									}
 								}
 							}
@@ -1980,5 +2104,143 @@
 	75%, 100% {
 		transform: scale(2);
 		opacity: 0;
+	}
+}
+
+#pc-wrap {
+	.property-payment-modal {
+		position: fixed;
+		inset: 0;
+		z-index: 1200;
+		display: grid;
+		place-items: center;
+		padding: 24px;
+
+		.payment-modal-backdrop {
+			position: absolute;
+			inset: 0;
+			background: rgba(20, 26, 34, 0.54);
+			backdrop-filter: blur(3px);
+		}
+
+		.payment-modal-content {
+			position: relative;
+			z-index: 1;
+			width: min(100%, 520px);
+			padding: 28px;
+			border: 1px solid rgba(191, 199, 210, 0.55);
+			border-radius: 18px;
+			background: $surface-container-lowest;
+			box-shadow: 0 24px 56px rgba(0, 0, 0, 0.24);
+
+			.payment-modal-heading {
+				display: flex;
+				align-items: flex-start;
+				justify-content: space-between;
+				gap: 16px;
+				margin-bottom: 24px;
+
+				.payment-modal-eyebrow {
+					display: block;
+					margin-bottom: 5px;
+					color: $primary;
+					font-size: 11px;
+					font-weight: 700;
+					letter-spacing: 0.08em;
+					text-transform: uppercase;
+				}
+
+				h2 {
+					margin: 0;
+					color: $on-surface;
+					font-size: 24px;
+					line-height: 1.25;
+				}
+
+				.payment-close-btn {
+					display: grid;
+					width: 36px;
+					height: 36px;
+					place-items: center;
+					border: 0;
+					border-radius: 50%;
+					background: $surface-container-low;
+					color: $on-surface-variant;
+					cursor: pointer;
+					transition: background 0.2s ease, color 0.2s ease;
+
+					&:hover {
+						background: $surface-container;
+						color: $on-surface;
+					}
+
+					&:disabled {
+						cursor: not-allowed;
+						opacity: 0.55;
+					}
+				}
+			}
+
+			.property-payment-form {
+				display: flex;
+				flex-direction: column;
+				gap: 24px;
+
+				.payment-modal-actions {
+					display: flex;
+					justify-content: flex-end;
+					gap: 10px;
+
+					button {
+						min-height: 44px;
+						padding: 0 18px;
+						border-radius: 9px;
+						font-size: 14px;
+						font-weight: 700;
+						cursor: pointer;
+						transition: background 0.2s ease, box-shadow 0.2s ease;
+
+						&:disabled {
+							cursor: not-allowed;
+							opacity: 0.65;
+						}
+					}
+
+					.payment-cancel-btn {
+						border: 1px solid $outline-variant;
+						background: transparent;
+						color: $on-surface;
+					}
+
+					.payment-confirm-btn {
+						border: 1px solid $primary;
+						background: $primary;
+						color: #ffffff;
+						box-shadow: 0 4px 12px rgba(0, 97, 148, 0.24);
+					}
+				}
+			}
+		}
+	}
+
+	.reservation-sticky-widget {
+		.reserve-cta-btn:disabled {
+			cursor: not-allowed;
+			opacity: 0.68;
+			transform: none;
+		}
+	}
+
+	.similar-card {
+		.card-image-empty {
+			display: grid;
+			width: 100%;
+			height: 100%;
+			min-height: 170px;
+			place-items: center;
+			background: $surface-container;
+			color: $on-surface-variant;
+			font-size: 13px;
+		}
 	}
 }

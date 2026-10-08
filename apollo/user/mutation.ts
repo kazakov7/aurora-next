@@ -85,7 +85,6 @@ export const SUBSCRIBE = gql`
 			followingId
 			followerId
 			createdAt
-			updatedAt
 		}
 	}
 `;
@@ -97,7 +96,6 @@ export const UNSUBSCRIBE = gql`
 			followingId
 			followerId
 			createdAt
-			updatedAt
 		}
 	}
 `;

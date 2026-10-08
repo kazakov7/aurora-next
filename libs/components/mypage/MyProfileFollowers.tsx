@@ -1,17 +1,20 @@
 import React, { useState } from "react";
+import { useRouter } from "next/router";
 import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import { GET_MEMBER_FOLLOWERS } from "../../../apollo/user/query";
 import { SUBSCRIBE, UNSUBSCRIBE } from "../../../apollo/user/mutation";
 import { userVar } from "../../../apollo/store";
 import { Follower } from "../../types/follow/follow";
-import { getImageUrl } from "../../config";
+import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
 import {
   sweetMixinErrorAlert,
   sweetTopSmallSuccessAlert,
 } from "../../sweetAlert";
+import FollowButton from "../common/FollowButton";
 
 const MyProfileFollowers: React.FC = () => {
   const user = useReactiveVar(userVar);
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [sortOrder, setSortOrder] = useState<"recent" | "name">("recent");
   // Map to track local toggle overrides: followerId -> isFollowingBack
@@ -23,7 +26,7 @@ const MyProfileFollowers: React.FC = () => {
   const [subscribeMutation] = useMutation(SUBSCRIBE);
   const [unsubscribeMutation] = useMutation(UNSUBSCRIBE);
 
-  const { data, loading, refetch } = useQuery(GET_MEMBER_FOLLOWERS, {
+  const { data, loading, error, refetch } = useQuery(GET_MEMBER_FOLLOWERS, {
     fetchPolicy: "network-only",
     variables: {
       input: {
@@ -56,11 +59,11 @@ const MyProfileFollowers: React.FC = () => {
     try {
       if (isCurrentlyFollowing) {
         setFollowStatusMap((prev) => ({ ...prev, [targetId]: false }));
-        await unsubscribeMutation({ variables: { input: targetId } });
+        await unsubscribeMutation({ variables: { input: targetId }, refetchQueries: ["GetMember"] });
         sweetTopSmallSuccessAlert(`Unfollowed ${targetNick}`, 800);
       } else {
         setFollowStatusMap((prev) => ({ ...prev, [targetId]: true }));
-        await subscribeMutation({ variables: { input: targetId } });
+        await subscribeMutation({ variables: { input: targetId }, refetchQueries: ["GetMember"] });
         sweetTopSmallSuccessAlert(`Following ${targetNick}`, 800);
       }
       await refetch();
@@ -130,21 +133,25 @@ const MyProfileFollowers: React.FC = () => {
       </div>
 
       {/* Wide Follower List Panel */}
-      {processedList.length > 0 ? (
+      {loading && !data ? (
+        <div className="profile-empty-state"><div className="loading-spinner" /><p>Loading followers...</p></div>
+      ) : error ? (
+        <div className="profile-empty-state"><h3>Followers are unavailable</h3><p>{error.message}</p></div>
+      ) : processedList.length > 0 ? (
         <div className="list-panel-container">
           {processedList.map((item: Follower) => {
             const follower = item?.followerData;
             const followerId = follower?._id || item.followerId;
             const followerNick =
-              follower?.memberFullName || follower?.memberNick || "Explorer";
-            const handle = `@${(follower?.memberNick || "user")
+              follower?.memberFullName || follower?.memberNick || "AURA member";
+            const handle = `@${(follower?.memberNick || "member")
               .toLowerCase()
               .replace(/\s+/g, "")}`;
             const followerLocation =
-              follower?.memberAddress || follower?.memberType || "Adventurer";
+              follower?.memberAddress || follower?.memberType || "Location not provided";
             const followerImg = getImageUrl(
               follower?.memberImage,
-              "/img/profile/defaultUser.svg",
+              DEFAULT_USER_AVATAR,
             );
 
             // Determine if current user follows this follower back:
@@ -168,12 +175,6 @@ const MyProfileFollowers: React.FC = () => {
                   <div className="text-details">
                     <div className="name-badge-row">
                       <span className="user-name">{followerNick}</span>
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        verified
-                      </span>
                     </div>
                     <p className="handle-sub">
                       {handle} · {followerLocation}
@@ -182,31 +183,15 @@ const MyProfileFollowers: React.FC = () => {
                 </div>
 
                 <div className="actions-right">
-                  <button
-                    type="button"
-                    className={`follow-state-btn ${
-                      isFollowingBack ? "is-following" : "not-following"
-                    }`}
-                    onClick={() =>
-                      handleToggleFollow(
-                        followerId,
-                        followerNick,
-                        isFollowingBack,
-                      )
-                    }
-                  >
-                    {isFollowingBack ? "Following" : "Follow"}
-                  </button>
+                  <FollowButton 
+                    isFollowing={isFollowingBack} 
+                    onClick={() => handleToggleFollow(followerId, followerNick, isFollowingBack)} 
+                  />
                   <button
                     type="button"
                     className="more-options-btn"
                     aria-label="More options"
-                    onClick={() =>
-                      sweetTopSmallSuccessAlert(
-                        `Follower profile: ${followerNick}`,
-                        800,
-                      )
-                    }
+                    onClick={() => router.push(`/member?memberId=${followerId}`)}
                   >
                     <span className="material-symbols-outlined">more_vert</span>
                   </button>

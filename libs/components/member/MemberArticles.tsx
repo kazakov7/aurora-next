@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
+import SaveButton from '../common/SaveButton';
 
 interface ArticleData {
 	id: string;
@@ -210,19 +211,13 @@ const MemberArticles: React.FC<MemberArticlesProps> = ({
 									/>
 									<div className="gradient-scrim" />
 									<span className="category-pill">{article.category}</span>
-									<button
-										type="button"
-										className={`bookmark-btn ${isBookmarked ? 'active' : ''}`}
-										aria-label="Bookmark"
-										onClick={(e) => handleBookmarkToggle(article.id, e)}
-									>
-										<span
-											className="material-symbols-outlined"
-											style={isBookmarked ? { fontVariationSettings: "'FILL' 1" } : undefined}
-										>
-											bookmark
-										</span>
-									</button>
+									<div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10 }}>
+										<SaveButton 
+											isSaved={isBookmarked} 
+											onClick={(e) => handleBookmarkToggle(article.id, e)} 
+											style={{ backgroundColor: 'rgba(255,255,255,0.9)', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
+										/>
+									</div>
 								</div>
 
 								<div className="card-body">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
@@ -11,7 +11,7 @@ import PropertyReservationWidget from '../../libs/components/property/detail/Pro
 import PropertyComments from '../../libs/components/property/detail/PropertyComments';
 import SimilarProperties from '../../libs/components/property/detail/SimilarProperties';
 import { Property } from '../../libs/types/property/property';
-import { GET_PROPERTY, GET_PROPERTIES } from '../../apollo/user/query';
+import { GET_PROPERTY } from '../../apollo/user/query';
 import { LIKE_TARGET_PROPERTY } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
 import { sweetErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
@@ -20,33 +20,10 @@ import { Message } from '../../libs/enums/common.enum';
 const PropertyDetail: NextPage = () => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
-	const [propertyId, setPropertyId] = useState<string>('');
-
-	/** LIFECYCLES **/
-	useEffect(() => {
-		if (router.isReady) {
-			const id = router.query.id as string;
-			if (id) {
-				setPropertyId(id);
-			}
-		}
-	}, [router.isReady, router.query.id]);
+	const propertyId = router.isReady && typeof router.query.id === 'string' ? router.query.id : '';
 
 	/** APOLLO REQUESTS **/
 	const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
-
-	// If no ID is provided in query, fetch first property from list so direct visits work gracefully
-	const { data: initialListData } = useQuery(GET_PROPERTIES, {
-		fetchPolicy: 'cache-first',
-		variables: { input: { page: 1, limit: 1, search: {} } },
-		skip: !!propertyId,
-	});
-
-	useEffect(() => {
-		if (!propertyId && initialListData?.getProperties?.list?.[0]?._id) {
-			setPropertyId(initialListData.getProperties.list[0]._id);
-		}
-	}, [propertyId, initialListData]);
 
 	const {
 		data: propertyData,
@@ -76,7 +53,7 @@ const PropertyDetail: NextPage = () => {
 		}
 	};
 
-	if (propertyLoading || !property) {
+	if (!router.isReady || propertyLoading) {
 		return (
 			<div className="property-detail-page">
 				<div className="detail-container">
@@ -102,6 +79,19 @@ const PropertyDetail: NextPage = () => {
 							sync
 						</span>
 						<span>Loading sanctuary details...</span>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	if (!property) {
+		return (
+			<div className="property-detail-page">
+				<div className="detail-container">
+					<div className="detail-empty-state">
+						<h1>Hotel unavailable</h1>
+						<p>This hotel could not be found or is no longer available.</p>
 					</div>
 				</div>
 			</div>
@@ -136,7 +126,7 @@ const PropertyDetail: NextPage = () => {
 						<PropertyOverview property={property} />
 
 						{/* Right Sticky Reservation Widget */}
-						<PropertyReservationWidget property={property} />
+						<PropertyReservationWidget property={property} refetchProperty={refetchProperty} />
 					</div>
 
 					{/* 5, 6, 7. Guest Comments, Pagination & Leave a Comment */}

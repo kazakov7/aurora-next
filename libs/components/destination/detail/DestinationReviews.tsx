@@ -4,7 +4,7 @@ import { userVar } from '../../../../apollo/store';
 import { CREATE_DESTINATION_REVIEW } from '../../../../apollo/user/mutation';
 import { sweetErrorAlert, sweetTopSmallSuccessAlert } from '../../../sweetAlert';
 import { Message } from '../../../enums/common.enum';
-import { getImageUrl } from '../../../config';
+import { DEFAULT_USER_AVATAR, getImageUrl } from '../../../config';
 import moment from 'moment';
 
 interface DestinationReviewItem {
@@ -30,8 +30,7 @@ interface DestinationReviewsProps {
 	onReviewAdded: () => void;
 }
 
-const defaultUserAvatar =
-	'https://lh3.googleusercontent.com/aida/AEtjO1Vs6vJ7D9paji8-89mcSWAIdGzT1-lLLISlFEhrn1gjPGaUKvLqPyNQ9vlro0PN-nQ0tH5dOmOw9Kkfv2wAlgyhjCEFbdi7ccIA0rHE1vFBMaOVikGP8S2V5qc9ZKls05gwWUZ9xo5aR1DwVniJ76z9eelBqQP4gtBsRtYRlDT3c2i24hFGozMZd0oXmRqRzOnrnGl3whaJsq1WffycW22zkCg6bIQFhmBKEhjUVupuhO2olcacURvdMJk';
+const defaultUserAvatar = DEFAULT_USER_AVATAR;
 
 const ratingLabelsMap: Record<number, string> = {
 	1: '1.0 / 5.0 (Poor)',

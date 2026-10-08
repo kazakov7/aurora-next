@@ -1,168 +1,206 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useMutation, useReactiveVar } from '@apollo/client';
+import { START_PROPERTY_PAYMENT } from '../../../../apollo/user/mutation';
+import { userVar } from '../../../../apollo/store';
+import { Message } from '../../../enums/common.enum';
 import { Property } from '../../../types/property/property';
-import { sweetTopSmallSuccessAlert } from '../../../sweetAlert';
+import { PropertyStatus } from '../../../enums/property.enum';
+import { sweetErrorAlert } from '../../../sweetAlert';
+import PropertyPaymentModal, { isStripePaymentConfigured } from './PropertyPaymentModal';
 
 interface PropertyReservationWidgetProps {
 	property: Property;
+	refetchProperty: () => Promise<unknown>;
 }
 
-const PropertyReservationWidget = ({ property }: PropertyReservationWidgetProps) => {
-	const [checkIn, setCheckIn] = useState<string>('2026-10-14');
-	const [checkOut, setCheckOut] = useState<string>('2026-10-19');
-	const [guestCount, setGuestCount] = useState<number>(Math.min(4, property?.maxGuests || 4));
+interface StartPropertyPaymentResponse {
+	startPropertyPayment?: {
+		clientSecret?: string;
+	};
+}
+
+const formatDateForInput = (date: Date): string => {
+	const year = date.getFullYear();
+	const month = `${date.getMonth() + 1}`.padStart(2, '0');
+	const day = `${date.getDate()}`.padStart(2, '0');
+	return `${year}-${month}-${day}`;
+};
+
+const getDateAfterDays = (days: number): string => {
+	const date = new Date();
+	date.setHours(0, 0, 0, 0);
+	date.setDate(date.getDate() + days);
+	return formatDateForInput(date);
+};
+
+const getDateAfterDaysFrom = (dateValue: string, days: number): string => {
+	const date = new Date(`${dateValue}T00:00:00`);
+	date.setDate(date.getDate() + days);
+	return formatDateForInput(date);
+};
+
+const getNights = (checkIn: string, checkOut: string): number => {
+	const start = new Date(`${checkIn}T00:00:00`);
+	const end = new Date(`${checkOut}T00:00:00`);
+	const difference = end.getTime() - start.getTime();
+	return Number.isFinite(difference) && difference > 0 ? Math.round(difference / 86_400_000) : 0;
+};
+
+const PropertyReservationWidget = ({ property, refetchProperty }: PropertyReservationWidgetProps) => {
+	const user = useReactiveVar(userVar);
+	const minimumCheckIn = getDateAfterDays(1);
+	const [checkIn, setCheckIn] = useState<string>(minimumCheckIn);
+	const [checkOut, setCheckOut] = useState<string>(getDateAfterDays(2));
+	const [guestCount, setGuestCount] = useState<number>(Math.min(2, Math.max(1, property.maxGuests)));
 	const [isGuestDropdownOpen, setIsGuestDropdownOpen] = useState(false);
+	const [clientSecret, setClientSecret] = useState<string>('');
+	const [checkoutKey, setCheckoutKey] = useState<string>('');
+	const maxGuestsAllowed = Math.max(1, property.maxGuests);
+	const isBookable = property.propertyStatus === PropertyStatus.ACTIVE;
+	const nights = getNights(checkIn, checkOut);
+	const pricePerNight = property.pricePerNight;
+	const total = pricePerNight * nights;
+	const ratingVal = typeof property.propertyRating === 'number' ? property.propertyRating.toFixed(2) : '—';
+	const reviewsCount = property.propertyReviews ?? 0;
 
-	const pricePerNight = property?.pricePerNight || 230000;
-	const nights = 5;
-	const subtotal = pricePerNight * nights;
-	const serviceFee = Math.round(subtotal * 0.05);
-	const total = subtotal + serviceFee;
+	/** APOLLO REQUESTS **/
+	const [startPropertyPayment, { loading: paymentStarting }] = useMutation<StartPropertyPaymentResponse>(START_PROPERTY_PAYMENT);
 
-	const ratingVal = property?.propertyRating ? property.propertyRating.toFixed(2) : '4.98';
-	const reviewsCount = property?.propertyReviews || 248;
+	/** LIFECYCLES **/
+	useEffect(() => {
+		setGuestCount((current) => Math.min(Math.max(1, current), maxGuestsAllowed));
+	}, [maxGuestsAllowed]);
 
-	const handleReserve = () => {
-		sweetTopSmallSuccessAlert(`Reservation request submitted for ${property?.propertyName || 'Sanctuary'}!`);
+	/** HANDLERS **/
+	const clearCheckout = () => setClientSecret('');
+	const resetCheckout = () => {
+		setClientSecret('');
+		setCheckoutKey('');
 	};
 
-	const maxGuestsAllowed = property?.maxGuests || 8;
+	const handleCheckInChange = (nextCheckIn: string) => {
+		setCheckIn(nextCheckIn);
+		if (nextCheckIn >= checkOut) {
+			const nextCheckOut = new Date(`${nextCheckIn}T00:00:00`);
+			nextCheckOut.setDate(nextCheckOut.getDate() + 1);
+			setCheckOut(formatDateForInput(nextCheckOut));
+		}
+		resetCheckout();
+	};
+
+	const handleCheckOutChange = (nextCheckOut: string) => {
+		setCheckOut(nextCheckOut);
+		resetCheckout();
+	};
+
+	const handleReserve = async () => {
+		if (!user?._id) {
+			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
+			return;
+		}
+		if (!isStripePaymentConfigured) {
+			await sweetErrorAlert('Secure payment is not configured. Please contact support.');
+			return;
+		}
+		if (!property._id || !isBookable || property.currency !== 'KRW' || nights < 1 || guestCount < 1 || guestCount > maxGuestsAllowed) {
+			await sweetErrorAlert('Please choose valid booking dates and guest count.');
+			return;
+		}
+		if (!window.crypto?.randomUUID) {
+			await sweetErrorAlert('Secure checkout is unavailable in this browser. Please update your browser and try again.');
+			return;
+		}
+
+		const idempotencyKey = checkoutKey || window.crypto.randomUUID();
+		setCheckoutKey(idempotencyKey);
+
+		try {
+			const { data } = await startPropertyPayment({
+				variables: {
+					input: {
+						propertyId: property._id,
+						checkIn: new Date(`${checkIn}T00:00:00`).toISOString(),
+						checkOut: new Date(`${checkOut}T00:00:00`).toISOString(),
+						bookingGuests: guestCount,
+						idempotencyKey,
+					},
+				},
+			});
+			const nextClientSecret = data?.startPropertyPayment?.clientSecret;
+			if (!nextClientSecret) throw new Error('Unable to initialize secure payment.');
+			setClientSecret(nextClientSecret);
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : 'Unable to start your reservation.';
+			await sweetErrorAlert(message);
+		}
+	};
+
+	const handlePaymentConfirmed = async () => {
+		await refetchProperty();
+		setCheckoutKey('');
+	};
 
 	return (
-		<aside className="reservation-sticky-widget">
-			<div className="widget-card">
-				{/* Price Header */}
-				<div className="price-header-row">
-					<div className="price-tag-group">
-						<span className="price-value">₩{pricePerNight.toLocaleString()}</span>
-						<span className="price-unit">/ night</span>
-					</div>
-					<div className="rating-badge-inline">
-						<span
-							className="material-symbols-outlined star-icon"
-							style={{ fontVariationSettings: "'FILL' 1" }}
-						>
-							star
-						</span>
-						<span className="score">{ratingVal}</span>
-						<span className="count">({reviewsCount})</span>
-					</div>
-				</div>
-
-				{/* Date & Guest Picker Block */}
-				<div className="picker-block">
-					<div className="date-pickers-row">
-						<div className="date-picker-box">
-							<label className="picker-label">Check-In</label>
-							<input
-								type="date"
-								className="picker-input"
-								value={checkIn}
-								onChange={(e) => setCheckIn(e.target.value)}
-							/>
+		<>
+			<aside className="reservation-sticky-widget">
+				<div className="widget-card">
+					<div className="price-header-row">
+						<div className="price-tag-group">
+							<span className="price-value">₩{pricePerNight.toLocaleString()}</span>
+							<span className="price-unit">/ night</span>
 						</div>
-						<div className="date-picker-box">
-							<label className="picker-label">Check-Out</label>
-							<input
-								type="date"
-								className="picker-input"
-								value={checkOut}
-								onChange={(e) => setCheckOut(e.target.value)}
-							/>
+						<div className="rating-badge-inline">
+							<span className="material-symbols-outlined star-icon" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+							<span className="score">{ratingVal}</span>
+							<span className="count">({reviewsCount})</span>
 						</div>
 					</div>
 
-					{/* Guests Picker */}
-					<div className="guest-picker-wrapper">
-						<div
-							className="guest-picker-box"
-							onClick={() => setIsGuestDropdownOpen(!isGuestDropdownOpen)}
-						>
-							<div>
-								<label className="picker-label">Guests</label>
-								<div className="picker-val">
-									{guestCount} Guests ({Math.ceil(guestCount / 2)} Suites)
+					<div className="picker-block">
+						<div className="date-pickers-row">
+							<div className="date-picker-box">
+								<label className="picker-label">Check-In</label>
+								<input type="date" className="picker-input" min={minimumCheckIn} value={checkIn} onChange={(event) => handleCheckInChange(event.target.value)} />
+							</div>
+							<div className="date-picker-box">
+								<label className="picker-label">Check-Out</label>
+							<input type="date" className="picker-input" min={getDateAfterDaysFrom(checkIn, 1)} value={checkOut} onChange={(event) => handleCheckOutChange(event.target.value)} />
+							</div>
+						</div>
+
+						<div className="guest-picker-wrapper">
+							<div className="guest-picker-box" onClick={() => setIsGuestDropdownOpen((current) => !current)}>
+								<div><label className="picker-label">Guests</label><div className="picker-val">{guestCount} {guestCount === 1 ? 'Guest' : 'Guests'}</div></div>
+								<span className="material-symbols-outlined chevron">{isGuestDropdownOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}</span>
+							</div>
+							{isGuestDropdownOpen ? (
+								<div className="guest-dropdown-menu">
+									{Array.from({ length: maxGuestsAllowed }, (_, index) => index + 1).map((guestOption) => (
+										<button key={guestOption} type="button" className={`guest-menu-item ${guestCount === guestOption ? 'selected' : ''}`} onClick={() => { setGuestCount(guestOption); setIsGuestDropdownOpen(false); resetCheckout(); }}>
+											<span>{guestOption} {guestOption === 1 ? 'Guest' : 'Guests'}</span>
+											{guestCount === guestOption ? <span className="material-symbols-outlined check-icon">check</span> : null}
+										</button>
+									))}
 								</div>
-							</div>
-							<span className="material-symbols-outlined chevron">
-								{isGuestDropdownOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}
-							</span>
+							) : null}
 						</div>
+					</div>
 
-						{isGuestDropdownOpen && (
-							<div className="guest-dropdown-menu">
-								{Array.from({ length: maxGuestsAllowed }, (_, i) => i + 1).map((num) => (
-									<button
-										key={num}
-										type="button"
-										className={`guest-menu-item ${guestCount === num ? 'selected' : ''}`}
-										onClick={() => {
-											setGuestCount(num);
-											setIsGuestDropdownOpen(false);
-										}}
-									>
-										<span>{num} {num === 1 ? 'Guest' : 'Guests'}</span>
-										{guestCount === num && (
-											<span className="material-symbols-outlined check-icon">check</span>
-										)}
-									</button>
-								))}
-							</div>
-						)}
-					</div>
-				</div>
-
-				{/* CTA Button */}
-				<button className="reserve-cta-btn" type="button" onClick={handleReserve}>
-					<span className="material-symbols-outlined lock-icon">lock</span>
-					<span>Reserve Sanctuary</span>
-				</button>
-				<p className="no-charge-note">You will not be charged yet.</p>
-
-				{/* Itemized Breakdown in KRW */}
-				<div className="itemized-breakdown">
-					<div className="breakdown-row">
-						<span className="breakdown-label">
-							₩{pricePerNight.toLocaleString()} × {nights} nights
-						</span>
-						<span className="breakdown-value">₩{subtotal.toLocaleString()}</span>
-					</div>
-					<div className="breakdown-row">
-						<span className="breakdown-label">Service & staff gratuity</span>
-						<span className="breakdown-value">₩{serviceFee.toLocaleString()}</span>
-					</div>
-					<div className="breakdown-row">
-						<span className="breakdown-label">AURA White-Glove Concierge</span>
-						<span className="breakdown-value free-tag">Included</span>
-					</div>
-					<div className="breakdown-divider"></div>
-					<div className="breakdown-row total-row">
-						<span className="total-label">Total before taxes</span>
-						<span className="total-value">₩{total.toLocaleString()}</span>
-					</div>
-				</div>
-
-				{/* Guarantee Badge */}
-				<div className="guarantee-box">
-					<span className="material-symbols-outlined shield-icon">verified_user</span>
-					<div className="guarantee-text">
-						<strong>AURA Escrow Guarantee</strong>
-						<p>Funds securely held until 24h post-arrival</p>
-					</div>
-				</div>
-
-				{/* Help Widget */}
-				<div className="help-box">
-					<span className="help-label">Questions regarding transfers or arrangements?</span>
-					<button
-						className="inquire-link"
-						type="button"
-						onClick={() => sweetTopSmallSuccessAlert('Concierge messenger connected!')}
-					>
-						Inquire with Concierge
+					<button className="reserve-cta-btn" type="button" disabled={paymentStarting || nights < 1 || !isBookable} onClick={handleReserve}>
+						<span className="material-symbols-outlined lock-icon">lock</span>
+						<span>{paymentStarting ? 'Preparing secure payment...' : isBookable ? 'Reserve hotel' : 'Unavailable'}</span>
 					</button>
+					<p className="no-charge-note">A secure Stripe payment form opens before any charge is confirmed.</p>
+
+					<div className="itemized-breakdown">
+						<div className="breakdown-row"><span className="breakdown-label">₩{pricePerNight.toLocaleString()} × {nights} night{nights === 1 ? '' : 's'}</span><span className="breakdown-value">₩{total.toLocaleString()}</span></div>
+						<div className="breakdown-divider" />
+						<div className="breakdown-row total-row"><span className="total-label">Total</span><span className="total-value">₩{total.toLocaleString()}</span></div>
+					</div>
 				</div>
-			</div>
-		</aside>
+			</aside>
+			{clientSecret ? <PropertyPaymentModal clientSecret={clientSecret} paymentAmount={total} onClose={clearCheckout} onPaymentConfirmed={handlePaymentConfirmed} /> : null}
+		</>
 	);
 };
 

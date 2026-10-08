@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
+import FollowButton from '../../common/FollowButton';
 
 interface DestinationTravelersProps {
 	destinationName: string;
@@ -95,13 +96,10 @@ const DestinationTravelers = ({ destinationName }: DestinationTravelersProps) =>
 							<Link href="/community" className="profile-link">
 								View Profile
 							</Link>
-							<button
-								type="button"
-								className={`follow-toggle-btn ${traveler.following ? 'following' : ''}`}
-								onClick={() => toggleFollow(traveler.id)}
-							>
-								{traveler.following ? 'Following' : '+ Follow'}
-							</button>
+							<FollowButton 
+								isFollowing={traveler.following} 
+								onClick={() => toggleFollow(traveler.id)} 
+							/>
 						</div>
 					</div>
 				))}

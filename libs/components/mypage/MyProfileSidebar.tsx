@@ -1,10 +1,11 @@
 import React from "react";
-import Link from "next/link";
 import { useRouter } from "next/router";
-import { useReactiveVar } from "@apollo/client";
+import { useQuery, useReactiveVar } from "@apollo/client";
 import { userVar } from "../../../apollo/store";
-import { sweetConfirmAlert, sweetTopSmallSuccessAlert } from "../../sweetAlert";
+import { sweetConfirmAlert } from "../../sweetAlert";
 import { logOut } from "../../auth";
+import { GET_FAVORITES, GET_FAVORITE_TOURS, GET_MY_BOOKINGS, GET_UNREAD_NOTIFICATION_COUNT } from "../../../apollo/user/query";
+import { BookingStatus } from "../../enums/booking.enum";
 
 interface MyProfileSidebarProps {
   activeCategory?: string;
@@ -19,6 +20,31 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
   const user = useReactiveVar(userVar);
   const currentCat =
     activeCategory || (router.query?.category as string) || "articles";
+  const queryOptions = { fetchPolicy: "network-only" as const, skip: !user?._id };
+  const { data: favoritePropertiesData } = useQuery(GET_FAVORITES, {
+    ...queryOptions,
+    variables: { input: { page: 1, limit: 1 } },
+  });
+  const { data: favoriteToursData } = useQuery(GET_FAVORITE_TOURS, {
+    ...queryOptions,
+    variables: { input: { page: 1, limit: 1 } },
+  });
+  const { data: activeBookingsData } = useQuery(GET_MY_BOOKINGS, {
+    ...queryOptions,
+    variables: {
+      input: {
+        page: 1,
+        limit: 1,
+        search: { bookingStatusList: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+      },
+    },
+  });
+  const { data: unreadData } = useQuery(GET_UNREAD_NOTIFICATION_COUNT, queryOptions);
+  const wishlistCount =
+    (favoritePropertiesData?.getFavorites?.metaCounter?.[0]?.total ?? 0) +
+    (favoriteToursData?.getFavoriteTours?.metaCounter?.[0]?.total ?? 0);
+  const activeBookingsCount = activeBookingsData?.getMyBookings?.metaCounter?.[0]?.total ?? 0;
+  const unreadCount = unreadData?.getUnreadNotificationCount ?? 0;
 
   const handleNavClick = (e: React.MouseEvent, cat: string) => {
     e.preventDefault();
@@ -50,35 +76,31 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
       id: "articles",
       label: "Articles",
       icon: "menu_book",
-      badge: String((user as any)?.memberArticles ?? 24),
+      badge: String(user?.memberArticles ?? 0),
     },
     {
       id: "followers",
       label: "Followers",
       icon: "group",
-      badge: (user as any)?.memberFollowers
-        ? String((user as any).memberFollowers)
-        : "8.4k",
+      badge: String(user?.memberFollowers ?? 0),
     },
     {
       id: "following",
       label: "Following",
       icon: "person_check",
-      badge: (user as any)?.memberFollowings
-        ? String((user as any).memberFollowings)
-        : "412",
+      badge: String(user?.memberFollowings ?? 0),
     },
     {
       id: "wishlist",
       label: "Wishlist",
       icon: "bookmark",
-      badge: "18",
+      badge: String(wishlistCount),
     },
     {
       id: "bookings",
       label: "Bookings",
       icon: "confirmation_number",
-      badge: "3 active",
+      badge: `${activeBookingsCount} active`,
       badgeClass: "badge-active-amber",
     },
     {
@@ -91,7 +113,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
       id: "notifications",
       label: "Notifications",
       icon: "notifications",
-      badge: "5 unread",
+      badge: `${unreadCount} unread`,
     },
     {
       id: "settings",
@@ -134,6 +156,23 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
 
         <div className="sidebar-nav-divider" />
 
+        {user?.memberType === 'ADMIN' && (
+          <button
+            type="button"
+            className="sidebar-item-btn"
+            style={{ color: '#006194', fontWeight: 600, background: 'rgba(204, 229, 255, 0.3)' }}
+            onClick={() => router.push('/_admin')}
+          >
+            <div className="item-left">
+              <span className="material-symbols-outlined" style={{ color: '#006194' }}>dashboard</span>
+              <span>Admin Dashboard</span>
+            </div>
+            <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#006194" }}>
+              north_east
+            </span>
+          </button>
+        )}
+
         <button
           type="button"
           className="sidebar-item-btn logout-btn"
@@ -159,12 +198,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
         <button
           type="button"
           className="chat-curator-btn"
-          onClick={() => {
-            sweetTopSmallSuccessAlert(
-              "Connecting with your dedicated AURA Curator...",
-              1200,
-            );
-          }}
+          onClick={() => router.push('/chat')}
         >
           Chat with Curator
         </button>

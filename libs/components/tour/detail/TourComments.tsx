@@ -7,16 +7,15 @@ import { Tour } from '../../../types/tour/tour';
 import { Comment } from '../../../types/comment/comment';
 import { CommentGroup } from '../../../enums/comment.enum';
 import { Direction, Message } from '../../../enums/common.enum';
-import { getImageUrl } from '../../../config';
+import { DEFAULT_USER_AVATAR, getImageUrl } from '../../../config';
 import { sweetErrorAlert, sweetTopSmallSuccessAlert } from '../../../sweetAlert';
 
 interface TourCommentsProps {
 	tour: Tour;
-	refetchTour?: () => void;
+	refetchTour?: () => Promise<unknown>;
 }
 
-const defaultAvatar =
-	'https://lh3.googleusercontent.com/aida-public/AB6AXuCDNwjaJfe5FznXVWjC98idcDi4DqpVr_EpBIGfDhSYg4lqKlNMKynXtRV-ExppnYCoAK6aDg2F96vUPOaFl0g4HL3EYKtNIb9kv01AynkKtopQs5uMTQuHBLlOrye7Y50bsvg1SbzJgGsvNnVEj6WcNKUO8fzOiY7tYxFT92mJIl0ixlefWggq9cezxXRiV2U-ojBzAYHMkSAUFdvar1Wt5LIP3UDuh9GgQg8HmI8A8zOlLmZdX759';
+const defaultAvatar = DEFAULT_USER_AVATAR;
 
 const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
 	const user = useReactiveVar(userVar);
@@ -77,14 +76,14 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
 			setCommentText('');
 			await sweetTopSmallSuccessAlert('Your evaluation has been posted!');
 			await refetchComments();
-			if (refetchTour) refetchTour();
+			if (refetchTour) await refetchTour();
 		} catch (err: any) {
 			await sweetErrorAlert(err.message || 'Failed to post comment.');
 		}
 	};
 
-	const ratingVal = tour?.tourRating ? tour.tourRating.toFixed(2) : '4.96';
-	const displayTotal = totalComments > 0 ? totalComments : tour?.tourReviews || 184;
+	const ratingVal = typeof tour?.tourRating === 'number' ? tour.tourRating.toFixed(2) : '—';
+	const displayTotal = totalComments || tour?.tourReviews || 0;
 
 	return (
 		<section className="tour-comments-section">
@@ -104,8 +103,7 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
 						</div>
 					</div>
 					<p className="comments-subtext">
-						Authentic evaluations by {displayTotal} verified travelers who experienced{' '}
-						{tour?.tourName || 'Swiss Alps Discovery'}
+						{displayTotal} evaluation{displayTotal === 1 ? '' : 's'} for {tour.tourName}
 					</p>
 				</div>
 
@@ -127,49 +125,6 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
 				</div>
 			</div>
 
-			{/* Category Rating Progress Bars (Inline SVG Bars) */}
-			<div className="ratings-metrics-grid">
-				<div className="metric-bar-item">
-					<div className="metric-label-row">
-						<span>Cleanliness</span>
-						<span className="metric-score">5.0</span>
-					</div>
-					<div className="progress-track">
-						<div className="progress-fill" style={{ width: '100%' }}></div>
-					</div>
-				</div>
-
-				<div className="metric-bar-item">
-					<div className="metric-label-row">
-						<span>Location &amp; Vistas</span>
-						<span className="metric-score">5.0</span>
-					</div>
-					<div className="progress-track">
-						<div className="progress-fill" style={{ width: '100%' }}></div>
-					</div>
-				</div>
-
-				<div className="metric-bar-item">
-					<div className="metric-label-row">
-						<span>Service &amp; Concierge</span>
-						<span className="metric-score">4.9</span>
-					</div>
-					<div className="progress-track">
-						<div className="progress-fill" style={{ width: '98%' }}></div>
-					</div>
-				</div>
-
-				<div className="metric-bar-item">
-					<div className="metric-label-row">
-						<span>Value to Experience</span>
-						<span className="metric-score">4.9</span>
-					</div>
-					<div className="progress-track">
-						<div className="progress-fill" style={{ width: '98%' }}></div>
-					</div>
-				</div>
-			</div>
-
 			{/* Reviews List */}
 			<div className="reviews-list-stack">
 				{loading ? (
@@ -182,7 +137,7 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
 						const authorName =
 							comment.memberData?.memberNick ||
 							comment.memberData?.memberFullName ||
-							'Verified Traveler';
+							'Traveler';
 						const authorImg = getImageUrl(comment.memberData?.memberImage, defaultAvatar);
 						const formattedDate = new Date(comment.createdAt).toLocaleDateString('en-US', {
 							month: 'short',
@@ -200,7 +155,7 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
 										/>
 										<div className="author-meta">
 											<h3 className="author-name">{authorName}</h3>
-											<p className="stay-date">Traveled {formattedDate} • Verified Stay</p>
+											<p className="stay-date">Posted {formattedDate}</p>
 										</div>
 									</div>
 									<div className="stars-row">
@@ -224,8 +179,7 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
 						<span className="material-symbols-outlined empty-icon">rate_review</span>
 						<p className="empty-title">No evaluations posted yet</p>
 						<p className="empty-desc">
-							Be the first verified explorer to share your experience with{' '}
-							{tour?.tourName || 'this tour'}.
+							Be the first to share your experience with {tour.tourName}.
 						</p>
 					</div>
 				)}
@@ -273,8 +227,8 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
 				<div className="comment-form-body">
 					<img
 						src={getImageUrl(
-							user?.memberImage,
-							'https://lh3.googleusercontent.com/aida-public/AB6AXuCK159XgBwM6kPjC2DqGvQ_X6ZqE_a8qR29oYd91hYd739m50f3A2nO6bYvB1m4qV9jZ7WvK6R9j_vC8xY2n_K8A2j_6N8bY4v-7'
+						user?.memberImage,
+						defaultAvatar
 						)}
 						alt="Current user"
 						className="user-comment-avatar"

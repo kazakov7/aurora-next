@@ -1,6 +1,10 @@
 export const REACT_APP_API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3007';
 export const REACT_APP_API_GRAPHQL_URL = process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql';
 export const REACT_APP_API_WS = process.env.REACT_APP_API_WS || 'ws://127.0.0.1:3007';
+export const DEFAULT_USER_AVATAR = '/img/profile/default-user.png';
+export const DEFAULT_PROPERTY_IMAGE = '/img/banner/hero-hotels.jpg';
+export const DEFAULT_TOUR_IMAGE = '/img/banner/hero-tour.jpg';
+export const DEFAULT_ARTICLE_IMAGE = '/img/banner/hero_traveler.jpg';
 
 export const Messages = {
 	error1: 'Something went wrong!',
@@ -12,6 +16,7 @@ export const Messages = {
 
 export const getImageUrl = (imagePath?: string, fallback: string = ''): string => {
 	if (!imagePath) return fallback;
+	if (imagePath.startsWith('/')) return imagePath;
 	if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
 	return `${REACT_APP_API_URL}/${imagePath}`;
 };

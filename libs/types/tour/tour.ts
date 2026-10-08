@@ -20,7 +20,7 @@ export interface Tour {
 	tourDeparturePlace?: string;
 	tourDestinationCity?: string;
 	tourImages: string[];
-	tourAdditionalInfo?: string[];
+	tourAdditionalInfo?: string;
 	tourViews: number;
 	tourLikes: number;
 	tourComments?: number;

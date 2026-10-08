@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { getImageUrl } from '../../config';
 import { sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import FollowButton from '../common/FollowButton';
 
 export interface HostItem {
 	id: string;
@@ -226,13 +227,11 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
 									</div>
 								</div>
 
-								<button
-									type="button"
-									className={`follow-toggle-btn ${isFollowing ? 'following' : ''}`}
-									onClick={() => toggleFollowHost(owner.id, owner.name)}
-								>
-									{isFollowing ? 'Following' : 'Follow'}
-								</button>
+								<FollowButton 
+									isFollowing={isFollowing} 
+									onClick={() => toggleFollowHost(owner.id, owner.name)} 
+									size="sm"
+								/>
 							</li>
 						);
 					})}
@@ -269,13 +268,11 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
 									</div>
 								</div>
 
-								<button
-									type="button"
-									className={`follow-toggle-btn ${isFollowing ? 'following' : ''}`}
-									onClick={() => toggleFollowAgency(agency.id, agency.name)}
-								>
-									{isFollowing ? 'Following' : 'Follow'}
-								</button>
+								<FollowButton 
+									isFollowing={isFollowing} 
+									onClick={() => toggleFollowAgency(agency.id, agency.name)} 
+									size="sm"
+								/>
 							</li>
 						);
 					})}

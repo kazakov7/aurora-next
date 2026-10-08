@@ -46,7 +46,8 @@ export interface AllPropertiesInquiry {
 	direction?: Direction;
 	search: {
 		propertyStatus?: PropertyStatus;
-		propertyTypeList?: PropertyType[];
+		destinationIdList?: string[];
+		propertyCityList?: string[];
 	};
 }
 

@@ -1,75 +1,99 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useRouter } from 'next/router';
 import { useQuery, useMutation, useReactiveVar } from '@apollo/client';
 import { GET_MY_BOOKINGS } from '../../../apollo/user/query';
-import { CANCEL_BOOKING } from '../../../apollo/user/mutation';
+import { CANCEL_BOOKING, CANCEL_TOUR_BOOKING } from '../../../apollo/user/mutation';
 import { userVar } from '../../../apollo/store';
 import { BookingCategory, BookingStatus } from '../../enums/booking.enum';
 import { Booking } from '../../types/booking/booking';
-import { getImageUrl } from '../../config';
+import { DEFAULT_PROPERTY_IMAGE, DEFAULT_TOUR_IMAGE, getImageUrl } from '../../config';
 import { sweetConfirmAlert, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 
 const MyProfileBookings: React.FC = () => {
 	const user = useReactiveVar(userVar);
+	const router = useRouter();
 	const [activeCategory, setActiveCategory] = useState<'ALL' | 'HOTEL' | 'TOUR'>('ALL');
-	const [activeStatus, setActiveStatus] = useState<string>('ALL');
+	const [activeStatus, setActiveStatus] = useState<'ALL' | 'UPCOMING' | 'COMPLETED' | 'CANCELLED'>('ALL');
 	const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
 	/** APOLLO REQUESTS **/
 	const [cancelBookingMutation] = useMutation(CANCEL_BOOKING);
+	const [cancelTourBookingMutation] = useMutation(CANCEL_TOUR_BOOKING);
 
-	const { data, loading, refetch } = useQuery(GET_MY_BOOKINGS, {
+	const { data, loading, error, refetch } = useQuery(GET_MY_BOOKINGS, {
 		fetchPolicy: 'network-only',
 		variables: {
 			input: {
 				page: 1,
-				limit: 20,
-				search: {
-					memberId: user?._id || '',
-					bookingCategory:
-						activeCategory === 'HOTEL'
-							? BookingCategory.PROPERTY
-							: activeCategory === 'TOUR'
-							? BookingCategory.TOUR
-							: undefined,
-					bookingStatus:
-						activeStatus === 'UPCOMING'
-							? BookingStatus.CONFIRMED
-							: activeStatus === 'COMPLETED'
-							? BookingStatus.COMPLETED
-							: activeStatus === 'CANCELLED'
-							? BookingStatus.CANCELLED
-							: undefined,
-				},
+				limit: 100,
+				search: {},
 			},
 		},
 		skip: !user?._id,
 		notifyOnNetworkStatusChange: true,
 	});
 
-	const bookings: Booking[] = data?.getMyBookings?.list || [];
-	const total = data?.getMyBookings?.metaCounter?.[0]?.total || bookings.length;
+	const allBookings: Booking[] = data?.getMyBookings?.list || [];
+	const total = data?.getMyBookings?.metaCounter?.[0]?.total ?? allBookings.length;
+	const bookings = useMemo(() => allBookings.filter((booking) => {
+		const categoryMatches = activeCategory === 'ALL' ||
+			(activeCategory === 'HOTEL' && booking.bookingCategory === BookingCategory.PROPERTY) ||
+			(activeCategory === 'TOUR' && booking.bookingCategory === BookingCategory.TOUR);
+		const statusMatches = activeStatus === 'ALL' ||
+			(activeStatus === 'UPCOMING' && [BookingStatus.PENDING, BookingStatus.CONFIRMED].includes(booking.bookingStatus)) ||
+			(activeStatus === 'COMPLETED' && booking.bookingStatus === BookingStatus.COMPLETED) ||
+			(activeStatus === 'CANCELLED' && booking.bookingStatus === BookingStatus.CANCELLED);
+		return categoryMatches && statusMatches;
+	}), [activeCategory, activeStatus, allBookings]);
 
-	const activeCount = bookings.filter(
+	const activeCount = allBookings.filter(
 		(b) => b.bookingStatus === BookingStatus.CONFIRMED || b.bookingStatus === BookingStatus.PENDING,
 	).length;
-	const hotelCount = bookings.filter((b) => b.bookingCategory === BookingCategory.PROPERTY).length;
-	const tourCount = bookings.filter((b) => b.bookingCategory === BookingCategory.TOUR).length;
+	const hotelCount = allBookings.filter((b) => b.bookingCategory === BookingCategory.PROPERTY).length;
+	const tourCount = allBookings.filter((b) => b.bookingCategory === BookingCategory.TOUR).length;
 
 	/** HANDLERS **/
-	const handleCancel = async (bookingId: string) => {
+	const handleCancel = async (booking: Booking) => {
 		const confirmed = await sweetConfirmAlert('Are you sure you want to cancel this reservation?');
 		if (!confirmed) return;
 
 		try {
-			await cancelBookingMutation({
-				variables: { bookingId },
-			});
+			const cancelMutation = booking.bookingCategory === BookingCategory.TOUR
+				? cancelTourBookingMutation
+				: cancelBookingMutation;
+			await cancelMutation({ variables: { bookingId: booking._id } });
 			sweetTopSmallSuccessAlert('Reservation cancelled successfully.', 1000);
 			await refetch();
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message || 'Cancellation failed.');
 		}
 	};
+
+	const handleExportCalendar = () => {
+		const calendarBookings = allBookings.filter((booking) => booking.checkIn);
+		if (!calendarBookings.length) {
+			sweetMixinErrorAlert('There are no dated bookings to export.');
+			return;
+		}
+		const toDate = (value?: Date | string) => value
+			? new Date(value).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+			: '';
+		const events = calendarBookings.map((booking) => {
+			const title = booking.propertyData?.propertyName || booking.tourData?.tourName || 'AURA booking';
+			return ['BEGIN:VEVENT', `UID:${booking._id}@aurora.travel`, `DTSTART:${toDate(booking.checkIn)}`, `DTEND:${toDate(booking.checkOut || booking.checkIn)}`, `SUMMARY:${title.replace(/[;,]/g, ' ')}`, `DESCRIPTION:Booking ${booking.bookingRefId} — ${booking.bookingStatus}`, 'END:VEVENT'].join('\r\n');
+		});
+		const blob = new Blob([['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//AURA Travel//Bookings//EN', ...events, 'END:VCALENDAR'].join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement('a');
+		link.href = url;
+		link.download = 'aura-bookings.ics';
+		link.click();
+		URL.revokeObjectURL(url);
+	};
+
+	const formatPrice = (amount: number, currency = 'KRW') => new Intl.NumberFormat('ko-KR', {
+		style: 'currency', currency, maximumFractionDigits: currency === 'KRW' ? 0 : 2,
+	}).format(amount);
 
 	const formatDateRange = (inDate?: Date | string, outDate?: Date | string) => {
 		if (!inDate) return 'Flexible Dates';
@@ -99,7 +123,7 @@ const MyProfileBookings: React.FC = () => {
 						type="button"
 						className="primary-action-btn"
 						style={{ background: '#f1f3ff', color: '#141b2b', boxShadow: 'none' }}
-						onClick={() => sweetTopSmallSuccessAlert('Calendar exported to iCal & Google Calendar.', 1000)}
+						onClick={handleExportCalendar}
 					>
 						<span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#545c72' }}>
 							file_download
@@ -170,37 +194,37 @@ const MyProfileBookings: React.FC = () => {
 			</div>
 
 			{/* Booking Cards Stack */}
-			{bookings.length > 0 ? (
+			{loading && !data ? (
+				<div className="profile-empty-state"><div className="loading-spinner" /><p>Loading your bookings...</p></div>
+			) : error ? (
+				<div className="profile-empty-state"><h3>Bookings are unavailable</h3><p>{error.message}</p></div>
+			) : bookings.length > 0 ? (
 				<div className="booking-cards-stack">
 					{bookings.map((booking: Booking) => {
 						const isHotel = booking.bookingCategory === BookingCategory.PROPERTY;
 						const title = isHotel
-							? booking.propertyData?.propertyName || 'Sanctuary Retreat'
-							: booking.tourData?.tourName || 'Alpine Expedition';
+							? booking.propertyData?.propertyName || 'Unavailable property'
+							: booking.tourData?.tourName || 'Unavailable tour';
 						const city = isHotel
-							? booking.propertyData?.propertyCity || 'Santorini, Greece'
-							: 'Alps Region';
+							? booking.propertyData?.propertyCity || booking.propertyData?.propertyAddress || 'Location not provided'
+							: booking.tourData?.tourDestinationCity || booking.tourData?.tourDepartureCity || 'Location not provided';
 						const imgUrl = isHotel
-							? getImageUrl(
-									booking.propertyData?.propertyImages?.[0],
-									'https://lh3.googleusercontent.com/aida-public/AB6AXuD8_BY-EVXIV7xo-yc9MYTb9NSoxhEi7EEv_XTCME9ZgfFw4tHp3r2MxvwZtjXUEnDFhGmRxFL45eq5LW-kSq3pfgKWZailt6pMXNLA7AILQwc6ni5OJlwUQwfaSoibHu1ciegz2OHO18tz_NErv3xXG3t7qtchAETDE-3q0qOCuiNxi1N43cAY-jINAZZJvIGhJEGSvz8a4onhCI47CfTAEJatfn0hxZHImOuDPkE7YYbavINRkHb6',
-							  )
-							: getImageUrl(
-									booking.tourData?.tourImages?.[0],
-									'https://lh3.googleusercontent.com/aida-public/AB6AXuBjBGLwDlfM8YtqhZoRxKxdvdcrqmuPZy3JcLHyzuR-q_-qcnZ_6iMAHGMlqK3XJovY7fxH5uMFEkaLtXh6jlhsQYsuOQ94lWyTfgkd66T7Hfxbpvv9gRQCpt6q0A3WAOQaJ0_94Lx9DwnKWQNipcpMnyWjueAwFuG2GcAqzkw7Ay3ES31QOlTu1RmwiEBVIaxMxSt6frcNKsRko_vqxFX8ZI-DYpJhBdJ7nmFvf_rCcohd9ZjKx5fG',
-							  );
+							? getImageUrl(booking.propertyData?.propertyImages?.[0], DEFAULT_PROPERTY_IMAGE)
+							: getImageUrl(booking.tourData?.tourImages?.[0], DEFAULT_TOUR_IMAGE);
 
-						const refCode = booking.bookingRefId || `#AUR-${booking._id.slice(-5).toUpperCase()}`;
+						const refCode = booking.bookingRefId;
+						const rating = isHotel ? booking.propertyData?.propertyRating : booking.tourData?.tourRating;
 						const isConfirmed =
 							booking.bookingStatus === BookingStatus.CONFIRMED ||
 							booking.bookingStatus === BookingStatus.PENDING;
 						const isCancelled = booking.bookingStatus === BookingStatus.CANCELLED;
+						const isCancellable = [BookingStatus.PENDING, BookingStatus.CONFIRMED].includes(booking.bookingStatus);
 
 						return (
 							<article key={booking._id} className="booking-card-item">
 								<div className="card-img-box">
 									<img src={imgUrl} alt={title} />
-									<span className="rating-badge">5.0 ★</span>
+									{typeof rating === 'number' && rating > 0 && <span className="rating-badge">{rating.toFixed(1)} ★</span>}
 								</div>
 
 								<div className="card-middle-info">
@@ -221,7 +245,7 @@ const MyProfileBookings: React.FC = () => {
 										<span>·</span>
 										<span>
 											<span className="material-symbols-outlined">person</span>
-											{booking.bookingGuests || 2} Guests
+											{booking.bookingGuests} Guests
 										</span>
 									</div>
 								</div>
@@ -238,7 +262,7 @@ const MyProfileBookings: React.FC = () => {
 
 									<div className="price-block">
 										<span className="amount">
-											₩{(booking.bookingTotalPrice || 1840000).toLocaleString()}
+											{formatPrice(booking.bookingTotalPrice, booking.bookingCurrency)}
 										</span>
 										<span className="note">total · taxes included</span>
 									</div>
@@ -251,11 +275,11 @@ const MyProfileBookings: React.FC = () => {
 										>
 											View Details
 										</button>
-										{!isCancelled && (
+									{isCancellable && (
 											<button
 												type="button"
 												className="cancel-btn"
-												onClick={() => handleCancel(booking._id)}
+											onClick={() => handleCancel(booking)}
 											>
 												Cancel
 											</button>
@@ -310,7 +334,7 @@ const MyProfileBookings: React.FC = () => {
 									Reservation Details
 								</span>
 								<h3 style={{ margin: '4px 0 0 0', fontSize: '20px', color: '#141b2b' }}>
-									{selectedBooking.bookingRefId || `#AUR-${selectedBooking._id.slice(-5).toUpperCase()}`}
+									{selectedBooking.bookingRefId}
 								</h3>
 							</div>
 							<button
@@ -325,16 +349,16 @@ const MyProfileBookings: React.FC = () => {
 						<div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '14px', color: '#3f4850' }}>
 							<div>
 								<strong>Destination / Property:</strong>{' '}
-								{selectedBooking.propertyData?.propertyName || selectedBooking.tourData?.tourName || 'Luxury Sanctuary'}
+								{selectedBooking.propertyData?.propertyName || selectedBooking.tourData?.tourName || 'Listing unavailable'}
 							</div>
 							<div>
 								<strong>Stay / Tour Dates:</strong> {formatDateRange(selectedBooking.checkIn, selectedBooking.checkOut)}
 							</div>
 							<div>
-								<strong>Registered Guests:</strong> {selectedBooking.bookingGuests || 2} persons
+								<strong>Registered Guests:</strong> {selectedBooking.bookingGuests} persons
 							</div>
 							<div>
-								<strong>Total Amount:</strong> ₩{(selectedBooking.bookingTotalPrice || 1840000).toLocaleString()} (KRW)
+								<strong>Total Amount:</strong> {formatPrice(selectedBooking.bookingTotalPrice, selectedBooking.bookingCurrency)}
 							</div>
 							<div>
 								<strong>Status:</strong>{' '}
@@ -355,10 +379,7 @@ const MyProfileBookings: React.FC = () => {
 									fontWeight: 600,
 									cursor: 'pointer',
 								}}
-								onClick={() => {
-									sweetTopSmallSuccessAlert('Concierge team notified. A curator will reach out shortly.', 1200);
-									setSelectedBooking(null);
-								}}
+								onClick={() => router.push('/chat')}
 							>
 								Contact Atelier Concierge
 							</button>

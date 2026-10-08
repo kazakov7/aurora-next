@@ -1,14 +1,18 @@
 import React from 'react';
+import { useRouter } from 'next/router';
 import { useQuery, useReactiveVar } from '@apollo/client';
-import { GET_VISITED } from '../../../apollo/user/query';
+import { GET_VISITED, GET_VISITED_TOURS } from '../../../apollo/user/query';
 import { userVar } from '../../../apollo/store';
-import { getImageUrl } from '../../config';
+import { DEFAULT_PROPERTY_IMAGE, DEFAULT_TOUR_IMAGE, getImageUrl } from '../../config';
+import { Property } from '../../types/property/property';
+import { Tour } from '../../types/tour/tour';
 
 const MyProfileHistory: React.FC = () => {
 	const user = useReactiveVar(userVar);
+	const router = useRouter();
 
 	/** APOLLO REQUESTS **/
-	const { data, loading } = useQuery(GET_VISITED, {
+	const { data, loading, error } = useQuery(GET_VISITED, {
 		fetchPolicy: 'network-only',
 		variables: {
 			input: {
@@ -19,9 +23,21 @@ const MyProfileHistory: React.FC = () => {
 		skip: !user?._id,
 		notifyOnNetworkStatusChange: true,
 	});
+	const { data: tourData, loading: toursLoading, error: toursError } = useQuery(GET_VISITED_TOURS, {
+		fetchPolicy: 'network-only',
+		variables: { input: { page: 1, limit: 10 } },
+		skip: !user?._id,
+		notifyOnNetworkStatusChange: true,
+	});
 
-	const visitedList = data?.getVisited?.list || [];
-	const total = data?.getVisited?.metaCounter?.[0]?.total || visitedList.length;
+	const visitedProperties: Property[] = data?.getVisited?.list || [];
+	const visitedTours: Tour[] = tourData?.getVisitedTours?.list || [];
+	const visitedList = [
+		...visitedProperties.map((property) => ({ ...property, isTour: false as const })),
+		...visitedTours.map((tour) => ({ ...tour, isTour: true as const })),
+	];
+	const total = (data?.getVisited?.metaCounter?.[0]?.total ?? visitedProperties.length) +
+		(tourData?.getVisitedTours?.metaCounter?.[0]?.total ?? visitedTours.length);
 
 	return (
 		<div>
@@ -32,22 +48,26 @@ const MyProfileHistory: React.FC = () => {
 				</div>
 			</div>
 
-			{visitedList.length > 0 ? (
+			{(loading || toursLoading) && !data && !tourData ? (
+				<div className="profile-empty-state"><div className="loading-spinner" /><p>Loading your travel history...</p></div>
+			) : error || toursError ? (
+				<div className="profile-empty-state"><h3>Travel history is unavailable</h3><p>{error?.message || toursError?.message}</p></div>
+			) : visitedList.length > 0 ? (
 				<div className="booking-cards-stack">
-					{visitedList.map((item: any) => {
-						const prop = item.visitedProperty || item;
-						const title = prop?.propertyTitle || prop?.propertyName || 'Alpine Sanctuary';
-						const loc = prop?.propertyAddress || prop?.propertyCity || 'Switzerland';
-						const img = getImageUrl(
-							prop?.propertyImages?.[0],
-							'https://lh3.googleusercontent.com/aida-public/AB6AXuD8_BY-EVXIV7xo-yc9MYTb9NSoxhEi7EEv_XTCME9ZgfFw4tHp3r2MxvwZtjXUEnDFhGmRxFL45eq5LW-kSq3pfgKWZailt6pMXNLA7AILQwc6ni5OJlwUQwfaSoibHu1ciegz2OHO18tz_NErv3xXG3t7qtchAETDE-3q0qOCuiNxi1N43cAY-jINAZZJvIGhJEGSvz8a4onhCI47CfTAEJatfn0hxZHImOuDPkE7YYbavINRkHb6',
-						);
+					{visitedList.map((item) => {
+						const title = item.isTour ? item.tourName : item.propertyName;
+						const loc = item.isTour
+							? item.tourDestinationCity || item.tourDepartureCity || 'Location not provided'
+							: item.propertyAddress || item.propertyCity || 'Location not provided';
+						const img = item.isTour
+							? getImageUrl(item.tourImages?.[0], DEFAULT_TOUR_IMAGE)
+							: getImageUrl(item.propertyImages?.[0], DEFAULT_PROPERTY_IMAGE);
 
 						return (
-							<article key={item._id} className="booking-card-item">
+							<article key={`${item.isTour ? 'tour' : 'property'}-${item._id}`} className="booking-card-item" onClick={() => router.push(item.isTour ? `/tour/detail?id=${item._id}` : `/property/detail?id=${item._id}`)}>
 								<div className="card-img-box">
 									<img src={img} alt={title} />
-									<span className="rating-badge">Completed</span>
+									<span className="rating-badge">{item.isTour ? 'TOUR' : 'HOTEL'}</span>
 								</div>
 								<div className="card-middle-info">
 									<h3 className="booking-title">{title}</h3>
@@ -55,9 +75,7 @@ const MyProfileHistory: React.FC = () => {
 										<span className="material-symbols-outlined">location_on</span>
 										<span>{loc}</span>
 									</p>
-									<p style={{ margin: 0, fontSize: '13px', color: '#707881' }}>
-										Visited on {new Date(item.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-									</p>
+									<p style={{ margin: 0, fontSize: '13px', color: '#707881' }}>Recently viewed</p>
 								</div>
 							</article>
 						);

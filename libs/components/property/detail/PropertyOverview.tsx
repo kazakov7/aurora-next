@@ -1,270 +1,165 @@
 import React, { useState } from 'react';
+import Link from 'next/link';
+import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
+import { GET_DESTINATION, GET_PROPERTY_HOST } from '../../../../apollo/user/query';
+import { SUBSCRIBE, UNSUBSCRIBE } from '../../../../apollo/user/mutation';
+import { userVar } from '../../../../apollo/store';
+import { getJwtToken } from '../../../auth';
+import { DEFAULT_USER_AVATAR, getImageUrl } from '../../../config';
+import { Destination } from '../../../types/destination/destination';
+import { Message } from '../../../enums/common.enum';
+import { MemberType } from '../../../enums/member.enum';
 import { Property } from '../../../types/property/property';
-import { getImageUrl } from '../../../config';
+import { sweetErrorAlert } from '../../../sweetAlert';
+import FollowButton from '../../common/FollowButton';
 
 interface PropertyOverviewProps {
 	property: Property;
 }
 
 const amenityIconMap: Record<string, string> = {
-	wifi: 'wifi',
-	pool: 'pool',
-	sauna: 'sauna',
-	kitchen: 'countertops',
-	'air conditioning': 'ac_unit',
-	heating: 'thermostat',
-	elevator: 'elevator',
-	'ocean view': 'water',
-	'mountain view': 'landscape',
-	spa: 'hot_tub',
-	fireplace: 'fireplace',
-	gym: 'fitness_center',
-	parking: 'local_parking',
-	concierge: 'room_service',
-	breakfast: 'bakery_dining',
+	wifi: 'wifi', pool: 'pool', sauna: 'sauna', kitchen: 'countertops',
+	'air conditioning': 'ac_unit', heating: 'thermostat', elevator: 'elevator',
+	'ocean view': 'water', 'mountain view': 'landscape', spa: 'hot_tub',
+	fireplace: 'fireplace', gym: 'fitness_center', parking: 'local_parking',
+	concierge: 'room_service', breakfast: 'bakery_dining',
 };
 
 const PropertyOverview = ({ property }: PropertyOverviewProps) => {
 	const [descExpanded, setDescExpanded] = useState(false);
+	const user = useReactiveVar(userVar);
+	const amenities = property.amenities || [];
+	const [subscribe, { loading: subscribing }] = useMutation(SUBSCRIBE);
+	const [unsubscribe, { loading: unsubscribing }] = useMutation(UNSUBSCRIBE);
+	const { data: destinationData } = useQuery<{ getDestination?: Destination }>(GET_DESTINATION, {
+		fetchPolicy: 'cache-and-network',
+		variables: { destinationId: property.destinationId },
+		skip: !property.destinationId,
+	});
+	const { data: hostData, refetch: refetchHost } = useQuery(GET_PROPERTY_HOST, {
+		fetchPolicy: 'network-only',
+		variables: { input: property.memberId },
+		skip: !property.memberId,
+	});
+	const destination = destinationData?.getDestination;
+	const host = hostData?.getMember || property.memberData;
+	const hostName = host?.memberFullName || host?.memberNick || 'Host';
+	const hostImage = getImageUrl(host?.memberImage, DEFAULT_USER_AVATAR);
+	const isOwnHostProfile = user?._id === host?._id;
+	const isFollowing = Boolean(host?.meFollowed?.[0]?.myFollowing);
+	const isFollowUpdating = subscribing || unsubscribing;
+	const hasCoordinates = typeof destination?.latitude === 'number' && typeof destination?.longitude === 'number';
+	const latitude = destination?.latitude ?? 0;
+	const longitude = destination?.longitude ?? 0;
+	const mapBounds = `${longitude - 0.012},${latitude - 0.008},${longitude + 0.012},${latitude + 0.008}`;
+	const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(mapBounds)}&layer=mapnik&marker=${latitude}%2C${longitude}`;
+	const mapLink = `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=15/${latitude}/${longitude}`;
 
-	const hostName = property?.memberData?.memberNick || property?.memberData?.memberFullName || 'Julian Laurent';
-	const hostImg = getImageUrl(
-		property?.memberData?.memberImage,
-		'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80'
-	);
+	/** HANDLERS **/
+	const handleFollow = async () => {
+		if (!host?._id || isOwnHostProfile) return;
+		const accessToken = getJwtToken();
+		if (!user?._id || !accessToken) {
+			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
+			return;
+		}
 
-	const fullDesc =
-		property?.propertyDesc ||
-		'Perched on the pristine glacial precipice of the Matterhorn valley, this bespoke architectural sanctuary combines brutalist alpine concrete with century-old larch timber. Soaring double-height floor-to-ceiling glass pavilions frame unobstructed views of alpine summits, while heated geothermal terrazzo floors and ambient artisan lighting provide an unmatched cocoon of luxury after exhilarating days on the slopes.';
-
-	const amenitiesList =
-		property?.amenities && property.amenities.length > 0
-			? property.amenities
-			: [
-					'1Gbps Starlink Wi-Fi',
-					'Heated Geothermal Pool',
-					'Finnish Panoramic Sauna',
-					'Ski Locker & Boot Dryer',
-					'Artisan Organic Breakfast',
-					'Matterhorn Mountain View',
-					'Suspended Hearth Fireplace',
-					'Private Valet Electro-Shuttle',
-					'Grand Cru Wine Cellar',
-			  ];
+		try {
+			const mutationOptions = {
+				variables: { input: host._id },
+				context: { headers: { Authorization: `Bearer ${accessToken}`, 'apollo-require-preflight': 'true' } },
+			};
+			if (isFollowing) await unsubscribe(mutationOptions);
+			else await subscribe(mutationOptions);
+			await refetchHost();
+		} catch (error: unknown) {
+			await sweetErrorAlert(error instanceof Error ? error.message : 'Unable to update follow status.');
+		}
+	};
 
 	return (
 		<div className="left-column-content">
-			{/* Chalet Overview Specs */}
 			<div className="detail-card overview-specs-card">
 				<div className="specs-card-header">
 					<div>
-						<h2 className="specs-heading">
-							{property?.propertyType ? `Private Modernist ${property.propertyType}` : 'Private Modernist Chalet'}
-						</h2>
-						<p className="specs-subtext">Curated by Swiss Heritage Atelier · Built 2023</p>
-					</div>
-					<div className="superhost-pill">
-						<span className="material-symbols-outlined">verified</span>
-						<span>Sanctuary Superhost</span>
+						<h2 className="specs-heading">{property.propertyType}</h2>
+						<p className="specs-subtext">Hotel details</p>
 					</div>
 				</div>
-
-				{/* Quick Spec Chips */}
 				<div className="quick-specs-grid">
-					<div className="spec-chip">
-						<span className="material-symbols-outlined spec-icon">groups</span>
-						<div className="spec-details">
-							<span className="spec-label">Capacity</span>
-							<span className="spec-value">{property?.maxGuests || 8} Guests</span>
-						</div>
-					</div>
-					<div className="spec-chip">
-						<span className="material-symbols-outlined spec-icon">king_bed</span>
-						<div className="spec-details">
-							<span className="spec-label">Bedrooms</span>
-							<span className="spec-value">{property?.bedrooms || 4} Bedrooms</span>
-						</div>
-					</div>
-					<div className="spec-chip">
-						<span className="material-symbols-outlined spec-icon">bathtub</span>
-						<div className="spec-details">
-							<span className="spec-label">Bathrooms</span>
-							<span className="spec-value">{property?.bathrooms || 3} Baths</span>
-						</div>
-					</div>
-					<div className="spec-chip">
-						<span className="material-symbols-outlined spec-icon">square_foot</span>
-						<div className="spec-details">
-							<span className="spec-label">Living Area</span>
-							<span className="spec-value">420 m²</span>
-						</div>
-					</div>
+					<div className="spec-chip"><span className="material-symbols-outlined spec-icon">groups</span><div className="spec-details"><span className="spec-label">Capacity</span><span className="spec-value">{property.maxGuests} Guests</span></div></div>
+					<div className="spec-chip"><span className="material-symbols-outlined spec-icon">king_bed</span><div className="spec-details"><span className="spec-label">Bedrooms</span><span className="spec-value">{property.bedrooms} Bedrooms</span></div></div>
+					<div className="spec-chip"><span className="material-symbols-outlined spec-icon">bed</span><div className="spec-details"><span className="spec-label">Beds</span><span className="spec-value">{property.beds} Beds</span></div></div>
+					<div className="spec-chip"><span className="material-symbols-outlined spec-icon">bathtub</span><div className="spec-details"><span className="spec-label">Bathrooms</span><span className="spec-value">{property.bathrooms} Baths</span></div></div>
+					<div className="spec-chip"><span className="material-symbols-outlined spec-icon">favorite</span><div className="spec-details"><span className="spec-label">Saved by</span><span className="spec-value">{property.propertyLikes.toLocaleString()} traveler{property.propertyLikes === 1 ? '' : 's'}</span></div></div>
+					<div className="spec-chip"><span className="material-symbols-outlined spec-icon">visibility</span><div className="spec-details"><span className="spec-label">Views</span><span className="spec-value">{property.propertyViews.toLocaleString()}</span></div></div>
+					<div className="spec-chip"><span className="material-symbols-outlined spec-icon">confirmation_number</span><div className="spec-details"><span className="spec-label">Bookings</span><span className="spec-value">{property.propertyBookings.toLocaleString()}</span></div></div>
 				</div>
 			</div>
 
-			{/* Description Narrative */}
 			<div className="detail-card description-card">
-				<h3 className="section-title">The Sanctuary Experience</h3>
-				<div className={`description-body ${descExpanded ? 'expanded' : ''}`}>
-					<p>{fullDesc}</p>
-					{descExpanded && (
-						<p className="extra-paragraph">
-							Constructed with ultra-low carbon footprint technology, triple-glazed solar thermal glass,
-							and natural spruce cladding from sustainably managed cantonal forests. Every suite includes
-							individual climate zoning, acoustic dampening walls, and custom artisanal furniture commissioned
-							exclusively for this sanctuary retreat.
-						</p>
-					)}
-				</div>
-				<button
-					className="read-more-toggle"
-					type="button"
-					onClick={() => setDescExpanded(!descExpanded)}
-				>
-					<span>{descExpanded ? 'Show less' : 'Read more about the architecture'}</span>
-					<span className="material-symbols-outlined">
-						{descExpanded ? 'expand_less' : 'expand_more'}
-					</span>
-				</button>
+				<h3 className="section-title">About this hotel</h3>
+				{property.propertyDesc ? (
+					<>
+						<div className={`description-body ${descExpanded ? 'expanded' : ''}`}><p>{property.propertyDesc}</p></div>
+						{property.propertyDesc.length > 280 ? <button className="read-more-toggle" type="button" onClick={() => setDescExpanded((current) => !current)}><span>{descExpanded ? 'Show less' : 'Read more'}</span><span className="material-symbols-outlined">{descExpanded ? 'expand_less' : 'expand_more'}</span></button> : null}
+					</>
+				) : <p className="detail-empty-copy">The host has not added a description yet.</p>}
 			</div>
 
-			{/* Sanctuary Highlights */}
-			<div className="detail-card highlights-card">
-				<h3 className="section-title">Sanctuary Highlights</h3>
-				<div className="highlights-grid">
-					<div className="highlight-item">
-						<div className="highlight-icon-box">
-							<span className="material-symbols-outlined">downhill_skiing</span>
-						</div>
-						<div className="highlight-content">
-							<h4 className="highlight-title">Ski-In / Ski-Out Access</h4>
-							<p className="highlight-desc">
-								Immediate link to premier ski trails via private heated terrace track.
-							</p>
-						</div>
-					</div>
-					<div className="highlight-item">
-						<div className="highlight-icon-box">
-							<span className="material-symbols-outlined">hot_tub</span>
-						</div>
-						<div className="highlight-content">
-							<h4 className="highlight-title">Private Geothermal Spa</h4>
-							<p className="highlight-desc">
-								Bio-sauna, cedar cold-plunge barrel, and 38°C outdoor hydrotherapy infinity spa.
-							</p>
-						</div>
-					</div>
-					<div className="highlight-item">
-						<div className="highlight-icon-box">
-							<span className="material-symbols-outlined">room_service</span>
-						</div>
-						<div className="highlight-content">
-							<h4 className="highlight-title">Dedicated Concierge</h4>
-							<p className="highlight-desc">
-								Daily artisan breakfast, lift pass provisioning, and bespoke mountain guide bookings.
-							</p>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			{/* Curated Amenities Grid */}
 			<div className="detail-card amenities-card">
-				<div className="amenities-header">
-					<h3 className="section-title">Curated Amenities</h3>
-					<span className="amenities-count">{amenitiesList.length} Included Features</span>
-				</div>
-				<div className="amenities-grid">
-					{amenitiesList.map((item, idx) => {
-						const normalized = item.toLowerCase();
-						const iconKey = Object.keys(amenityIconMap).find((k) => normalized.includes(k));
-						const iconName = iconKey ? amenityIconMap[iconKey] : 'check_circle';
-
-						return (
-							<div key={idx} className="amenity-item">
-								<span className="material-symbols-outlined amenity-icon">{iconName}</span>
-								<span className="amenity-name">{item}</span>
-							</div>
-						);
+				<div className="amenities-header"><h3 className="section-title">Amenities</h3><span className="amenities-count">{amenities.length} included</span></div>
+				{amenities.length ? <div className="amenities-grid">
+					{amenities.map((amenity) => {
+						const key = Object.keys(amenityIconMap).find((item) => amenity.toLowerCase().includes(item));
+						return <div key={amenity} className="amenity-item"><span className="material-symbols-outlined amenity-icon">{key ? amenityIconMap[key] : 'check_circle'}</span><span className="amenity-name">{amenity}</span></div>;
 					})}
-				</div>
+				</div> : <p className="detail-empty-copy">Amenities have not been listed yet.</p>}
 			</div>
 
-			{/* Location & Setting */}
 			<div className="detail-card location-card">
 				<div className="location-header">
 					<div>
-						<h3 className="section-title">Location & Setting</h3>
-						<p className="location-address">
-							{property?.propertyAddress || 'Schluhmattstrasse 119, 3920 Zermatt, Switzerland'}
-						</p>
-					</div>
-					<span className="location-distance">
-						<span className="material-symbols-outlined">navigation</span>
-						350m to Mountain Gondola
-					</span>
-				</div>
-
-				<div
-					className="map-preview-banner"
-					style={{
-						backgroundImage:
-							"url('https://lh3.googleusercontent.com/aida-public/AB6AXuBdgBJhVqHOY5l_KWREqb0QPu2P62YoFrUoNLKLnwAXHwgtOFdW37XYJHnJjh60z-sAwUN5yFBs_bz3xmdyFSQ2HlsvXf9GXBNo8i3O0Ibl5MghWV5_iIAQTPD-KvmzMLW-HJi_WwFNeXU16JFR2cBtuLHvURoM6MdvkSGkMlHi0yGTMuCoQxsvIBeww2g0Qs_10aWDLdcGI97Ro4rSpmYWePMwFtDz4sp5qhvwNWPm8p0wUuMfR6Jl')",
-					}}
-				>
-					<div className="map-overlay-tint"></div>
-					<div className="floating-pin-badge">
-						<span className="ping-dot"></span>
-						<span className="pin-dot"></span>
-						<span className="pin-title">{property?.propertyName || 'Alpine Sanctuary'}</span>
-						<span className="pin-elev">(1,840m)</span>
-					</div>
-					<div className="map-bottom-tag">
-						Vehicle-free zone • 8 mins to Central Station via Electro-Cart
+						<h3 className="section-title">Location</h3>
+						<p className="location-address">{[property.propertyAddress, property.propertyCity].filter(Boolean).join(', ') || 'Location details are not available yet.'}</p>
 					</div>
 				</div>
+				{hasCoordinates ? (
+					<div className="map-preview-banner">
+						<iframe className="location-map-frame" src={mapUrl} title={`${property.propertyName} location map`} loading="lazy" />
+						<a className="map-open-link" href={mapLink} target="_blank" rel="noreferrer">
+							<span className="material-symbols-outlined">open_in_new</span>
+							Open map
+						</a>
+					</div>
+				) : <p className="detail-empty-copy">Map coordinates are not available for this destination yet.</p>}
 			</div>
 
-			{/* Host Profile Card */}
 			<div className="detail-card host-profile-card">
 				<div className="host-card-inner">
 					<div className="host-main-info">
-						<div className="host-avatar-wrapper">
-							<img
-								src={hostImg}
-								alt={hostName}
-								className="host-avatar"
-							/>
-							<span className="host-badge-check">
-								<span className="material-symbols-outlined">check</span>
-							</span>
-						</div>
+						<div className="host-avatar-wrapper"><img src={hostImage} alt={hostName} className="host-avatar" /></div>
 						<div className="host-text-details">
-							<h3 className="host-name">{hostName}</h3>
-							<p className="host-title">Sanctuary Host · 7 years hosting</p>
+							<div className="host-name-row"><h3 className="host-name">{hostName}</h3>{host?.memberType === MemberType.AGENT ? <span className="host-agent-badge"><span className="material-symbols-outlined">verified</span>Agent</span> : null}</div>
+							<p className="host-title">{host?.memberType === MemberType.AGENT ? 'Verified accommodation agent' : 'Property host'}</p>
+							{host?.memberDesc ? <p className="host-description">{host.memberDesc}</p> : null}
 							<div className="host-metrics-row">
-								<div className="metric-chip">
-									<span
-										className="material-symbols-outlined star-icon"
-										style={{ fontVariationSettings: "'FILL' 1" }}
-									>
-										star
-									</span>
-									<span>4.99 Rating</span>
-								</div>
+								<span className="metric-text"><strong>{host?.memberFollowers ?? 0}</strong> Followers</span>
 								<span className="metric-sep">•</span>
-								<span className="metric-text">100% Response Rate (within 1 hour)</span>
+								<span className="metric-text"><strong>{host?.memberProperties ?? 0}</strong> Hotels</span>
 							</div>
 						</div>
 					</div>
-
 					<div className="host-action-buttons">
-						<button className="host-btn secondary-btn" type="button">
-							View Profile
-						</button>
-						<button className="host-btn primary-btn" type="button">
-							Message Host
-						</button>
+						{host?._id ? <Link className="host-btn secondary-btn" href={`/member?memberId=${host._id}`}>View profile</Link> : null}
+						<button className="host-btn chat-btn" type="button" disabled title="1:1 chat will be available soon"><span className="material-symbols-outlined">chat</span>1:1 chat soon</button>
+						{!isOwnHostProfile && host?._id ? (
+							<FollowButton 
+								isFollowing={isFollowing} 
+								isLoading={isFollowUpdating} 
+								onClick={handleFollow} 
+							/>
+						) : null}
 					</div>
 				</div>
 			</div>

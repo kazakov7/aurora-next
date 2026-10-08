@@ -274,7 +274,7 @@ const Hero = () => {
             <div
               className={`filter-location ${openLocation ? "on" : ""}`}
               ref={locationRef}
-              style={{ left: "100%" }}
+              style={{ left: "27%" }}
             >
               <div
                 onClick={() => {

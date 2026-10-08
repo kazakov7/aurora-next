@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useReactiveVar } from '@apollo/client';
 import { START_TOUR_PAYMENT } from '../../../../apollo/user/mutation';
@@ -18,6 +19,7 @@ interface StartTourPaymentResponse {
 }
 
 const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps) => {
+	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const seatsLeft = Math.max(0, tour.tourCapacity - (tour.tourReservedSeats ?? 0));
 	const [travelers, setTravelers] = useState(Math.min(2, Math.max(1, seatsLeft)));
@@ -44,30 +46,7 @@ const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps
 			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
 			return;
 		}
-		if (!isStripePaymentConfigured) {
-			await sweetErrorAlert('Secure payment is not configured. Please contact support.');
-			return;
-		}
-		if (!tour._id || tour.tourCurrency !== 'KRW' || seatsLeft < 1 || travelers < 1 || travelers > seatsLeft) {
-			await sweetErrorAlert('This tour no longer has enough available seats.');
-			return;
-		}
-		if (!window.crypto?.randomUUID) {
-			await sweetErrorAlert('Secure checkout is unavailable in this browser. Please update your browser and try again.');
-			return;
-		}
-
-		const idempotencyKey = checkoutKey || window.crypto.randomUUID();
-		setCheckoutKey(idempotencyKey);
-		try {
-			const { data } = await startTourPayment({ variables: { input: { tourId: tour._id, bookingGuests: travelers, idempotencyKey } } });
-			const nextClientSecret = data?.startTourPayment?.clientSecret;
-			if (!nextClientSecret) throw new Error('Unable to initialize secure payment.');
-			setClientSecret(nextClientSecret);
-		} catch (error: unknown) {
-			await sweetErrorAlert(error instanceof Error ? error.message : 'Unable to start your tour reservation.');
-		}
-	};
+		router.push('/checkout');	};
 	const handlePaymentConfirmed = async () => {
 		await refetchTour();
 		setCheckoutKey('');
@@ -96,7 +75,7 @@ const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps
 					<div className="itemized-breakdown"><div className="breakdown-row"><span className="breakdown-label">₩{tour.tourPrice.toLocaleString()} × {travelers} traveler{travelers === 1 ? '' : 's'}</span><span className="breakdown-value">₩{totalPrice.toLocaleString()}</span></div><div className="total-price-box"><span className="total-title">Total</span><span className="total-amount">₩{totalPrice.toLocaleString()}</span></div></div>
 				</div>
 			</aside>
-			{clientSecret ? <PropertyPaymentModal clientSecret={clientSecret} paymentAmount={totalPrice} onClose={closeCheckout} onPaymentConfirmed={handlePaymentConfirmed} /> : null}
+			
 		</>
 	);
 };

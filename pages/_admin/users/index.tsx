@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import moment from "moment";
 import { NextPage } from 'next';
 import withAdminLayout from '../../../libs/components/layout/LayoutAdmin';
 import UserDrawer from '../../../libs/components/admin/UserDrawer';
@@ -128,7 +129,7 @@ const AdminMembersPage: NextPage = () => {
 			m.memberPhone || '',
 			m.memberType,
 			m.memberStatus,
-			new Date(m.createdAt).toLocaleDateString(),
+			m.createdAt ? moment(m.createdAt).format('YYYY-MM-DD') : '-',
 		]);
 
 		const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
@@ -287,7 +288,7 @@ const AdminMembersPage: NextPage = () => {
 												</span>
 											</td>
 											<td>
-												<span className="date-text">{new Date(member.createdAt).toLocaleDateString()}</span>
+												<span className="date-text">{member.createdAt ? moment(member.createdAt).format('MMM DD, YYYY') : '-'}</span>
 											</td>
 											<td className="px-6 text-right" style={{ position: 'relative' }}>
 												<div className="actions-group">

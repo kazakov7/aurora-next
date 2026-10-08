@@ -1618,3 +1618,64 @@
     grid-template-columns: 1fr 1fr;
     gap: 16px;
   }
+
+  .admin-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 460px;
+    max-width: 100vw;
+    background-color: #ffffff;
+    z-index: 1000;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+    display: flex;
+    flex-direction: column;
+    animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+    .drawer-header {
+      height: 64px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(191, 199, 210, 0.2);
+
+      .header-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 18px;
+        font-weight: 600;
+        color: #141b2b;
+
+        .material-symbols-outlined {
+          color: #006399;
+          font-size: 22px;
+        }
+      }
+
+      .close-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        background: transparent;
+        color: #545c72;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+          background-color: #f1f3ff;
+          color: #141b2b;
+        }
+
+        .material-symbols-outlined {
+          font-size: 20px;
+        }
+      }
+    }
+  }

@@ -8,28 +8,10 @@
 		justify-content: center;
 		background-color: #ffffff;
 
-		/* SIGN IN CARD */
-		.signin-card {
+		/* SHARED AUTH CARD */
+		.auth-split-card {
 			width: 100%;
-			max-width: 1140px;
-			background: #ffffff;
-			border-radius: 24px;
-			box-shadow: 0 4px 30px -4px rgba(20, 27, 43, 0.08), 0 2px 12px -2px rgba(20, 27, 43, 0.04);
-			border: 1px solid rgba(220, 226, 247, 0.6);
-			overflow: hidden;
-			display: grid;
-			grid-template-columns: 1.15fr 0.85fr;
-			min-height: 640px;
-
-			@media (max-width: 1024px) {
-				grid-template-columns: 1fr;
-			}
-		}
-
-		/* SIGN UP CARD */
-		.signup-card {
-			width: 100%;
-			max-width: 1240px;
+			max-width: 1200px;
 			background: #ffffff;
 			border-radius: 28px;
 			box-shadow: 0 10px 40px -6px rgba(20, 27, 43, 0.09), 0 4px 16px -2px rgba(20, 27, 43, 0.05);
@@ -37,13 +19,14 @@
 			overflow: hidden;
 			display: grid;
 			grid-template-columns: 1fr 1fr;
-			min-height: 720px;
+			height: 740px;
 
 			@media (max-width: 1024px) {
+				height: auto;
+				min-height: auto;
 				grid-template-columns: 1fr;
 			}
 		}
-
 		/* LEFT FORM PANEL */
 		.form-panel {
 			padding: 44px 52px;
@@ -215,7 +198,7 @@
 
 						input {
 							width: 100%;
-							height: 44px;
+							height: 40px;
 							padding: 0 16px;
 							background: #ffffff;
 							border: 1px solid #bfc7d2;
@@ -248,7 +231,7 @@
 				}
 
 				.two-cols {
-					display: grid;
+					display: flex;
 					grid-template-columns: 1fr 1fr;
 					gap: 14px;
 
@@ -397,20 +380,21 @@
 
 			/* SOCIAL BUTTONS */
 			.social-grid {
-				display: grid;
-				grid-template-columns: repeat(3, 1fr);
+				display: flex;
+				width: 100%;
 				gap: 10px;
 
 				.social-btn {
-					height: 44px;
+					flex: 1;
+					height: 40px;
 					background: #f1f3ff;
 					border: 1px solid transparent;
 					border-radius: 10px;
 					display: flex;
 					align-items: center;
 					justify-content: center;
-					gap: 8px;
-					font-size: 13px;
+					gap: 6px;
+					font-size: 12px;
 					font-weight: 500;
 					color: #141b2b;
 					cursor: pointer;
@@ -474,6 +458,8 @@
 			background: #293040;
 
 			@media (max-width: 1024px) {
+				height: auto;
+				min-height: auto;
 				min-height: 380px;
 				margin: 12px 24px 24px;
 			}

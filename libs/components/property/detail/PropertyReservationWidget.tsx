@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { useMutation, useReactiveVar } from '@apollo/client';
 import { START_PROPERTY_PAYMENT } from '../../../../apollo/user/mutation';
@@ -47,6 +48,7 @@ const getNights = (checkIn: string, checkOut: string): number => {
 };
 
 const PropertyReservationWidget = ({ property, refetchProperty }: PropertyReservationWidgetProps) => {
+	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const minimumCheckIn = getDateAfterDays(1);
 	const [checkIn, setCheckIn] = useState<string>(minimumCheckIn);
@@ -98,42 +100,7 @@ const PropertyReservationWidget = ({ property, refetchProperty }: PropertyReserv
 			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
 			return;
 		}
-		if (!isStripePaymentConfigured) {
-			await sweetErrorAlert('Secure payment is not configured. Please contact support.');
-			return;
-		}
-		if (!property._id || !isBookable || property.currency !== 'KRW' || nights < 1 || guestCount < 1 || guestCount > maxGuestsAllowed) {
-			await sweetErrorAlert('Please choose valid booking dates and guest count.');
-			return;
-		}
-		if (!window.crypto?.randomUUID) {
-			await sweetErrorAlert('Secure checkout is unavailable in this browser. Please update your browser and try again.');
-			return;
-		}
-
-		const idempotencyKey = checkoutKey || window.crypto.randomUUID();
-		setCheckoutKey(idempotencyKey);
-
-		try {
-			const { data } = await startPropertyPayment({
-				variables: {
-					input: {
-						propertyId: property._id,
-						checkIn: new Date(`${checkIn}T00:00:00`).toISOString(),
-						checkOut: new Date(`${checkOut}T00:00:00`).toISOString(),
-						bookingGuests: guestCount,
-						idempotencyKey,
-					},
-				},
-			});
-			const nextClientSecret = data?.startPropertyPayment?.clientSecret;
-			if (!nextClientSecret) throw new Error('Unable to initialize secure payment.');
-			setClientSecret(nextClientSecret);
-		} catch (error: unknown) {
-			const message = error instanceof Error ? error.message : 'Unable to start your reservation.';
-			await sweetErrorAlert(message);
-		}
-	};
+		router.push('/checkout');	};
 
 	const handlePaymentConfirmed = async () => {
 		await refetchProperty();
@@ -199,7 +166,7 @@ const PropertyReservationWidget = ({ property, refetchProperty }: PropertyReserv
 					</div>
 				</div>
 			</aside>
-			{clientSecret ? <PropertyPaymentModal clientSecret={clientSecret} paymentAmount={total} onClose={clearCheckout} onPaymentConfirmed={handlePaymentConfirmed} /> : null}
+			
 		</>
 	);
 };

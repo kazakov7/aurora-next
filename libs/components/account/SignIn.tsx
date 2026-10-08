@@ -70,7 +70,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 	};
 
 	return (
-		<div className="signin-card">
+		<div className="auth-split-card">
 			{/* Left Column: Authentication Form */}
 			<div className="form-panel">
 				{/* Top Bar / Breadcrumb Micro-Nav */}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import { GET_COMMENTS } from "../../../../apollo/user/query";
 import { CREATE_COMMENT } from "../../../../apollo/user/mutation";
@@ -27,7 +27,7 @@ interface CommentsQueryData {
 const defaultAvatar = DEFAULT_USER_AVATAR;
 
 const formatTimeAgo = (dateStr?: Date | string): string => {
-  if (!dateStr) return "Recently";
+  if (!dateStr) return "";
   try {
     const diffMs = Date.now() - new Date(dateStr).getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
@@ -40,7 +40,7 @@ const formatTimeAgo = (dateStr?: Date | string): string => {
       return `${diffWeeks} week${diffWeeks > 1 ? "s" : ""} ago`;
     return `${Math.floor(diffDays / 30)} mo ago`;
   } catch {
-    return "Recently";
+    return "";
   }
 };
 
@@ -56,9 +56,6 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
   const [commentsList, setCommentsList] = useState<Comment[]>([]);
   const [totalComments, setTotalComments] = useState<number>(0);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [likedComments, setLikedComments] = useState<Record<string, boolean>>(
-    {},
-  );
 
   const syncCommentsState = (result?: CommentsQueryData) => {
     const nextComments = result?.getComments?.list ?? [];
@@ -74,6 +71,7 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
   const [createComment] = useMutation(CREATE_COMMENT);
 
   const {
+    data,
     loading,
     refetch: refetchComments,
   } = useQuery<CommentsQueryData>(GET_COMMENTS, {
@@ -91,8 +89,11 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
       },
     },
     skip: !articleId,
-    onCompleted: syncCommentsState,
   });
+
+  useEffect(() => {
+    syncCommentsState(data);
+  }, [data]);
 
   const handlePostComment = async () => {
     if (!user?._id) {
@@ -138,13 +139,6 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
     }
   };
 
-  const toggleLikeComment = (commentId: string) => {
-    setLikedComments((prev) => ({
-      ...prev,
-      [commentId]: !prev[commentId],
-    }));
-  };
-
   return (
     <section
       id="comments-section"
@@ -186,16 +180,14 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
             const authorName =
               c.memberData?.memberFullName ||
               c.memberData?.memberNick ||
-              "Traveler";
-            const authorHandle = `@${(
-              c.memberData?.memberNick || "traveler"
-            ).toLowerCase()}`;
+              "Member";
+            const authorHandle = c.memberData?.memberNick
+              ? `@${c.memberData.memberNick.toLowerCase()}`
+              : "";
             const authorImg = getImageUrl(
               c.memberData?.memberImage,
               defaultAvatar,
             );
-            const isLiked = !!likedComments[c._id];
-
             return (
               <article key={c._id} className="comment-item-card">
                 <div className="comment-top-row">
@@ -208,24 +200,14 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
                     <div className="user-names">
                       <div className="name-and-handle">
                         <span className="name">{authorName}</span>
-                        <span className="handle">{authorHandle}</span>
+                        {authorHandle && <span className="handle">{authorHandle}</span>}
                       </div>
-                      <span className="time-ago">
-                        {formatTimeAgo(c.createdAt)}
-                      </span>
+                      {formatTimeAgo(c.createdAt) && (
+                        <span className="time-ago">{formatTimeAgo(c.createdAt)}</span>
+                      )}
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    className={`comment-like-btn ${isLiked ? "liked" : ""}`}
-                    onClick={() => toggleLikeComment(c._id)}
-                  >
-                    <span className="material-symbols-outlined icon">
-                      thumb_up
-                    </span>
-                    <span className="count">{isLiked ? 1 : 0}</span>
-                  </button>
                 </div>
 
                 <p className="comment-content-text">{c.commentContent}</p>
@@ -303,7 +285,7 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
             className="comment-textarea"
             rows={4}
             maxLength={500}
-            placeholder="Share your thoughts, experiences, or ask a question about South Korea..."
+            placeholder="Share your thoughts, experience, or a question about this article..."
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
           />

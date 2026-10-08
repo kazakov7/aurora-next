@@ -1,3 +1,4 @@
+import { Pagination, Stack, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
@@ -17,7 +18,7 @@ import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/swee
 
 const defaultInput: ToursInquiry = {
 	page: 1,
-	limit: 12,
+	limit: 6,
 	sort: 'tourViews',
 	direction: Direction.DESC,
 	search: {},
@@ -95,7 +96,7 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 	}, [router.query.input]);
 
 	/** HANDLERS **/
-	const handlePaginationChange = async (newPage: number) => {
+	const handlePaginationChange = async (event: React.ChangeEvent<unknown>, newPage: number) => {
 		const updated = { ...searchFilter, page: newPage };
 		setSearchFilter(updated);
 		setCurrentPage(newPage);
@@ -182,7 +183,7 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 		);
 	};
 
-	const totalPages = Math.max(1, Math.ceil(total / (searchFilter.limit || 12)));
+	const totalPages = Math.max(1, Math.ceil(total / (searchFilter.limit || 6)));
 
 	return (
 		<div className="tour-page-wrapper">
@@ -258,49 +259,28 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 						)}
 
 						{/* Pagination Controls */}
-						{totalPages > 1 && (
-							<div className="pagination-wrapper">
-								<div className="pagination-buttons">
-									<button
-										aria-label="Previous page"
-										className="page-nav-btn"
-										type="button"
-										disabled={currentPage <= 1}
-										onClick={() => handlePaginationChange(currentPage - 1)}
-									>
-										<span className="material-symbols-outlined">chevron_left</span>
-									</button>
+						{totalPages > 0 && (
+							<Stack className="pagination-config" sx={{ mt: '50px', alignItems: 'center' }}>
+								{tours.length !== 0 && (
+									<Stack className="pagination-box">
+										<Pagination
+											page={currentPage}
+											count={totalPages}
+											onChange={handlePaginationChange}
+											shape="circular"
+											color="primary"
+										/>
+									</Stack>
+								)}
 
-									{Array.from({ length: totalPages }).map((_, i) => {
-										const p = i + 1;
-										return (
-											<button
-												key={p}
-												type="button"
-												className={`page-num-btn ${currentPage === p ? 'active' : ''}`}
-												onClick={() => handlePaginationChange(p)}
-											>
-												{p}
-											</button>
-										);
-									})}
-
-									<button
-										aria-label="Next page"
-										className="page-nav-btn"
-										type="button"
-										disabled={currentPage >= totalPages}
-										onClick={() => handlePaginationChange(currentPage + 1)}
-									>
-										<span className="material-symbols-outlined">chevron_right</span>
-									</button>
-								</div>
-
-								<p className="pagination-summary">
-									Showing <span className="highlight-text">{tours.length}</span> of{' '}
-									<span className="highlight-text">{total}</span> journeys available worldwide
-								</p>
-							</div>
+								{tours.length !== 0 && (
+									<Stack className="total-result" sx={{ mt: 2 }}>
+										<Typography variant="body2" color="text.secondary">
+											Total {total} journey{total > 1 ? 's' : ''} available
+										</Typography>
+									</Stack>
+								)}
+							</Stack>
 						)}
 					</main>
 				</div>

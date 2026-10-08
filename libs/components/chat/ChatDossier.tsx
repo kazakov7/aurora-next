@@ -1,160 +1,252 @@
-import React, { useState } from 'react';
-import { ChatConversation } from './chat.types';
+import React, { useEffect } from 'react';
+import { useMutation, useQuery } from '@apollo/client';
+import { useRouter } from 'next/router';
+import { GET_MEMBER, GET_MEMBER_AGENT } from '../../../apollo/user/query';
+import { SUBSCRIBE, UNSUBSCRIBE } from '../../../apollo/user/mutation';
 import FollowButton from '../common/FollowButton';
+import { ChatConversation, ChatMember } from './chat.types';
+import { DEFAULT_USER_AVATAR, getImageUrl } from '../../config';
+import { sweetErrorAlert } from '../../sweetAlert';
+import { AgentVerificationStatus, AgentType } from '../../enums/agent.enum';
+import moment from 'moment';
 
 interface ChatDossierProps {
-	conversation: ChatConversation;
+	conversation?: ChatConversation;
+	currentMemberId: string;
 }
 
-const ChatDossier: React.FC<ChatDossierProps> = ({ conversation }) => {
-	const [isFollowing, setIsFollowing] = useState(true);
+const getPeer = (conversation: ChatConversation, currentMemberId: string): ChatMember | undefined => 
+	conversation.memberOneId === currentMemberId ? conversation.memberTwoData : conversation.memberOneData;
 
-	const handleViewProfile = () => {
-		alert(`Opening profile dossier for ${conversation.name}`);
+const ChatDossier: React.FC<ChatDossierProps> = ({ conversation, currentMemberId }) => {
+	const router = useRouter();
+	const peer = conversation?.chatType === 'DIRECT' && conversation ? getPeer(conversation, currentMemberId) : undefined;
+	const isGlobal = conversation?.chatType === 'GLOBAL';
+	
+	// Fetch real public profile of the member
+	const { data, refetch, loading } = useQuery(GET_MEMBER, { 
+		variables: { input: peer?._id || '' }, 
+		skip: !peer?._id, 
+		fetchPolicy: 'network-only' 
+	});
+	
+	const queriedMember = data?.getMember;
+	const member = peer && queriedMember?._id === peer._id ? queriedMember : peer;
+	
+	// Fetch agent details if the member is an AGENT
+	const { data: agentData, loading: agentLoading } = useQuery(GET_MEMBER_AGENT, {
+		variables: { memberId: member?._id || '' },
+		skip: !member?._id || member?.memberType !== 'AGENT',
+		fetchPolicy: 'network-only'
+	});
+	
+	const agent = agentData?.getMemberAgent;
+
+	const [subscribe, { loading: subscribing }] = useMutation(SUBSCRIBE);
+	const [unsubscribe, { loading: unsubscribing }] = useMutation(UNSUBSCRIBE);
+
+	const name = isGlobal ? 'Global Chat' : member?.memberFullName || member?.memberNick || 'Unavailable member';
+	const isFollowing = Boolean(member?.meFollowed?.[0]?.myFollowing);
+	
+	// Reset/Refetch when conversation switches
+	useEffect(() => {
+		if (peer?._id) {
+			refetch({ input: peer._id });
+		}
+	}, [peer?._id, refetch]);
+
+	const handleFollow = async () => {
+		if (!member?._id) return;
+		try {
+			const options = {
+				variables: { input: member._id },
+				refetchQueries: ['GetMember', 'GetMyChats'],
+				awaitRefetchQueries: true,
+			};
+			if (isFollowing) await unsubscribe(options);
+			else await subscribe(options);
+			await refetch({ input: member._id });
+		} catch (error) {
+			await sweetErrorAlert(error instanceof Error ? error.message : 'Unable to update follow status.');
+		}
 	};
 
-	const handleFileClick = (fileName: string) => {
-		alert(`Opening shared file: ${fileName}`);
-	};
+	if (!conversation) {
+		return (
+			<aside aria-label="Member information" className="chat-dossier-panel" style={{ justifyContent: 'center', alignItems: 'center' }}>
+				<p style={{ color: '#707881', fontSize: '14px' }}>Select a conversation to view details.</p>
+			</aside>
+		);
+	}
 
-	return (
-		<aside aria-label="Member Dossier" className="chat-dossier-panel">
-			{/* Profile Summary Header */}
-			<div className="dossier-profile-header">
-				<div className="dossier-avatar-box">
-					{conversation.avatar ? (
-						<img src={conversation.avatar} alt={conversation.name} className="dossier-avatar" />
-					) : (
+	if (isGlobal) {
+		return (
+			<aside aria-label="Member information" className="chat-dossier-panel">
+				<div className="dossier-profile-header">
+					<div className="dossier-avatar-box">
 						<div className="dossier-avatar-placeholder">
-							<span className="material-symbols-outlined">{conversation.icon || 'person'}</span>
+							<span className="material-symbols-outlined">public</span>
 						</div>
-					)}
-					<span className="check-badge">
-						<span className="material-symbols-outlined">check</span>
-					</span>
-				</div>
-
-				<div className="name-verified-row">
-					<h3>{conversation.name}</h3>
-					{conversation.verified && (
-						<span className="material-symbols-outlined verified-icon">verified</span>
-					)}
-				</div>
-
-				<span className="dossier-role-badge">
-					{conversation.roleBadge || (conversation.role === 'partner' ? 'Hotel Partner' : 'Traveler')}
-				</span>
-
-				{conversation.location && (
-					<p className="dossier-location">
-						<span className="material-symbols-outlined">location_on</span>
-						{conversation.location}
-					</p>
-				)}
-
-				<p className="dossier-bio">{conversation.bio || 'AURA Member & Luxury Traveler'}</p>
-
-				{/* Primary Direct Actions */}
-				<div className="dossier-actions-grid">
-					<button type="button" className="btn-view-profile" onClick={handleViewProfile}>
-						View Profile
-					</button>
-					<FollowButton 
-						isFollowing={isFollowing} 
-						onClick={() => setIsFollowing(!isFollowing)} 
-						style={{ width: '100%', marginTop: '12px' }}
-					/>
-				</div>
-			</div>
-
-			<div className="dossier-divider" />
-
-			{/* Partner Stays & Sanctuaries (if available) */}
-			{conversation.properties && conversation.properties.length > 0 && (
-				<>
-					<div className="dossier-section">
-						<div className="section-title-row">
-							<span className="section-title">THEIR PROPERTIES</span>
-							<span className="see-all-link" onClick={() => alert('Viewing all partner properties')}>
-								See All ({conversation.properties.length + 1})
-							</span>
+					</div>
+					<div className="name-verified-row">
+						<h3>AURORA Global</h3>
+					</div>
+					<span className="dossier-role-badge">Community Lounge</span>
+					<div className="dossier-stats-grid">
+						<div className="stat-card">
+							<span className="stat-val">24/7</span>
+							<span className="stat-lbl">Active</span>
 						</div>
-
-						{conversation.properties.map((prop) => (
-							<div key={prop.id} className="property-dossier-card">
-								<div className="prop-thumb" style={{ backgroundImage: `url('${prop.image}')` }} />
-								<div className="prop-details">
-									<h4>{prop.title}</h4>
-									<p className="prop-loc">{prop.location}</p>
-									<div className="prop-price-row">
-										<span className="prop-price">
-											From {prop.price}
-											<span className="per-night"> / nt</span>
-										</span>
-										<span className="prop-rating">
-											<span className="material-symbols-outlined star-icon">star</span>
-											{prop.rating}
-										</span>
-									</div>
-								</div>
-							</div>
-						))}
+						<div className="stat-card">
+							<span className="stat-val">Public</span>
+							<span className="stat-lbl">Access</span>
+						</div>
 					</div>
-					<div className="dossier-divider" />
-				</>
-			)}
-
-			{/* Shared Media & Documents Collapsible Section */}
-			<div className="dossier-section">
-				<div className="shared-files-header">
-					<div className="left-group">
-						<span className="material-symbols-outlined">folder_shared</span>
-						<span>Shared Files & Media</span>
-					</div>
-					<span className="item-count">
-						{conversation.sharedFiles ? `${conversation.sharedFiles.length} items` : '0 items'}
-					</span>
 				</div>
-
-				<div className="files-list">
-					{conversation.sharedFiles && conversation.sharedFiles.length > 0 ? (
-						conversation.sharedFiles.map((f) => (
-							<div
-								key={f.id}
-								className="file-item-row"
-								onClick={() => handleFileClick(f.fileName)}
-							>
-								<div className="file-info-left">
-									<span className="material-symbols-outlined file-icon">
-										{f.type === 'pdf' ? 'description' : 'image'}
-									</span>
-									<span className="file-name">{f.fileName}</span>
-								</div>
-								<span className="file-size">{f.fileSize}</span>
-							</div>
-						))
-					) : (
+				<div className="dossier-divider" />
+				<div className="dossier-section">
+					<span className="section-title">About</span>
+					<div className="about-row">
+						<span className="about-val">Connect and share with the AURORA travel community. Please follow our community guidelines to keep the lounge welcoming and respectful for everyone.</span>
+					</div>
+				</div>
+				<div className="dossier-divider" />
+				<div className="dossier-section">
+					<div className="shared-files-header">
+						<div className="left-group">
+							<span className="material-symbols-outlined">folder_shared</span>
+							<span>Shared Files & Media</span>
+						</div>
+						<span className="item-count">0 items</span>
+					</div>
+					<div className="files-list">
 						<div className="file-item-row">
 							<div className="file-info-left">
 								<span className="material-symbols-outlined file-icon">info</span>
-								<span className="file-name">No shared media yet</span>
+								<span className="file-name">Attachments not supported yet.</span>
 							</div>
 						</div>
-					)}
+					</div>
 				</div>
-			</div>
+			</aside>
+		);
+	}
 
-			{/* Direct Host Protection Trust Badge */}
-			<div className="dossier-trust-badge">
-				<span className="material-symbols-outlined trust-icon">verified_user</span>
-				<div className="trust-text font-body-sm">
-					<p className="trust-title">AURA Verified Partner</p>
-					<p className="trust-desc">
-						Bookings through this chat are backed by Instant Escrow Protection and 24/7 Airside
-						Concierge.
-					</p>
+	return (
+		<aside aria-label="Member information" className="chat-dossier-panel">
+			{loading ? (
+				<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#707881' }}>
+					Loading profile...
 				</div>
-			</div>
+			) : (
+				<>
+					<div className="dossier-profile-header">
+						<div className="dossier-avatar-box">
+							<img src={getImageUrl(member?.memberImage, DEFAULT_USER_AVATAR)} alt={name} className="dossier-avatar" />
+						</div>
+						<div className="name-verified-row">
+							<h3>{name}</h3>
+							{agent?.verificationStatus === AgentVerificationStatus.APPROVED && (
+								<span className="material-symbols-outlined verified-icon" title="Verified Partner">verified</span>
+							)}
+						</div>
+						<span className="dossier-role-badge">
+							{member?.memberType === 'AGENT' 
+								? (agent?.agentType === AgentType.HOTEL ? 'Hotel Partner' : agent?.agentType === AgentType.TOUR ? 'Tour Partner' : 'Travel Partner') 
+								: 'Traveler'}
+						</span>
+						
+						<div className="dossier-stats-grid">
+							<div className="stat-card">
+								<span className="stat-val">{member?.memberArticles || 0}</span>
+								<span className="stat-lbl">Articles</span>
+							</div>
+							<div className="stat-card">
+								<span className="stat-val">{member?.memberFollowers || 0}</span>
+								<span className="stat-lbl">Followers</span>
+							</div>
+							<div className="stat-card">
+								<span className="stat-val">{member?.memberFollowings || 0}</span>
+								<span className="stat-lbl">Following</span>
+							</div>
+						</div>
+
+						{member?._id && member._id !== currentMemberId && (
+							<div className="dossier-actions-grid">
+								<button type="button" className="btn-view-profile" onClick={() => void router.push(`/member?memberId=${member._id}`)}>
+									View Profile
+								</button>
+								<FollowButton 
+									isFollowing={isFollowing} 
+									isLoading={subscribing || unsubscribing} 
+									onClick={() => void handleFollow()} 
+									style={{ width: '100%' }} 
+								/>
+							</div>
+						)}
+					</div>
+
+					<div className="dossier-divider" />
+
+					<div className="dossier-section">
+						<span className="section-title">About</span>
+						{member?.memberAddress ? (
+							<div className="about-row">
+								<span className="about-lbl">Location</span>
+								<span className="about-val">{member.memberAddress}</span>
+							</div>
+						) : null}
+						<div className="about-row">
+							<span className="about-lbl">Member Since</span>
+							<span className="about-val">{member?.createdAt ? moment(isNaN(Number(member.createdAt)) ? member.createdAt : Number(member.createdAt)).format('MMMM YYYY') : '...'}</span>
+						</div>
+						{member?.memberDesc ? (
+							<div className="about-row">
+								<span className="about-lbl">Bio</span>
+								<span className="about-val">{member.memberDesc}</span>
+							</div>
+						) : null}
+					</div>
+
+					{member?.memberType === 'AGENT' && agent && (
+						<>
+							<div className="dossier-divider" />
+							<div className="dossier-section">
+								<span className="section-title">Partner Details</span>
+								<div className="agent-info-card">
+									<div className="agent-info-row">
+										<span className="ai-lbl">Company</span>
+										<span className="ai-val">{agent.companyName}</span>
+									</div>
+									<div className="agent-info-row">
+										<span className="ai-lbl">{agent.agentType === AgentType.HOTEL ? 'Active Hotels' : 'Active Tours'}</span>
+										<span className="ai-val">{agent.agentType === AgentType.HOTEL ? (member?.memberProperties || 0) : (member?.memberTours || 0)}</span>
+									</div>
+								</div>
+							</div>
+						</>
+					)}
+
+					<div className="dossier-divider" />
+					<div className="dossier-section">
+						<div className="shared-files-header">
+							<div className="left-group">
+								<span className="material-symbols-outlined">folder_shared</span>
+								<span>Shared Files & Media</span>
+							</div>
+							<span className="item-count">0 items</span>
+						</div>
+						<div className="files-list">
+							<div className="file-item-row">
+								<div className="file-info-left">
+									<span className="material-symbols-outlined file-icon">info</span>
+									<span className="file-name">Attachments not supported yet.</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</>
+			)}
 		</aside>
 	);
 };

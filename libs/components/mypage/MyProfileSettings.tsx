@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useMutation, useReactiveVar } from "@apollo/client";
 import { UPDATE_MEMBER } from "../../../apollo/user/mutation";
 import { userVar } from "../../../apollo/store";
@@ -6,14 +6,18 @@ import {
   sweetMixinErrorAlert,
   sweetTopSmallSuccessAlert,
 } from "../../sweetAlert";
+import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
 
 const MyProfileSettings: React.FC = () => {
   const user = useReactiveVar(userVar);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [nick, setNick] = useState<string>(user?.memberNick || "");
   const [phone, setPhone] = useState<string>(user?.memberPhone || "");
   const [address, setAddress] = useState<string>(user?.memberAddress || "");
   const [desc, setDesc] = useState<string>(user?.memberDesc || "");
+  const [image, setImage] = useState<string>(user?.memberImage || "");
+  const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 
   /** APOLLO REQUESTS **/
   const [updateMemberMutation, { loading }] = useMutation(UPDATE_MEMBER);
@@ -23,9 +27,65 @@ const MyProfileSettings: React.FC = () => {
     setPhone(user?.memberPhone || "");
     setAddress(user?.memberAddress || "");
     setDesc(user?.memberDesc || "");
-  }, [user?._id, user?.memberNick, user?.memberPhone, user?.memberAddress, user?.memberDesc]);
+    setImage(user?.memberImage || "");
+  }, [user?._id, user?.memberNick, user?.memberPhone, user?.memberAddress, user?.memberDesc, user?.memberImage]);
 
   /** HANDLERS **/
+  const handleImageUpload = async (e: any) => {
+    try {
+        const file = e.target.files[0];
+        if (!file) return;
+        setUploadingImage(true);
+
+        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+        const formData = new FormData();
+        formData.append(
+            'operations',
+            JSON.stringify({
+                query: `mutation ImageUploader($file: Upload!, $target: String!) {
+                    imageUploader(file: $file, target: $target) 
+              }`,
+                variables: {
+                    file: null,
+                    target: 'member',
+                },
+            }),
+        );
+        formData.append(
+            'map',
+            JSON.stringify({
+                '0': ['variables.file'],
+            }),
+        );
+        formData.append('0', file);
+
+        const response = await fetch(process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql', {
+            method: 'POST',
+            headers: {
+                'apollo-require-preflight': 'true',
+                Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+        });
+
+        const json = await response.json();
+        const responseImage = json.data?.imageUploader;
+        if (responseImage) {
+            setImage(responseImage);
+        } else {
+            throw new Error(json.errors?.[0]?.message || 'Upload failed');
+        }
+    } catch (err: any) {
+        console.log('Error, handleImageUpload:', err);
+        sweetMixinErrorAlert(err.message || 'Image upload failed');
+    } finally {
+        setUploadingImage(false);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -37,13 +97,15 @@ const MyProfileSettings: React.FC = () => {
             memberPhone: phone.trim(),
             memberAddress: address.trim(),
             memberDesc: desc.trim(),
+            memberImage: image,
           },
         },
       });
 
-      if (result.data?.updateMember) userVar({ ...userVar(), ...result.data.updateMember });
-
-      sweetTopSmallSuccessAlert("Profile updated successfully!", 1000);
+      if (result.data?.updateMember) {
+        userVar({ ...userVar(), ...result.data.updateMember });
+        sweetTopSmallSuccessAlert("Profile updated successfully!", 1000);
+      }
     } catch (err: any) {
       sweetMixinErrorAlert(err.message || "Update failed.");
     }
@@ -71,6 +133,52 @@ const MyProfileSettings: React.FC = () => {
           onSubmit={handleSave}
           style={{ display: "flex", flexDirection: "column", gap: "18px" }}
         >
+          {/* Avatar Upload */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '10px' }}>
+             <img 
+                src={getImageUrl(image, DEFAULT_USER_AVATAR)} 
+                alt="Avatar" 
+                style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #dce2f7' }}
+             />
+             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "#141b2b" }}>Profile Picture</label>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                    <button 
+                        type="button" 
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingImage}
+                        style={{
+                            height: '36px', padding: '0 16px', background: '#e9edff', color: '#006194', 
+                            border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '13px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}
+                    >
+                        {uploadingImage ? 'Uploading...' : 'Change Image'}
+                    </button>
+                    {image && (
+                        <button 
+                            type="button" 
+                            onClick={() => setImage('')}
+                            style={{
+                                height: '36px', padding: '0 16px', background: '#ffebee', color: '#c62828', 
+                                border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '13px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}
+                        >
+                            Remove
+                        </button>
+                    )}
+                </div>
+                <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={handleImageUpload} 
+                    accept="image/*" 
+                    style={{ display: 'none' }} 
+                />
+             </div>
+          </div>
+
           <div>
             <label
               style={{
@@ -198,7 +306,7 @@ const MyProfileSettings: React.FC = () => {
           <div style={{ display: "flex", gap: "12px", marginTop: "10px" }}>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || uploadingImage}
               style={{
                 height: "44px",
                 padding: "0 24px",

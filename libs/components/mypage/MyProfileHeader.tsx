@@ -4,7 +4,7 @@ import { useQuery, useReactiveVar } from "@apollo/client";
 import { userVar } from "../../../apollo/store";
 import { GET_MEMBER } from "../../../apollo/user/query";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
-import PartnerModal from "./PartnerModal";
+
 
 interface MyProfileHeaderProps {
   onCategoryChange?: (category: string) => void;
@@ -16,7 +16,7 @@ const MyProfileHeader: React.FC<MyProfileHeaderProps> = ({
   const user = useReactiveVar(userVar);
   const router = useRouter();
 
-  const [partnerModalOpen, setPartnerModalOpen] = useState(false);
+  
 
   const { data } = useQuery(GET_MEMBER, {
     fetchPolicy: "network-only",
@@ -131,7 +131,7 @@ const MyProfileHeader: React.FC<MyProfileHeaderProps> = ({
             {profile?.memberType === "USER" && (
               <button
                 className="btn-primary"
-                onClick={() => setPartnerModalOpen(true)}
+                onClick={() => handleNav("partner")}
               >
                 <span className="material-symbols-outlined">handshake</span>
                 <span>Become a Partner</span>
@@ -150,10 +150,7 @@ const MyProfileHeader: React.FC<MyProfileHeaderProps> = ({
         </div>
       </div>
 
-      <PartnerModal
-        isOpen={partnerModalOpen}
-        onClose={() => setPartnerModalOpen(false)}
-      />
+      
     </section>
   );
 };

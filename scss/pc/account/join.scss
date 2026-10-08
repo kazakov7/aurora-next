@@ -384,6 +384,19 @@
 				width: 100%;
 				gap: 10px;
 
+				.google-auth-button {
+					flex: 1;
+					height: 40px;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+
+					&.is-disabled {
+						opacity: 0.6;
+						pointer-events: none;
+					}
+				}
+
 				.social-btn {
 					flex: 1;
 					height: 40px;

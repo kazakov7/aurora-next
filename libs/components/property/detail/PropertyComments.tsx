@@ -94,9 +94,10 @@ const PropertyComments = ({
     }
   };
 
-  const ratingVal = typeof property?.propertyRating === "number"
-    ? property.propertyRating.toFixed(2)
-    : "—";
+  const ratingVal =
+    typeof property?.propertyRating === "number"
+      ? property.propertyRating.toFixed(2)
+      : "—";
   const displayTotal = totalComments || property?.propertyReviews || 0;
 
   return (
@@ -106,18 +107,10 @@ const PropertyComments = ({
         <div className="comments-title-group">
           <div className="comments-heading-wrap">
             <h2 className="comments-main-heading">Guest Comments</h2>
-            <div className="score-pill">
-              <span
-                className="material-symbols-outlined"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                star
-              </span>
-              <span>{ratingVal}</span>
-            </div>
           </div>
           <p className="comments-subtext">
-            {displayTotal} evaluation{displayTotal === 1 ? "" : "s"} for {property.propertyName}
+            {displayTotal} evaluation{displayTotal === 1 ? "" : "s"} for{" "}
+            {property.propertyName}
           </p>
         </div>
 
@@ -236,10 +229,7 @@ const PropertyComments = ({
 
         <div className="comment-form-body">
           <img
-            src={getImageUrl(
-              user?.memberImage,
-              defaultAvatar,
-            )}
+            src={getImageUrl(user?.memberImage, defaultAvatar)}
             alt="Current user"
             className="user-comment-avatar"
           />

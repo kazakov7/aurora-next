@@ -183,7 +183,7 @@ const WishlistPlaceCard = ({
             <span className="unit">{priceUnit}</span>
           </p>
           <button className="book-btn group-btn">
-            View Details
+            reserve
             <ArrowRight className="arrow-icon" />
           </button>
         </motion.div>

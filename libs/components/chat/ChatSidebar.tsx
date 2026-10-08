@@ -1,161 +1,100 @@
-import React, { useState } from 'react';
-import { ChatConversation } from './chat.types';
+import React, { useMemo, useState } from 'react';
+import { ChatConversation, ChatMember, ChatRole } from './chat.types';
+import { DEFAULT_USER_AVATAR, getImageUrl } from '../../config';
 
 interface ChatSidebarProps {
 	conversations: ChatConversation[];
 	activeId: string;
+	currentMemberId: string;
+	loading: boolean;
+	error?: string;
 	onSelect: (id: string) => void;
+	onViewProfile: (conversation: ChatConversation) => void;
+	onRequestDelete: (conversation: ChatConversation) => void;
 }
 
-const ChatSidebar: React.FC<ChatSidebarProps> = ({ conversations, activeId, onSelect }) => {
+const getPeer = (conversation: ChatConversation, currentMemberId: string): ChatMember | undefined =>
+	conversation.memberOneId === currentMemberId ? conversation.memberTwoData : conversation.memberOneData;
+
+const getRole = (conversation: ChatConversation, currentMemberId: string): ChatRole =>
+	conversation.chatType === 'GLOBAL'
+		? 'global'
+		: getPeer(conversation, currentMemberId)?.memberType === 'AGENT'
+			? 'partner'
+			: 'traveler';
+
+const formatLastActivity = (value?: string): string =>
+	value && !Number.isNaN(new Date(value).getTime())
+		? new Intl.DateTimeFormat('en', { hour: 'numeric', minute: '2-digit' }).format(new Date(value))
+		: '';
+
+const ChatSidebar: React.FC<ChatSidebarProps> = ({
+	conversations,
+	activeId,
+	currentMemberId,
+	loading,
+	error,
+	onSelect,
+	onViewProfile,
+	onRequestDelete,
+}) => {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [filterTab, setFilterTab] = useState<'all' | 'partners' | 'travelers' | 'unread'>('all');
-
-	const unreadTotal = conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
-
-	const globalChat = conversations.find((c) => c.id === 'global');
-	const otherFilteredConversations = conversations
-		.filter((c) => c.id !== 'global')
-		.filter((c) => {
-			// Filter by search
-			const matchesSearch =
-				c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-				(c.subtitle && c.subtitle.toLowerCase().includes(searchTerm.toLowerCase())) ||
-				c.lastMessage.toLowerCase().includes(searchTerm.toLowerCase());
-
-			if (!matchesSearch) return false;
-
-			// Filter by Tab
-			if (filterTab === 'partners') return c.role === 'partner';
-			if (filterTab === 'travelers') return c.role === 'traveler';
-			if (filterTab === 'unread') return (c.unreadCount || 0) > 0;
-			return true;
-		});
-		
-	const filteredConversations = globalChat 
-		? [globalChat, ...otherFilteredConversations] 
-		: otherFilteredConversations;
+	const [openMenuId, setOpenMenuId] = useState('');
+	const unreadTotal = conversations.reduce((total, conversation) => total + (conversation.unreadCount || 0), 0);
+	const filteredConversations = useMemo(() => {
+		const normalizedSearch = searchTerm.trim().toLowerCase();
+		return [...conversations]
+			.sort((first, second) =>
+				first.chatType === 'GLOBAL'
+					? -1
+					: second.chatType === 'GLOBAL'
+						? 1
+						: +new Date(second.lastMessageAt || 0) - +new Date(first.lastMessageAt || 0),
+			)
+			.filter((conversation) => {
+				const role = getRole(conversation, currentMemberId);
+				if (filterTab === 'partners' && role !== 'partner') return false;
+				if (filterTab === 'travelers' && role !== 'traveler') return false;
+				if (filterTab === 'unread' && !(conversation.unreadCount || 0)) return false;
+				if (!normalizedSearch || role === 'global') return true;
+				const peer = getPeer(conversation, currentMemberId);
+				return `${peer?.memberNick || ''} ${peer?.memberFullName || ''}`.toLowerCase().includes(normalizedSearch);
+			});
+	}, [conversations, currentMemberId, filterTab, searchTerm]);
 
 	return (
 		<aside aria-label="Conversations Directory" className="chat-sidebar">
-			{/* Sidebar Header */}
 			<div className="sidebar-header">
-				<div className="header-top-row">
-					<div className="title-group">
-						<h2>Messages</h2>
-						<span className="unread-badge">{unreadTotal} Unread</span>
-					</div>
-					<button
-						type="button"
-						className="compose-btn"
-						aria-label="Compose new message"
-						onClick={() => alert('Compose new message: Select a contact or search members.')}
-					>
-						<span className="material-symbols-outlined">edit_square</span>
-					</button>
-				</div>
-
-				{/* Search Input */}
-				<div className="search-box">
-					<span className="material-symbols-outlined search-icon">search</span>
-					<input
-						type="text"
-						value={searchTerm}
-						onChange={(e) => setSearchTerm(e.target.value)}
-						placeholder="Search conversations..."
-					/>
-				</div>
-
-				{/* Segmented Filter Pills */}
+				<div className="header-top-row"><div className="title-group"><h2>Messages</h2><span className="unread-badge">{unreadTotal} unread</span></div></div>
+				<div className="search-box"><span className="material-symbols-outlined search-icon">search</span><input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Search conversations..." /></div>
 				<div className="filter-pills">
-					<button
-						type="button"
-						className={`pill-btn ${filterTab === 'all' ? 'active' : ''}`}
-						onClick={() => setFilterTab('all')}
-					>
-						All
-					</button>
-					<button
-						type="button"
-						className={`pill-btn ${filterTab === 'partners' ? 'active' : ''}`}
-						onClick={() => setFilterTab('partners')}
-					>
-						Partners
-					</button>
-					<button
-						type="button"
-						className={`pill-btn ${filterTab === 'travelers' ? 'active' : ''}`}
-						onClick={() => setFilterTab('travelers')}
-					>
-						Travelers
-					</button>
-					<button
-						type="button"
-						className={`pill-btn ${filterTab === 'unread' ? 'active' : ''}`}
-						onClick={() => setFilterTab('unread')}
-					>
-						Unread
-					</button>
+					{(['all', 'partners', 'travelers', 'unread'] as const).map((tab) => <button key={tab} type="button" className={`pill-btn ${filterTab === tab ? 'active' : ''}`} onClick={() => setFilterTab(tab)}>{tab[0].toUpperCase() + tab.slice(1)}</button>)}
 				</div>
 			</div>
-
-			{/* Conversations Scroll List */}
 			<div className="conversations-list">
-				{filteredConversations.map((item) => {
-					const isActive = item.id === activeId;
+				{loading && !conversations.length ? <div className="no-conversations-empty"><p>Loading conversations…</p></div> : null}
+				{error ? <div className="no-conversations-empty"><p>{error}</p></div> : null}
+				{filteredConversations.map((conversation) => {
+					const role = getRole(conversation, currentMemberId);
+					const peer = getPeer(conversation, currentMemberId);
+					const name = role === 'global' ? 'Global Chat' : peer?.memberNick || peer?.memberFullName || 'Unavailable member';
+					const subtitle = role === 'global' ? 'Community' : role === 'partner' ? 'Travel partner' : 'Traveler';
+					const isActive = conversation._id === activeId;
+					const isDirect = conversation.chatType === 'DIRECT';
 					return (
-						<div
-							key={item.id}
-							className={`conversation-item ${isActive ? 'active' : ''} ${item.role === 'global' ? 'global-item' : ''}`}
-							onClick={() => onSelect(item.id)}
-						>
-							{isActive && <span className="active-indicator" />}
-
-							<div className="avatar-box">
-								{item.avatar ? (
-									<img src={item.avatar} alt={item.name} className="avatar-img" />
-								) : (
-									<div className={`avatar-placeholder ${item.role}`}>
-										<span className="material-symbols-outlined">
-											{item.icon || (item.role === 'global' ? 'public' : 'person')}
-										</span>
-									</div>
-								)}
-								{item.isOnline && <span className="online-dot" />}
-							</div>
-
-							<div className="item-info">
-								<div className="name-row">
-									<span className="item-name">{item.name}</span>
-									<span className={`item-time ${isActive ? 'active-time' : ''}`}>{item.lastTime}</span>
-								</div>
-								<div className="sub-row">
-									{item.role === 'global' ? (
-										<span className="role-tag global">Community Lounge</span>
-									) : item.role === 'partner' ? (
-										<span className="role-tag partner">{item.subtitle || 'Hotel Partner'}</span>
-									) : (
-										<span className="role-tag traveler">{item.subtitle || 'Verified Explorer'}</span>
-									)}
-								</div>
-								<p className={`last-msg ${item.unreadCount ? 'unread-msg' : ''}`}>{item.lastMessage}</p>
-							</div>
-
-							{item.unreadCount ? (
-								<span className="unread-count-badge">{item.unreadCount}</span>
-							) : item.role === 'partner' ? (
-								<span className="material-symbols-outlined check-icon">done_all</span>
-							) : null}
+						<div key={conversation._id} className={`conversation-row ${isActive ? 'active' : ''} ${role === 'global' ? 'global-item' : ''}`}>
+							<button type="button" className="conversation-item" onClick={() => onSelect(conversation._id)}>
+								{isActive ? <span className="active-indicator" /> : null}
+								<div className="avatar-box">{role === 'global' ? <div className="avatar-placeholder global"><span className="material-symbols-outlined">public</span></div> : <img src={getImageUrl(peer?.memberImage, DEFAULT_USER_AVATAR)} alt={name} className="avatar-img" />}</div>
+								<div className="item-info"><div className="name-row"><span className="item-name">{name}</span><span className={`item-time ${isActive ? 'active-time' : ''}`}>{formatLastActivity(conversation.lastMessageAt)}</span></div><div className="sub-row"><span className={`role-tag ${role}`}>{subtitle}</span></div><p className={`last-msg ${conversation.unreadCount ? 'unread-msg' : ''}`}>{conversation.lastMessage || 'No messages yet'}</p></div>
+								{conversation.unreadCount ? <span className="unread-count-badge">{conversation.unreadCount}</span> : null}
+							</button>
+							{isDirect ? <div className="conversation-context"><button type="button" className="conversation-menu-trigger" aria-label={`Conversation actions for ${name}`} aria-expanded={openMenuId === conversation._id} onClick={() => setOpenMenuId((current) => current === conversation._id ? '' : conversation._id)}><span className="material-symbols-outlined">more_horiz</span></button>{openMenuId === conversation._id ? <div className="conversation-context-menu" role="menu"><button type="button" role="menuitem" onClick={() => { setOpenMenuId(''); onViewProfile(conversation); }}><span className="material-symbols-outlined">person</span>View Profile</button><button type="button" role="menuitem" className="delete-chat-menu-item" onClick={() => { setOpenMenuId(''); onRequestDelete(conversation); }}><span className="material-symbols-outlined">delete_outline</span>Delete Chat</button></div> : null}</div> : null}
 						</div>
 					);
 				})}
-
-				{filteredConversations.length === 0 && (
-					<div className="no-conversations-empty">
-						<span className="material-symbols-outlined">search_off</span>
-						<p>No conversations found</p>
-					</div>
-				)}
+				{!loading && !error && !filteredConversations.length ? <div className="no-conversations-empty"><span className="material-symbols-outlined">forum</span><p>No conversations found</p></div> : null}
 			</div>
 		</aside>
 	);

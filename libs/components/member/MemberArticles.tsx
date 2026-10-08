@@ -1,245 +1,188 @@
 import React, { useState } from 'react';
-import Link from 'next/link';
-import SaveButton from '../common/SaveButton';
-
-interface ArticleData {
-	id: string;
-	title: string;
-	excerpt: string;
-	category: string;
-	image: string;
-	date: string;
-	readTime: string;
-	likes: number;
-	views: string;
-	bookmarked?: boolean;
-}
-
-const sampleArticles: ArticleData[] = [
-	{
-		id: 'art-1',
-		title: 'Solitude at 3,000m: High Alpine Cabins of Zermatt',
-		excerpt:
-			'A photographic study of shelter and stark geometry amid the Pennine Alps, where silent sunrises greet solitary climbers before first light.',
-		category: 'Expedition Log',
-		image:
-			'https://lh3.googleusercontent.com/aida-public/AB6AXuBYs5tFD4wiWlMRwjcXwSmW80n7hXNpqeWysJdEK4jR6Rok3ASiJgOPkHfKNXrBxCPn1AhSBuv6ApOenZmSSUh6-dnjYlElKmB6Uv8an7EASqwyI1LTn0eDEA4HGuQgc68XZIRyFQAaBxZkBzjk9lMjja97UQ43CD1uu5qLr5T5mU-MgCnBFIC9mwjcJULGblmDOqXnoQLTHhqgqWUZM73Ic4rTWpHW-f0CLyPjKa-EqKE5p7ybzIZZ',
-		date: 'Oct 12, 2024',
-		readTime: '6 min read',
-		likes: 184,
-		views: '2.8k',
-	},
-	{
-		id: 'art-2',
-		title: 'A Quiet Morning in Gion, Kyoto: Beyond the Bamboo Forest',
-		excerpt:
-			'Documenting centuries-old cedar latticework and the hushed rhythm of early morning tea deliveries before the ancient capital awakens.',
-		category: 'Local Insights',
-		image:
-			'https://lh3.googleusercontent.com/aida-public/AB6AXuDlwRII0TgihawSfWJmrAuylie2PUlXlZG6vBAlAccLhmkLvZoa0DzpYW82Gg38FLSqkCRVHWMqhjxrmBJ2HKVuQYxu02KE4-RbpRUA4Lf2KRiMQzwp6NMW_cjx7JMPhGHhY_nsgpsF12Aroqj1Q4r44Iw1ZR5o2Df3Rk8noOO50xilMe3gAvdZVqywm5-TmEsS8pZTSTlsQZQl7bRBoZx87F_eURZMyjLj-p14gxKDPAFYiRnNYXd-',
-		date: 'Sep 28, 2024',
-		readTime: '8 min read',
-		likes: 242,
-		views: '3.9k',
-	},
-	{
-		id: 'art-3',
-		title: 'Midnight Arctic Glow: Forty Hours Along the Reinefjorden',
-		excerpt:
-			'Tracing continuous violet twilight across jagged Scandinavian sea stacks and weathered timber outposts on the edge of the Norwegian Sea.',
-		category: 'Photography',
-		image:
-			'https://lh3.googleusercontent.com/aida-public/AB6AXuCmiqXj3nbjRxryXkCGMk6UVQygbTB8gKvt4yNl7GYp9HkJVMIqxFxP0-ZIYUOaq-U16tMVt5bhd9KEhOqjGy-1EkgpGc5MIZwUBpUDemxTOX-txyanR_lufnepzyyqmbO47wbjTexWT0jM1BvY-XuBni__RglC_L2e8eAbfWiybPk5WxjAUCx8KdxB-Ua1sLQuB2XLA5xzzekX2fYMb6pn4KqVOSAygP2b0URVvUqAjp3eyUwa66za',
-		date: 'Aug 19, 2024',
-		readTime: '5 min read',
-		likes: 315,
-		views: '4.5k',
-	},
-	{
-		id: 'art-4',
-		title: 'Stilts and Sea Salt: Modernist Isolation on Fogo Island',
-		excerpt:
-			'Examining how contemporary stilt architecture dialogues with brutal subarctic winds, traditional outport carpentry, and open horizons.',
-		category: 'Architecture',
-		image:
-			'https://lh3.googleusercontent.com/aida-public/AB6AXuA7dMuJbRNQQdTZ8_5UWen05yshqWugXdJy-h9nt9b0NqHG8Zuo0SuXjow1w9vETIn-6YWv2J208vjxR93Q8VwBbBxj4XF8ZAC4Xf06HQoYKz87CHcNbp0dmFInQFQRiojNMMG7WTmERA3dLP4loGXnc1MoN_2vTPHYUOiWoOhowYt9RrdR8rJWQJehsp0NYSU9QMecIyybgTbwxAItGMODr80nFKcgA5jptkQa5p2Psu05A25VcWvD',
-		date: 'Jul 30, 2024',
-		readTime: '7 min read',
-		likes: 196,
-		views: '2.1k',
-	},
-	{
-		id: 'art-5',
-		title: 'Subterranean Sanctuaries: Troglodyte Stays of Anatolia',
-		excerpt:
-			'A 5-day route through carved volcanic stone vaults, secluded pigeon valleys, and restorative thermal courtyards in Göreme.',
-		category: 'Itineraries',
-		image:
-			'https://lh3.googleusercontent.com/aida-public/AB6AXuABQuw9y0Gg62LQKPI0ot0BJh1kvNEh0MitF6i6DQK441qoovEU_GPohzYacOFQHZ4BcNc_6repgqSjq8XJioPylQCsLphNUxW7Pp4jYflRfd1t4dfzAav-5tWQFGPjhgLmRZHkbN4fxlfdFNjOHXHxtaFx4RhFBxq9uOYXAOAwIyn8T_6tGF86icmSE6-odq53QJ2QKt_kireaKVFtTUV3A3WhYGEdZ21h8xPsHb4STdjPpuCUKcpr',
-		date: 'Jul 14, 2024',
-		readTime: '9 min read',
-		likes: 278,
-		views: '3.3k',
-	},
-	{
-		id: 'art-6',
-		title: 'Dolomite Alpenglow: High Pass Traverses in South Tyrol',
-		excerpt:
-			'Traversing limestone massifs when the sun dips low and strikes vertical rock walls with intense crimson and copper radiance.',
-		category: 'Expedition Log',
-		image:
-			'https://lh3.googleusercontent.com/aida-public/AB6AXuDQbBlEpiYdmX4oBFqax4ULNtqTOlo5sEw1gYGAWu_bP0UDFum35i6_vJH5wgmDyZUB0ZteVneiPF0r8chzRS1GLVTgGZtdurcHfpjzD6VwdZ5eTqpc6ArPEGnQsAN0lh49tSQU6xD6gLZXjGI5IMIud-fNfA5TbYaisX3M5_PF6aO-oJmre-M_RoqH6XAgyAy7cLb64lHUMZMG7QcZZp7dIndBWqxdokxxjUsxnapHOW3Zyukjgf61',
-		date: 'Jun 22, 2024',
-		readTime: '6 min read',
-		likes: 402,
-		views: '5.1k',
-	},
-	{
-		id: 'art-7',
-		title: 'Adobe and Starlight: The Desert Observatories of San Pedro',
-		excerpt:
-			'A review of ram-earthed eco-lodges designed for celestial clarity, where private courtyards mirror the astronomical silence of the altiplano.',
-		category: 'Hotel Reviews',
-		image:
-			'https://lh3.googleusercontent.com/aida-public/AB6AXuAROYI4qPXV0j1dH0El6EQbcH7sVaVVZIQTpTAI-scNLo8LO2ZbT67N18zb9nZGMD8UNlWVGByULvjDqBDJq6qhL2mCWeLYCVNU0DiQbGKmEiIayQL3PcVth-kbcDhKpIEoq330bZr6-DRU8rhgiqJiX853-2ivQZ4T7JyI-M0cUS3BJcsNWzGEZqvCy6yKI5ZT4Kr_fKs6i9G_O5SQa5dZLTz7QTT80T0aK54bWfS9Ghj_G4AbeGGi',
-		date: 'May 11, 2024',
-		readTime: '7 min read',
-		likes: 164,
-		views: '1.9k',
-	},
-	{
-		id: 'art-8',
-		title: 'Pillars of Faith: The Suspended Monasteries of Meteora',
-		excerpt:
-			'Documenting monastic hermitages perched atop monolithic conglomerate pillars in Thessaly, suspended between earth and the Aegean heavens.',
-		category: 'Architecture',
-		image:
-			'https://lh3.googleusercontent.com/aida-public/AB6AXuBYT9OngX1t3bC3NpKEcX23muw7dALZNbsx9K8xvF_sBxd8efKPpFaEq4SF78uLoGCEzXUffHRa1I5bhQVKwlaFUN_ajy0wuTdw7eBWlLjh2ARlaIY5pAKtJjncIycmzZRZoVLemHw7zYAkNi7iix_Vw1kSK0PHA2da7ExdeE_ojBsWX4fs4hS9NaHEX2R01nummkCYXNZYZU-UXXca1owRD4r3uBXEYPZFnuCqDs2lEgn7mo0fUKrC',
-		date: 'Apr 29, 2024',
-		readTime: '6 min read',
-		likes: 229,
-		views: '3.1k',
-	},
-	{
-		id: 'art-9',
-		title: 'Windward Archipelago: 72 Hours in the Outer Faroes',
-		excerpt:
-			'Navigating sheer sea-girt basalt palisades, turf-roofed hamlets, and solitary sea stacks where the North Atlantic commands total surrender.',
-		category: 'Expedition Log',
-		image:
-			'https://lh3.googleusercontent.com/aida-public/AB6AXuCYZVT2wgVz3fFx55tn2LrMnsnGLTA2EaKgcfue8kDLXLDv9ck5B6aYkT5mrfBk5tkCeDswJJVmywAi_MTm6Ioflwa7zz2cTJoYhN5elmSdzlkGFwo8NBT9vf9W6VUeg6gwbf1ot75Rd42UiZRciKhbIFLRsQYG7MfmhVI26AcwbMWgS-gz-PWMDb6AlDNQAzTafsK2yWW_UDGmhYT3OgSMfeNoExFRX1SdzzSpp-QkTsA5gNv0nuJH',
-		date: 'Apr 04, 2024',
-		readTime: '10 min read',
-		likes: 388,
-		views: '4.7k',
-	},
-];
+import { useRouter } from 'next/router';
+import moment from 'moment';
+import { useQuery, useMutation, useReactiveVar } from '@apollo/client';
+import { GET_BOARD_ARTICLES } from '../../../apollo/user/query';
+import { LIKE_TARGET_ARTICLE } from '../../../apollo/user/mutation';
+import { userVar } from '../../../apollo/store';
+import { Member } from '../../types/member/member';
+import { BoardArticle } from '../../types/board-article/board-article';
+import { DEFAULT_ARTICLE_IMAGE, getImageUrl } from '../../config';
+import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 
 interface MemberArticlesProps {
-	memberName?: string;
-	articles?: any[];
+	member: Member;
+	onArticlesCountChange?: (count: number) => void;
 }
 
-const MemberArticles: React.FC<MemberArticlesProps> = ({
-	memberName = 'Julian Laurent',
-	articles,
-}) => {
-	const [sortFilter, setSortFilter] = useState<'newest' | 'liked' | 'viewed'>('newest');
-	const [bookmarks, setBookmarks] = useState<Record<string, boolean>>({});
+const MemberArticles: React.FC<MemberArticlesProps> = ({ member, onArticlesCountChange }) => {
+	const router = useRouter();
+	const currentUser = useReactiveVar(userVar);
+
 	const [page, setPage] = useState<number>(1);
+	const [sort, setSort] = useState<'createdAt' | 'articleLikes' | 'articleViews'>('createdAt');
 
-	const displayArticles = sampleArticles;
+	/** APOLLO REQUESTS **/
+	const [likeArticleMutation] = useMutation(LIKE_TARGET_ARTICLE);
 
-	const handleBookmarkToggle = (id: string, e: React.MouseEvent) => {
-		e.preventDefault();
-		e.stopPropagation();
-		setBookmarks((prev) => ({ ...prev, [id]: !prev[id] }));
+	const { data, loading, refetch } = useQuery(GET_BOARD_ARTICLES, {
+		fetchPolicy: 'network-only',
+		variables: {
+			input: {
+				page: page,
+				limit: 9,
+				sort: sort,
+				direction: 'DESC',
+				search: {
+					memberId: member?._id || '',
+				},
+			},
+		},
+		skip: !member?._id,
+		notifyOnNetworkStatusChange: true,
+		onCompleted: (resData) => {
+			const totalCount = resData?.getBoardArticles?.metaCounter?.[0]?.total ?? 0;
+			if (onArticlesCountChange) {
+				onArticlesCountChange(totalCount);
+			}
+		},
+	});
+
+	const articles: BoardArticle[] = data?.getBoardArticles?.list || [];
+	const total: number = data?.getBoardArticles?.metaCounter?.[0]?.total || 0;
+	const totalPages = Math.ceil(total / 9) || 1;
+
+	/** HANDLERS **/
+	const handleSortChange = (newSort: 'createdAt' | 'articleLikes' | 'articleViews') => {
+		setSort(newSort);
+		setPage(1);
 	};
 
+	const handleLikeToggle = async (e: React.MouseEvent, articleId: string) => {
+		e.stopPropagation();
+		if (!currentUser?._id) {
+			sweetMixinErrorAlert('Please log in to bookmark articles.');
+			router.push('/account/login');
+			return;
+		}
+
+		try {
+			await likeArticleMutation({ variables: { input: articleId } });
+			await refetch();
+			sweetTopSmallSuccessAlert('Bookmark updated.', 700);
+		} catch (err: any) {
+			sweetMixinErrorAlert(err?.message || 'Action failed.');
+		}
+	};
+
+	const memberName = member?.memberFullName || member?.memberNick || 'Member';
+
 	return (
-		<main className="member-articles-content">
+		<div className="member-content-area">
 			{/* Content Header & Sort Filter */}
-			<div className="content-header-bar">
-				<div className="title-block">
-					<div className="title-row">
+			<div className="content-header-row">
+				<div className="header-title-box">
+					<div className="title-badge-wrap">
 						<h2>Articles</h2>
-						<span className="published-badge">18 published</span>
+						<span className="count-pill">{total} published</span>
 					</div>
-					<p className="subtitle">
+					<p className="header-subtitle">
 						Travel journals, photo-essays, and architectural chronicles by {memberName}.
 					</p>
 				</div>
 
 				{/* Public Sort Pill Selector */}
-				<div className="sort-pills-box">
+				<div className="sort-pill-container">
 					<button
 						type="button"
-						className={`sort-pill ${sortFilter === 'newest' ? 'active' : ''}`}
-						onClick={() => setSortFilter('newest')}
+						className={`sort-btn ${sort === 'createdAt' ? 'active' : ''}`}
+						onClick={() => handleSortChange('createdAt')}
 					>
 						Newest
 					</button>
 					<button
 						type="button"
-						className={`sort-pill ${sortFilter === 'liked' ? 'active' : ''}`}
-						onClick={() => setSortFilter('liked')}
+						className={`sort-btn ${sort === 'articleLikes' ? 'active' : ''}`}
+						onClick={() => handleSortChange('articleLikes')}
 					>
 						Most Liked
 					</button>
 					<button
 						type="button"
-						className={`sort-pill ${sortFilter === 'viewed' ? 'active' : ''}`}
-						onClick={() => setSortFilter('viewed')}
+						className={`sort-btn ${sort === 'articleViews' ? 'active' : ''}`}
+						onClick={() => handleSortChange('articleViews')}
 					>
 						Most Viewed
 					</button>
 				</div>
 			</div>
 
-			{/* Articles Grid (3 cols desktop x 3 rows = 9 cards) */}
-			{displayArticles.length > 0 ? (
-				<div className="articles-grid" id="articles-grid">
-					{displayArticles.map((article) => {
-						const isBookmarked = !!bookmarks[article.id];
+			{/* Articles Grid or Loading or Empty State */}
+			{loading && articles.length === 0 ? (
+				<p className="member-profile-state">Loading articles...</p>
+			) : articles.length > 0 ? (
+				<div className="member-articles-grid" id="articles-grid">
+					{articles.map((article) => {
+						const isLiked = article?.meLiked?.[0]?.myFavorite || false;
+						const readTime = `${Math.max(1, Math.ceil((article.articleContent?.length || 200) / 400))} min read`;
+						const formattedDate = moment(isNaN(Number(article.createdAt)) ? article.createdAt : Number(article.createdAt)).format('MMM DD, YYYY');
+
 						return (
-							<article key={article.id} className="article-card group">
-								<div className="card-media-wrapper">
+							<article
+								key={article._id}
+								className="member-article-card"
+								onClick={() => router.push(`/community/detail?id=${article._id}`)}
+							>
+								{/* Image Thumbnail Container */}
+								<div className="card-img-box">
 									<img
-										src={article.image}
-										alt={article.title}
 										className="card-img"
+										src={getImageUrl(article.articleImage, DEFAULT_ARTICLE_IMAGE)}
+										alt={article.articleTitle}
 									/>
-									<div className="gradient-scrim" />
-									<span className="category-pill">{article.category}</span>
-									<div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10 }}>
-										<SaveButton 
-											isSaved={isBookmarked} 
-											onClick={(e) => handleBookmarkToggle(article.id, e)} 
-											style={{ backgroundColor: 'rgba(255,255,255,0.9)', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
-										/>
-									</div>
+									<div className="gradient-overlay"></div>
+
+									{/* Category Pill Tag */}
+									<span className="category-badge">{article.articleCategory || 'Expedition'}</span>
+
+									{/* Bookmark Button */}
+									<button
+										type="button"
+										className="bookmark-btn"
+										aria-label="Bookmark"
+										onClick={(e) => handleLikeToggle(e, article._id)}
+									>
+										<span
+											className="material-symbols-outlined"
+											style={isLiked ? { fontVariationSettings: "'FILL' 1", color: '#ba1a1a' } : undefined}
+										>
+											{isLiked ? 'bookmark' : 'bookmark_border'}
+										</span>
+									</button>
 								</div>
 
+								{/* Card Details */}
 								<div className="card-body">
-									<div className="text-content">
-										<Link href={`/community/detail?id=${article.id}`}>
-											<h3 className="card-title">{article.title}</h3>
-										</Link>
-										<p className="card-excerpt">{article.excerpt}</p>
+									<div className="card-text-group">
+										<h3 className="article-title">{article.articleTitle}</h3>
+										<p className="article-excerpt">
+											{article.articleContent || 'Photographic study and chronicle from the AURA archives.'}
+										</p>
 									</div>
 
+									{/* Footer Meta Row */}
 									<div className="card-footer-meta">
-										<span className="meta-left">
-											{article.date} · {article.readTime}
+										<span>
+											{formattedDate} · {readTime}
 										</span>
 										<div className="meta-stats">
 											<span className="stat-item">
 												<span className="material-symbols-outlined">favorite</span>
-												{article.likes}
+												{article.articleLikes || 0}
 											</span>
 											<span className="stat-item">
 												<span className="material-symbols-outlined">visibility</span>
-												{article.views}
+												{article.articleViews || 0}
 											</span>
 										</div>
 									</div>
@@ -256,53 +199,55 @@ const MemberArticles: React.FC<MemberArticlesProps> = ({
 					</div>
 					<h3>No articles published yet</h3>
 					<p>
-						{memberName} has not released any public dispatches or photo monographs yet. Check back
-						soon for new expeditions.
+						{memberName} has not released any public dispatches or photo monographs yet. Check back soon for new expeditions.
 					</p>
 				</div>
 			)}
 
 			{/* Minimalist Pagination */}
-			<div className="pagination-wrapper">
-				<span className="pagination-info">Showing 1–9 of 18 articles</span>
-				<div className="pagination-pills">
-					<button
-						type="button"
-						className="nav-arrow-btn"
-						aria-label="Previous page"
-						disabled={page === 1}
-						onClick={() => setPage(1)}
-					>
-						<span className="material-symbols-outlined">chevron_left</span>
-					</button>
+			{totalPages > 1 && (
+				<div className="pagination-wrapper">
+					<span className="pagination-info">
+						Showing {(page - 1) * 9 + 1}–{Math.min(page * 9, total)} of {total} articles
+					</span>
+					<div className="pagination-pills">
+						<button
+							type="button"
+							className="nav-arrow-btn"
+							aria-label="Previous page"
+							disabled={page === 1}
+							onClick={() => setPage((p) => Math.max(1, p - 1))}
+						>
+							<span className="material-symbols-outlined">chevron_left</span>
+						</button>
 
-					<button
-						type="button"
-						className={`page-num-btn ${page === 1 ? 'active' : ''}`}
-						onClick={() => setPage(1)}
-					>
-						1
-					</button>
+						{Array.from({ length: totalPages }).map((_, i) => {
+							const p = i + 1;
+							return (
+								<button
+									key={p}
+									type="button"
+									className={`page-num-btn ${page === p ? 'active' : ''}`}
+									onClick={() => setPage(p)}
+								>
+									{p}
+								</button>
+							);
+						})}
 
-					<button
-						type="button"
-						className={`page-num-btn ${page === 2 ? 'active' : ''}`}
-						onClick={() => setPage(2)}
-					>
-						2
-					</button>
-
-					<button
-						type="button"
-						className="nav-arrow-btn"
-						aria-label="Next page"
-						onClick={() => setPage(2)}
-					>
-						<span className="material-symbols-outlined">chevron_right</span>
-					</button>
+						<button
+							type="button"
+							className="nav-arrow-btn"
+							aria-label="Next page"
+							disabled={page === totalPages}
+							onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+						>
+							<span className="material-symbols-outlined">chevron_right</span>
+						</button>
+					</div>
 				</div>
-			</div>
-		</main>
+			)}
+		</div>
 	);
 };
 

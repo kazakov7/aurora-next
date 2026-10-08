@@ -16,7 +16,7 @@ export interface AgentApplicationsInquiry {
 
 export interface RejectAgentApplicationInput {
 	_id: string;
-	comment?: string;
+	rejectionReason: string;
 }
 
 export interface AgentInput {

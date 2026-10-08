@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
 import { GET_HOME_EXPLORERS } from "../../../apollo/user/query";
@@ -122,9 +123,17 @@ const CommunityCurators = () => {
   return (
     <section className="curators-section team-section">
       <div className="section-container">
-        <div className="section-header team-header">
-          <div className="team-badge">Team</div>
-          <h2 className="team-title">Meet the creative minds<br/>behind our success</h2>
+        <div className="section-header">
+          <div>
+            <span className="section-tag">Community Curators</span>
+            <h2 className="section-title">
+              Meet the creative minds behind our success
+            </h2>
+          </div>
+          <Link href="/community" className="section-link">
+            <span>Explore community</span>
+            <span className="material-symbols-outlined">arrow_forward</span>
+          </Link>
         </div>
 
         <div className="team-grid">
@@ -140,9 +149,6 @@ const CommunityCurators = () => {
               DEFAULT_USER_AVATAR,
             );
 
-            // Mock roles since backend only has memberType
-            const roles = ["WordPress Developer", "Social Media Specialist", "Product Designer", "UI Designer"];
-            const role = roles[index % roles.length];
             const shapeIndex = index % 4;
 
             return (
@@ -157,16 +163,18 @@ const CommunityCurators = () => {
                     src={avatarUrl}
                     alt={curator.memberNick}
                     className="team-cover-img"
-                    onError={(e: any) => { e.target.src = DEFAULT_USER_AVATAR; }}
+                    onError={(e: any) => {
+                      e.target.src = DEFAULT_USER_AVATAR;
+                    }}
                   />
                 </div>
-                
+
                 <div className="team-bottom-content">
                   <h3 className="team-name">
                     {curator.memberFullName || curator.memberNick}
                   </h3>
-                  <div className="team-role">{role}</div>
-                  
+                  <div className="team-role">{curator.memberType}</div>
+
                   <div className="team-social-icons">
                     <Globe size={18} strokeWidth={1.5} />
                     <Mail size={18} strokeWidth={1.5} />
@@ -174,10 +182,12 @@ const CommunityCurators = () => {
 
                   {user?._id !== curator._id && (
                     <div className="team-follow-wrapper">
-                      <FollowButton 
-                        isFollowing={isFollowing} 
-                        isLoading={isUpdatingFollow} 
-                        onClick={(e) => followHandler(e, curator._id, isFollowing)} 
+                      <FollowButton
+                        isFollowing={isFollowing}
+                        isLoading={isUpdatingFollow}
+                        onClick={(e) =>
+                          followHandler(e, curator._id, isFollowing)
+                        }
                         size="sm"
                       />
                     </div>

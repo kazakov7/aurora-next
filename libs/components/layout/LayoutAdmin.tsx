@@ -85,6 +85,10 @@ const withAdminLayout = (Component: any) => {
 										<span className="material-symbols-outlined">calendar_month</span>
 										<span>Bookings</span>
 									</Link>
+									<Link href="/_admin/notifications" className={`nav-item ${activePath === 'notifications' ? 'active' : ''}`}>
+										<span className="material-symbols-outlined">notifications</span>
+										<span>Notifications</span>
+									</Link>
 								</div>
 								
 								<div className="nav-group">
@@ -140,10 +144,10 @@ const withAdminLayout = (Component: any) => {
 							</div>
 							
 							<div className="header-right">
-								<button className="notif-btn" type="button">
+								<Link href="/_admin/notifications" className="notif-btn" aria-label="Notifications">
 									<span className="material-symbols-outlined">notifications</span>
 									<span className="notif-badge"></span>
-								</button>
+								</Link>
 								<div className="divider-vertical"></div>
 								<div className="user-profile">
 									<div className="user-info">

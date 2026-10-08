@@ -4,7 +4,15 @@ import { useQuery, useReactiveVar } from "@apollo/client";
 import { userVar } from "../../../apollo/store";
 import { sweetConfirmAlert } from "../../sweetAlert";
 import { logOut } from "../../auth";
-import { GET_FAVORITES, GET_FAVORITE_TOURS, GET_MY_BOOKINGS, GET_UNREAD_NOTIFICATION_COUNT } from "../../../apollo/user/query";
+import {
+  GET_FAVORITES,
+  GET_FAVORITE_TOURS,
+  GET_MY_BOOKINGS,
+  GET_UNREAD_NOTIFICATION_COUNT,
+  GET_MY_AGENT_APPLICATIONS,
+} from "../../../apollo/user/query";
+import { AgentType, AgentVerificationStatus } from "../../enums/agent.enum";
+import { Direction } from "../../enums/common.enum";
 import { BookingStatus } from "../../enums/booking.enum";
 
 interface MyProfileSidebarProps {
@@ -20,7 +28,10 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
   const user = useReactiveVar(userVar);
   const currentCat =
     activeCategory || (router.query?.category as string) || "articles";
-  const queryOptions = { fetchPolicy: "network-only" as const, skip: !user?._id };
+  const queryOptions = {
+    fetchPolicy: "network-only" as const,
+    skip: !user?._id,
+  };
   const { data: favoritePropertiesData } = useQuery(GET_FAVORITES, {
     ...queryOptions,
     variables: { input: { page: 1, limit: 1 } },
@@ -35,15 +46,44 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
       input: {
         page: 1,
         limit: 1,
-        search: { bookingStatusList: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+        search: {
+          bookingStatusList: [BookingStatus.PENDING, BookingStatus.CONFIRMED],
+        },
       },
     },
   });
-  const { data: unreadData } = useQuery(GET_UNREAD_NOTIFICATION_COUNT, queryOptions);
+  const { data: unreadData } = useQuery(
+    GET_UNREAD_NOTIFICATION_COUNT,
+    queryOptions,
+  );
+  const { data: agentData } = useQuery(GET_MY_AGENT_APPLICATIONS, {
+    fetchPolicy: "network-only",
+    variables: {
+      input: {
+        page: 1,
+        limit: 1,
+        search: {},
+      },
+    },
+  });
+
+    const latestApplication = agentData?.getMyAgentApplications?.list?.[0];
+  const myAgentType = latestApplication?.verificationStatus === AgentVerificationStatus.APPROVED ? latestApplication.agentType : null;
+  const hasPending = latestApplication?.verificationStatus === AgentVerificationStatus.PENDING;
+  const hasRejected = latestApplication?.verificationStatus === AgentVerificationStatus.REJECTED;
+  const isApprovedAgent = user?.memberType === "AGENT" && myAgentType;
+
+  // Partner tab label
+  let partnerTabLabel = "Become a Partner";
+  if (hasPending || hasRejected) {
+    partnerTabLabel = "Agent Application";
+  }
+
   const wishlistCount =
     (favoritePropertiesData?.getFavorites?.metaCounter?.[0]?.total ?? 0) +
     (favoriteToursData?.getFavoriteTours?.metaCounter?.[0]?.total ?? 0);
-  const activeBookingsCount = activeBookingsData?.getMyBookings?.metaCounter?.[0]?.total ?? 0;
+  const activeBookingsCount =
+    activeBookingsData?.getMyBookings?.metaCounter?.[0]?.total ?? 0;
   const unreadCount = unreadData?.getUnreadNotificationCount ?? 0;
 
   const handleNavClick = (e: React.MouseEvent, cat: string) => {
@@ -115,12 +155,20 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
       icon: "notifications",
       badge: `${unreadCount} unread`,
     },
-    {
+        {
       id: "settings",
       label: "Settings",
       icon: "tune",
     },
   ];
+  
+  if (user?.memberType === "USER" && !isApprovedAgent) {
+      navItems.splice(navItems.length - 1, 0, {
+          id: "partner",
+          label: partnerTabLabel,
+          icon: "storefront",
+      });
+  }
 
   return (
     <aside className="profile-sidebar">
@@ -154,20 +202,92 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
           );
         })}
 
+        {isApprovedAgent && (
+          <>
+            <div
+              className="sidebar-section-title"
+              style={{
+                padding: "16px 12px 8px",
+                fontSize: "11px",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                color: "#707881",
+                fontWeight: 600,
+              }}
+            >
+              Partner Operations
+            </div>
+            {myAgentType === AgentType.HOTEL && (
+              <button
+                type="button"
+                className={`sidebar-item-btn ${
+                  currentCat === "myHotels" ? "active" : ""
+                }`}
+                onClick={(e) => handleNavClick(e, "myHotels")}
+              >
+                <div className="item-left">
+                  <span className="material-symbols-outlined">domain</span>
+                  <span>My Hotels</span>
+                </div>
+              </button>
+            )}
+            {myAgentType === AgentType.TOUR && (
+              <button
+                type="button"
+                className={`sidebar-item-btn ${
+                  currentCat === "myTours" ? "active" : ""
+                }`}
+                onClick={(e) => handleNavClick(e, "myTours")}
+              >
+                <div className="item-left">
+                  <span className="material-symbols-outlined">explore</span>
+                  <span>My Tours</span>
+                </div>
+              </button>
+            )}
+            <button
+              type="button"
+              className={`sidebar-item-btn ${
+                currentCat === "reservations" ? "active" : ""
+              }`}
+              onClick={(e) => handleNavClick(e, "reservations")}
+            >
+              <div className="item-left">
+                <span className="material-symbols-outlined">
+                  calendar_month
+                </span>
+                <span>Reservations</span>
+              </div>
+            </button>
+          </>
+        )}
+
         <div className="sidebar-nav-divider" />
 
-        {user?.memberType === 'ADMIN' && (
+        {user?.memberType === "ADMIN" && (
           <button
             type="button"
             className="sidebar-item-btn"
-            style={{ color: '#006194', fontWeight: 600, background: 'rgba(204, 229, 255, 0.3)' }}
-            onClick={() => router.push('/_admin')}
+            style={{
+              color: "#006194",
+              fontWeight: 600,
+              background: "rgba(204, 229, 255, 0.3)",
+            }}
+            onClick={() => router.push("/_admin")}
           >
             <div className="item-left">
-              <span className="material-symbols-outlined" style={{ color: '#006194' }}>dashboard</span>
+              <span
+                className="material-symbols-outlined"
+                style={{ color: "#006194" }}
+              >
+                dashboard
+              </span>
               <span>Admin Dashboard</span>
             </div>
-            <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#006194" }}>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: "16px", color: "#006194" }}
+            >
               north_east
             </span>
           </button>
@@ -198,7 +318,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
         <button
           type="button"
           className="chat-curator-btn"
-          onClick={() => router.push('/chat')}
+          onClick={() => router.push("/chat")}
         >
           Chat with Curator
         </button>

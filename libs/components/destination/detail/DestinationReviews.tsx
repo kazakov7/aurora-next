@@ -233,7 +233,7 @@ const DestinationReviews = ({
 												<span className="author-handle">{authorNick}</span>
 												<span className="meta-dot"></span>
 												<span className="review-date">
-													{moment(rev.createdAt).fromNow()}
+													{moment(isNaN(Number(rev.createdAt)) ? rev.createdAt : Number(rev.createdAt)).fromNow()}
 												</span>
 											</div>
 											<div className="stars-row">

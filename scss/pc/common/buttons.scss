@@ -8,32 +8,36 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  background: transparent;
-  border: none;
+  background-color: #ffffff;
+  border: 1px solid rgba(220, 226, 247, 0.8);
   cursor: pointer;
-  padding: 8px;
+  padding: 6px 12px;
   border-radius: 9999px;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.25s ease;
   color: #707881; /* outline color */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 
   .material-symbols-outlined {
-    font-size: 24px;
-    transition: all 0.3s ease;
+    font-size: 20px;
+    transition: all 0.25s ease;
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    color: #707881;
   }
 
   .like-count {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: inherit;
     font-family: 'Inter', sans-serif;
   }
 
   &:hover {
-    background-color: rgba(255, 60, 60, 0.08);
-    color: #ff3c3c;
+    background-color: #ffffff;
+    color: #ba1a1a;
+    border-color: rgba(186, 26, 26, 0.3);
     
     .material-symbols-outlined {
+      color: #ba1a1a;
       transform: scale(1.1);
     }
   }
@@ -43,24 +47,37 @@
   }
 
   &.liked {
-    color: #ff3c3c; /* beautiful modern red */
+    background-color: #ba1a1a !important; /* RED BACKGROUND WHEN LIKED */
+    color: #ffffff !important;
+    border-color: #ba1a1a !important;
+    box-shadow: 0 2px 6px rgba(186, 26, 26, 0.25);
 
     .material-symbols-outlined {
+      color: #ffffff !important;
       font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       animation: heartPulse 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .like-count {
+      color: #ffffff !important;
+    }
+
+    &:hover {
+      background-color: #d32f2f !important;
+      color: #ffffff !important;
     }
   }
 
   /* Sizes */
   &.size-sm {
-    padding: 4px;
-    .material-symbols-outlined { font-size: 20px; }
-    .like-count { font-size: 13px; }
+    padding: 4px 10px;
+    .material-symbols-outlined { font-size: 18px; }
+    .like-count { font-size: 12px; }
   }
   &.size-lg {
-    padding: 10px;
-    .material-symbols-outlined { font-size: 28px; }
-    .like-count { font-size: 16px; }
+    padding: 10px 18px;
+    .material-symbols-outlined { font-size: 24px; }
+    .like-count { font-size: 15px; }
   }
 }
 

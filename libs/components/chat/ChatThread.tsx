@@ -1,262 +1,274 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChatConversation, ChatMessage } from './chat.types';
-import { DEFAULT_USER_AVATAR } from '../../config';
+import React, { useEffect, useRef, useState } from "react";
+import { ChatConversation, ChatMessage, ChatMember } from "./chat.types";
+import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
 
 interface ChatThreadProps {
-	conversation: ChatConversation;
-	onSendMessage: (conversationId: string, text: string) => void;
+  conversation?: ChatConversation;
+  messages: ChatMessage[];
+  currentMemberId: string;
+  loading: boolean;
+  error?: string;
+  hasOlderMessages: boolean;
+  socketStatus: "connected" | "reconnecting" | "disconnected";
+  onLoadOlder: () => Promise<void>;
+  onSendMessage: (text: string) => Promise<boolean>;
 }
 
-const ChatThread: React.FC<ChatThreadProps> = ({ conversation, onSendMessage }) => {
-	const [textInput, setTextInput] = useState('');
-	const messagesEndRef = useRef<HTMLDivElement>(null);
+const getPeer = (
+  conversation: ChatConversation,
+  currentMemberId: string,
+): ChatMember | undefined =>
+  conversation.memberOneId === currentMemberId
+    ? conversation.memberTwoData
+    : conversation.memberOneData;
+const formatTime = (value: string) =>
+  new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(
+    new Date(value),
+  );
+const formatDate = (value: string) =>
+  new Intl.DateTimeFormat("en", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(value));
 
-	const scrollToBottom = () => {
-		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-	};
+const ChatThread: React.FC<ChatThreadProps> = ({
+  conversation,
+  messages,
+  currentMemberId,
+  loading,
+  error,
+  hasOlderMessages,
+  socketStatus,
+  onLoadOlder,
+  onSendMessage,
+}) => {
+  const [textInput, setTextInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
+  const feedRef = useRef<HTMLDivElement>(null);
+  const previousConversationIdRef = useRef("");
 
-	useEffect(() => {
-		scrollToBottom();
-	}, [conversation.messages]);
+  useEffect(() => {
+    if (!conversation || previousConversationIdRef.current === conversation._id)
+      return;
+    previousConversationIdRef.current = conversation._id;
+    setTextInput("");
+    setSendError("");
+  }, [conversation]);
 
-	const handleSend = (e?: React.FormEvent) => {
-		if (e) e.preventDefault();
-		if (!textInput.trim()) return;
-		onSendMessage(conversation.id, textInput.trim());
-		setTextInput('');
-	};
+  useEffect(() => {
+    if (!feedRef.current || !messages.length) return;
+    feedRef.current.scrollTop = feedRef.current.scrollHeight;
+  }, [conversation?._id, messages.length]);
 
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-		if (e.key === 'Enter' && !e.shiftKey) {
-			e.preventDefault();
-			handleSend();
-		}
-	};
+  const handleSend = async (event?: React.FormEvent) => {
+    event?.preventDefault();
+    const content = textInput.trim();
+    if (!content || sending) return;
+    setSending(true);
+    setSendError("");
+    try {
+      const wasSent = await onSendMessage(content);
+      if (wasSent) setTextInput("");
+      else
+        setSendError(
+          socketStatus === "disconnected"
+            ? "Reconnecting to chat. Your message is still here."
+            : "Message could not be sent. Please try again.",
+        );
+    } catch {
+      setSendError("Message could not be sent. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  };
 
-	const handleDownloadAttachment = (fileName: string) => {
-		alert(`Downloading ${fileName}... (Verified Concierge File)`);
-	};
+  const handleLoadOlder = async () => {
+    const feed = feedRef.current;
+    const previousHeight = feed?.scrollHeight || 0;
+    await onLoadOlder();
+    requestAnimationFrame(() => {
+      if (feed) feed.scrollTop = feed.scrollHeight - previousHeight;
+    });
+  };
 
-	const isGlobal = conversation.role === 'global';
+  if (!conversation)
+    return (
+      <main className="chat-thread-panel">
+        <div className="no-conversations-empty">
+          <p>Select a conversation to start messaging.</p>
+        </div>
+      </main>
+    );
+  const isGlobal = conversation.chatType === "GLOBAL";
+  const peer = getPeer(conversation, currentMemberId);
+  const name = isGlobal
+    ? "Global Chat"
+    : peer?.memberNick || peer?.memberFullName || "Unavailable member";
+  const subtitle = isGlobal
+    ? "Community conversation"
+    : peer?.memberType === "AGENT"
+    ? "Travel partner"
+    : "Traveler";
+  let previousDate = "";
 
-	return (
-		<main aria-label="Conversation Thread" className="chat-thread-panel">
-			{/* Chat Header */}
-			<header className="thread-header">
-				<div className="header-info">
-					<div className="avatar-wrapper">
-						{conversation.avatar ? (
-							<img src={conversation.avatar} alt={conversation.name} className="header-avatar" />
-						) : (
-							<div className="avatar-placeholder">
-								<span className="material-symbols-outlined">{conversation.icon || 'person'}</span>
-							</div>
-						)}
-						{conversation.isOnline && <span className="online-indicator" />}
-					</div>
-
-					<div className="name-details">
-						<div className="title-row">
-							<h1>{conversation.name}</h1>
-							{conversation.verified && (
-								<span className="material-symbols-outlined verified-icon">verified</span>
-							)}
-							{conversation.roleBadge && (
-								<span className="role-badge">{conversation.roleBadge}</span>
-							)}
-						</div>
-
-						<div className="meta-status-row">
-							<span className="active-status">
-								<span className="pulse-dot" />
-								{conversation.isOnline ? 'Active Now' : 'Offline'}
-							</span>
-							<span className="bullet">·</span>
-							<span className="sub-detail">{conversation.subtitle}</span>
-							{conversation.location && (
-								<>
-									<span className="bullet">·</span>
-									<span className="location-tag">
-										<span className="material-symbols-outlined">location_on</span>
-										{conversation.location}
-									</span>
-								</>
-							)}
-						</div>
-					</div>
-				</div>
-
-				{/* Header Actions */}
-				<div className="header-actions">
-					<button
-						type="button"
-						className="action-icon-btn"
-						aria-label="Audio call with host"
-						onClick={() => alert(`Initiating encrypted audio call with ${conversation.name}...`)}
-					>
-						<span className="material-symbols-outlined">call</span>
-					</button>
-					<button
-						type="button"
-						className="action-icon-btn"
-						aria-label="Video consultation"
-						onClick={() => alert(`Initiating 4K video consultation with ${conversation.name}...`)}
-					>
-						<span className="material-symbols-outlined">videocam</span>
-					</button>
-					<button
-						type="button"
-						className="action-icon-btn"
-						aria-label="Toggle profile details"
-						onClick={() => alert(`Showing profile dossier for ${conversation.name}`)}
-					>
-						<span className="material-symbols-outlined">info</span>
-					</button>
-					<button
-						type="button"
-						className="action-icon-btn"
-						aria-label="More conversation options"
-						onClick={() => alert('Options: Mute Notifications, Export Transcript, Block Contact.')}
-					>
-						<span className="material-symbols-outlined">more_vert</span>
-					</button>
-				</div>
-			</header>
-
-			{/* Message History Feed */}
-			<div className="thread-messages-feed">
-				{/* Date Separator */}
-				<div className="date-separator">
-					<span className="separator-badge">Today, October 24</span>
-				</div>
-
-				{/* Messages List */}
-				{conversation.messages.map((msg: ChatMessage) => {
-					const isMe = msg.isOutgoing || msg.senderId === 'me';
-					return (
-						<div
-							key={msg.id}
-							className={`message-group ${isMe ? 'outgoing' : 'incoming'}`}
-						>
-							{!isMe && (
-								<img
-									src={msg.senderAvatar || conversation.avatar || DEFAULT_USER_AVATAR}
-									alt={msg.senderName}
-									className="msg-avatar"
-								/>
-							)}
-
-							<div className="msg-content-col">
-								<div className={`message-bubble ${isMe ? 'me-bubble' : 'peer-bubble'}`}>
-									<p>{msg.text}</p>
-
-									{/* PDF Attachment Card if present */}
-									{msg.attachment && (
-										<div
-											className="pdf-attachment-card"
-											onClick={() => handleDownloadAttachment(msg.attachment!.fileName)}
-										>
-											<div className="attachment-icon-box">
-												<span className="material-symbols-outlined">picture_as_pdf</span>
-											</div>
-											<div className="attachment-info">
-												<p className="file-name">{msg.attachment.fileName}</p>
-												<p className="file-meta">{msg.attachment.fileSize}</p>
-											</div>
-											<button
-												type="button"
-												className="dl-btn"
-												aria-label="Download attachment"
-											>
-												<span className="material-symbols-outlined">arrow_downward</span>
-											</button>
-										</div>
-									)}
-								</div>
-
-								<div className="msg-meta-row">
-									<span className="msg-time">{msg.time}</span>
-									{isMe && (
-										<span className="material-symbols-outlined check-icon">done_all</span>
-									)}
-								</div>
-							</div>
-						</div>
-					);
-				})}
-				<div ref={messagesEndRef} />
-			</div>
-
-			{/* Message Composer Footer */}
-			<footer className="thread-composer">
-				<form onSubmit={handleSend} className="composer-inner">
-					<div className="attachment-actions">
-						<button
-							type="button"
-							className="composer-icon-btn"
-							aria-label="Attach documents"
-							onClick={() => alert('Attachment: Select file to send (PDF, DOCX, HEIC).')}
-						>
-							<span className="material-symbols-outlined">add_circle</span>
-						</button>
-						<button
-							type="button"
-							className="composer-icon-btn"
-							aria-label="Attach imagery"
-							onClick={() => alert('Select photo from gallery.')}
-						>
-							<span className="material-symbols-outlined">image</span>
-						</button>
-						<button
-							type="button"
-							className="composer-icon-btn"
-							aria-label="Select emoji"
-							onClick={() => setTextInput((prev) => prev + ' 😊')}
-						>
-							<span className="material-symbols-outlined">mood</span>
-						</button>
-					</div>
-
-					<input
-						type="text"
-						id="chat-input"
-						value={textInput}
-						onChange={(e) => setTextInput(e.target.value)}
-						onKeyDown={handleKeyDown}
-						placeholder="Type a message or press '/' for concierge shortcuts..."
-						className="composer-input"
-					/>
-
-					<div className="send-actions">
-						<button
-							type="button"
-							className="composer-icon-btn"
-							aria-label="Record voice note"
-							onClick={() => alert('Recording voice note... Release to send.')}
-						>
-							<span className="material-symbols-outlined">mic</span>
-						</button>
-						<button
-							type="submit"
-							id="btn-send-message"
-							className="send-btn"
-							aria-label="Send message"
-						>
-							<span className="material-symbols-outlined">send</span>
-						</button>
-					</div>
-				</form>
-
-				<div className="composer-submeta">
-					<span className="encrypted-notice">
-						<span className="material-symbols-outlined">lock</span>
-						End-to-End Encrypted Concierge Channel
-					</span>
-					<span className="shortcut-hint">Shift + Return for new line</span>
-				</div>
-			</footer>
-		</main>
-	);
+  return (
+    <main aria-label="Conversation Thread" className="chat-thread-panel">
+      <header className="thread-header">
+        <div className="header-info">
+          <div className="avatar-wrapper">
+            {isGlobal ? (
+              <div className="avatar-placeholder">
+                <span className="material-symbols-outlined">public</span>
+              </div>
+            ) : (
+              <img
+                src={getImageUrl(peer?.memberImage, DEFAULT_USER_AVATAR)}
+                alt={name}
+                className="header-avatar"
+              />
+            )}
+          </div>
+          <div className="name-details">
+            <div className="title-row">
+              <h1>{name}</h1>
+              {isGlobal ? <span className="role-badge">Community</span> : null}
+            </div>
+            <div className="meta-status-row">
+              <span className="active-status">
+                <span className={`pulse-dot ${socketStatus}`} />
+                {socketStatus === "connected"
+                  ? "Connected"
+                  : socketStatus === "reconnecting"
+                  ? "Reconnecting"
+                  : "Offline"}
+              </span>
+              <span className="bullet">·</span>
+              <span className="sub-detail">{subtitle}</span>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div ref={feedRef} className="thread-messages-feed">
+        {hasOlderMessages ? (
+          <button
+            type="button"
+            className="load-older-btn"
+            onClick={handleLoadOlder}
+          >
+            Load older messages
+          </button>
+        ) : null}
+        {loading && !messages.length ? (
+          <div className="no-conversations-empty">
+            <p>Loading messages…</p>
+          </div>
+        ) : null}
+        {error ? (
+          <div className="no-conversations-empty">
+            <p>{error}</p>
+          </div>
+        ) : null}
+        {!loading && !error && !messages.length ? (
+          <div className="no-conversations-empty">
+            <p>No messages yet. Say hello.</p>
+          </div>
+        ) : null}
+        {messages.map((message) => {
+          const date = formatDate(message.createdAt);
+          const showDate = date !== previousDate;
+          previousDate = date;
+          const isMe = message.senderId === currentMemberId;
+          const senderName =
+            message.senderData?.memberNick ||
+            message.senderData?.memberFullName ||
+            "Member";
+          return (
+            <React.Fragment key={message._id}>
+              {showDate ? (
+                <div className="date-separator">
+                  <span className="separator-badge">{date}</span>
+                </div>
+              ) : null}
+              <div
+                className={`message-group ${isMe ? "outgoing" : "incoming"}`}
+              >
+                {!isMe ? (
+                  <img
+                    src={getImageUrl(
+                      message.senderData?.memberImage,
+                      DEFAULT_USER_AVATAR,
+                    )}
+                    alt={senderName}
+                    className="msg-avatar"
+                  />
+                ) : null}
+                <div className="msg-content-col">
+                  {isGlobal && !isMe ? (
+                    <span className="message-sender-name">{senderName}</span>
+                  ) : null}
+                  <div
+                    className={`message-bubble ${
+                      isMe ? "me-bubble" : "peer-bubble"
+                    }`}
+                  >
+                    <p>{message.messageContent}</p>
+                  </div>
+                  <div className="msg-meta-row">
+                    <span className="msg-time">
+                      {formatTime(message.createdAt)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </React.Fragment>
+          );
+        })}
+      </div>
+      <footer className="thread-composer">
+        <form onSubmit={handleSend} className="composer-inner">
+          <textarea
+            id="chat-input"
+            value={textInput}
+            onChange={(event) => setTextInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                void handleSend();
+              }
+            }}
+            placeholder="Type a message…"
+            className="composer-input"
+            maxLength={1000}
+            disabled={sending || socketStatus === "disconnected"}
+          />
+          <div className="send-actions">
+            <button
+              type="submit"
+              id="btn-send-message"
+              className="send-btn"
+              aria-label="Send message"
+              disabled={
+                !textInput.trim() || sending || socketStatus === "disconnected"
+              }
+            >
+              <span className="material-symbols-outlined">send</span>
+            </button>
+          </div>
+        </form>
+        <div className="composer-submeta">
+          <span>
+            {sendError ||
+              (socketStatus === "connected"
+                ? "Messages are delivered through AURORA."
+                : "Waiting for a secure chat connection…")}
+          </span>
+          <span className="shortcut-hint">Shift + Enter for new line</span>
+        </div>
+      </footer>
+    </main>
+  );
 };
 
 export default ChatThread;

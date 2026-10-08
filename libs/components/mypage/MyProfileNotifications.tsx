@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Stack, Box, Pagination } from '@mui/material';
 import { useQuery, useMutation, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
@@ -9,6 +9,7 @@ import { NotificationStatus } from '../../enums/notification.enum';
 import { sweetErrorHandling } from '../../sweetAlert';
 import { useRouter } from 'next/router';
 import moment from 'moment';
+import { useNotificationRealtime } from '../../hooks/useNotificationRealtime';
 
 interface NotificationsInquiry {
 	page: number;
@@ -31,6 +32,7 @@ const MyProfileNotifications = () => {
 	const [notifications, setNotifications] = useState<Notification[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [unreadCount, setUnreadCount] = useState<number>(0);
+	const [expandedNotificationId, setExpandedNotificationId] = useState<string | null>(null);
 
 	/** APOLLO REQUESTS **/
 	const { loading, data, refetch } = useQuery(GET_MY_NOTIFICATIONS, {
@@ -62,6 +64,12 @@ const MyProfileNotifications = () => {
 		setUnreadCount(unreadData?.getUnreadNotificationCount || 0);
 	}, [unreadData]);
 
+	const handleRealtimeNotification = useCallback(() => {
+		void refetch();
+		void refetchUnread();
+	}, [refetch, refetchUnread]);
+	useNotificationRealtime({ memberId: user?._id, onNotification: handleRealtimeNotification });
+
 	/** HANDLERS **/
 	const handleFilterChange = (status?: NotificationStatus) => {
 		setInquiry({
@@ -87,10 +95,14 @@ const MyProfileNotifications = () => {
 		}
 	};
 
-	const handleNotificationAction = async (notification: Notification) => {
+	const handleNotificationExpand = async (notification: Notification) => {
+		setExpandedNotificationId((current) => current === notification._id ? null : notification._id);
 		if (notification.notificationStatus === NotificationStatus.WAIT) {
 			await handleMarkAsRead(notification._id);
 		}
+	};
+
+	const handleNotificationAction = async (notification: Notification) => {
 		if (notification.notificationType === 'FOLLOW' && notification.authorId) {
 			try {
 				await subscribe({ variables: { input: notification.authorId }, refetchQueries: ['GetMember'] });
@@ -202,6 +214,7 @@ const MyProfileNotifications = () => {
 						<Stack
 							key={notif._id}
 							className={`notification-item ${notif.notificationStatus === NotificationStatus.WAIT ? 'unread' : 'read'}`}
+							onClick={() => void handleNotificationExpand(notif)}
 							direction="row"
 							justifyContent="space-between"
 							alignItems="center"
@@ -216,8 +229,9 @@ const MyProfileNotifications = () => {
 									<div className="title">
 									<strong>{notif.notificationTitle}</strong>
 									</div>
-									{notif.notificationDesc && <span className="desc">“{notif.notificationDesc}”</span>}
-									<span className="time">{moment(notif.createdAt).fromNow()}</span>
+									{notif.authorData && <span className="sender">{notif.authorData.memberFullName || notif.authorData.memberNick}</span>}
+									{expandedNotificationId === notif._id && notif.notificationDesc && <span className="desc">“{notif.notificationDesc}”</span>}
+									<span className="time">{moment(isNaN(Number(notif.createdAt)) ? notif.createdAt : Number(notif.createdAt)).fromNow()}</span>
 								</Stack>
 							</Stack>
 							<Stack className="item-right" direction="row" alignItems="center" spacing={1}>
@@ -225,12 +239,12 @@ const MyProfileNotifications = () => {
 									<Box className="unread-dot" />
 								)}
 								{notif.notificationType === 'FOLLOW' && (
-									<button className="action-btn" onClick={() => void handleNotificationAction(notif)}>Follow Back</button>
+									<button className="action-btn" onClick={(event) => { event.stopPropagation(); void handleNotificationAction(notif); }}>Follow Back</button>
 								)}
 								{notif.notificationType === 'BOOKING' && (
-									<button className="action-btn-primary" onClick={() => void handleNotificationAction(notif)}>View Booking</button>
+									<button className="action-btn-primary" onClick={(event) => { event.stopPropagation(); void handleNotificationAction(notif); }}>View Booking</button>
 								)}
-								<button className="more-btn" aria-label="Mark notification as read" disabled={notif.notificationStatus === NotificationStatus.READ} onClick={() => handleMarkAsRead(notif._id)}>
+								<button className="more-btn" aria-label="Mark notification as read" disabled={notif.notificationStatus === NotificationStatus.READ} onClick={(event) => { event.stopPropagation(); void handleMarkAsRead(notif._id); }}>
 									<span className="material-symbols-outlined">check</span>
 								</button>
 							</Stack>

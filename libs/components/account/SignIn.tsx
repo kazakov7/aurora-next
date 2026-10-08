@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useMutation } from '@apollo/client';
-import { LOGIN } from '../../../apollo/user/mutation';
+import { GOOGLE_AUTH, LOGIN } from '../../../apollo/user/mutation';
 import { setJwtToken, updateUserInfo } from '../../auth';
+import { getGoogleAuthErrorMessage, getSafeAuthRedirect, renderGoogleSignInButton, startKakaoAuthorization } from '../../auth/social';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 
 interface SignInProps {
@@ -17,9 +18,12 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 	const [showPassword, setShowPassword] = useState<boolean>(false);
 	const [rememberMe, setRememberMe] = useState<boolean>(true);
 	const [identifierHint, setIdentifierHint] = useState<string>('');
+	const googleButtonRef = useRef<HTMLDivElement>(null);
 
 	/** APOLLO REQUESTS **/
 	const [loginMutation, { loading }] = useMutation(LOGIN);
+	const [googleAuth, { loading: googleLoading }] = useMutation(GOOGLE_AUTH);
+	const [socialLoading, setSocialLoading] = useState<'google' | 'kakao' | ''>('');
 
 	/** HANDLERS **/
 	const handleIdentifierChange = (val: string) => {
@@ -65,8 +69,52 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 		}
 	};
 
-	const handleSocialClick = (provider: string) => {
-		sweetMixinErrorAlert(`${provider} login is currently integrating with production OAuth.`);
+	const handleGoogleLogin = useCallback(async (credential: string) => {
+		if (socialLoading) return;
+		try {
+			setSocialLoading('google');
+			const { data } = await googleAuth({ variables: { input: { credential } } });
+			const member = data?.googleAuth;
+			if (!member?.accessToken) throw new Error('SOCIAL_AUTH_FAILED');
+			setJwtToken(member.accessToken);
+			updateUserInfo(member.accessToken);
+			await sweetTopSmallSuccessAlert(`Welcome, ${member.memberNick}!`, 800);
+			await router.push(getSafeAuthRedirect(router.query.referrer));
+		} catch (error) {
+			sweetMixinErrorAlert(getGoogleAuthErrorMessage(error, 'sign-in'));
+		} finally {
+			setSocialLoading('');
+		}
+	}, [googleAuth, router, socialLoading]);
+
+	useEffect(() => {
+		const container = googleButtonRef.current;
+		if (!container) return;
+		let disposed = false;
+		void renderGoogleSignInButton(container, (credential) => {
+			if (!disposed) void handleGoogleLogin(credential);
+		}).catch((error) => {
+			if (!disposed) sweetMixinErrorAlert(getGoogleAuthErrorMessage(error, 'sign-in'));
+		});
+		return () => {
+			disposed = true;
+			container.replaceChildren();
+		};
+	}, [handleGoogleLogin]);
+
+	const handleKakaoLogin = () => {
+		if (socialLoading) return;
+		try {
+			setSocialLoading('kakao');
+			startKakaoAuthorization(router.query.referrer);
+		} catch {
+			setSocialLoading('');
+			sweetMixinErrorAlert('Kakao sign-in is not configured.');
+		}
+	};
+
+	const handleUnsupportedSocial = (provider: string) => {
+		sweetMixinErrorAlert(`${provider} sign-in is not available yet.`);
 	};
 
 	return (
@@ -197,39 +245,19 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 					{/* Social Authentication Triad */}
 					<div className="social-grid">
 						{/* Google */}
-						<button
-							type="button"
-							className="social-btn"
-							title="Continue with Google"
-							onClick={() => handleSocialClick('Google')}
-						>
-							<svg viewBox="0 0 24 24">
-								<path
-									d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z"
-									fill="#4285F4"
-								></path>
-								<path
-									d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"
-									fill="#34A853"
-								></path>
-								<path
-									d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.99 0 12s.45 3.83 1.25 5.42l4.03-3.15z"
-									fill="#FBBC05"
-								></path>
-								<path
-									d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-									fill="#EA4335"
-								></path>
-							</svg>
-							<span>Google</span>
-						</button>
+						<div
+							ref={googleButtonRef}
+							className={`google-auth-button ${loading || googleLoading || socialLoading ? 'is-disabled' : ''}`}
+							aria-label="Continue with Google"
+						/>
 
 						{/* Kakao */}
 						<button
 							type="button"
 							className="social-btn"
 							title="Continue with Kakao"
-							onClick={() => handleSocialClick('Kakao')}
+							onClick={handleKakaoLogin}
+							disabled={loading || googleLoading || Boolean(socialLoading)}
 						>
 							<svg fill="#381E1F" viewBox="0 0 24 24">
 								<path d="M12 3C6.477 3 2 6.477 2 10.767c0 2.775 1.884 5.21 4.724 6.56l-1.2 4.41c-.105.386.326.697.66.476l5.228-3.468c.192.013.388.022.588.022 5.523 0 10-3.477 10-7.767C22 6.477 17.523 3 12 3z"></path>
@@ -242,7 +270,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 							type="button"
 							className="social-btn"
 							title="Continue with Telegram"
-							onClick={() => handleSocialClick('Telegram')}
+							onClick={() => handleUnsupportedSocial('Telegram')}
 						>
 							<svg fill="#229ED9" viewBox="0 0 24 24">
 								<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"></path>

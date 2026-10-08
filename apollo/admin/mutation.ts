@@ -28,7 +28,7 @@ export const APPROVE_AGENT_APPLICATION = gql`
 			_id
 			memberId
 			agentType
-			status
+			verificationStatus
 			updatedAt
 		}
 	}
@@ -40,8 +40,8 @@ export const REJECT_AGENT_APPLICATION = gql`
 			_id
 			memberId
 			agentType
-			status
-			comment
+			verificationStatus
+			rejectionReason
 			updatedAt
 		}
 	}

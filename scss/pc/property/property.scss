@@ -390,84 +390,92 @@
     flex: 1;
     min-width: 0;
 
-    .listing-header-row {
+    .listing-header-box {
+      background: $surface-container-lowest;
+      border-radius: 16px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(191, 199, 210, 0.35);
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
       gap: 16px;
-      padding-bottom: 24px;
+      margin-bottom: 24px;
 
-      .header-titles {
-        .title-with-badge {
+      .header-top-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .heading-with-counter {
           display: flex;
           align-items: center;
           gap: 12px;
 
           .listing-heading {
-            font-size: 28px;
-            font-weight: 600;
+            font-size: 22px;
+            font-weight: 700;
             color: $on-surface;
-            margin: 0;
             letter-spacing: -0.02em;
+            margin: 0;
           }
 
-          .stays-count-badge {
+          .journeys-badge {
             padding: 4px 10px;
             border-radius: 9999px;
             background: $surface-container;
-            color: $on-surface-variant;
+            color: $primary;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 700;
           }
         }
 
-        .listing-subtext {
-          font-size: 13px;
-          color: $on-surface-variant;
-          margin: 4px 0 0;
-        }
-      }
+        .sort-group {
+          display: flex;
+          align-items: center;
+          gap: 8px;
 
-      .sort-controls {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-
-        .sort-label {
-          font-size: 13px;
-          color: $on-surface-variant;
-          white-space: nowrap;
-        }
-
-        .sort-select-wrapper {
-          position: relative;
-
-          .sort-dropdown {
-            appearance: none;
-            background: $surface-container-lowest;
-            color: $on-surface;
-            font-size: 13px;
-            font-weight: 500;
-            border-radius: 12px;
-            padding: 8px 32px 8px 14px;
-            border: none;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-            cursor: pointer;
-            outline: none;
-
-            &:focus {
-              box-shadow: 0 0 0 2px rgba(0, 97, 148, 0.2);
-            }
-          }
-
-          .dropdown-arrow {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-            font-size: 18px;
+          .sort-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
             color: $outline;
+            font-weight: 600;
+          }
+
+          .sort-dropdown-box {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+
+            .sort-dropdown {
+              appearance: none;
+              -webkit-appearance: none;
+              background: $surface-container-low;
+              border: none;
+              border-radius: 8px;
+              padding: 7px 30px 7px 12px;
+              font-size: 12px;
+              font-weight: 600;
+              color: $on-surface;
+              cursor: pointer;
+              transition: background-color 0.15s;
+
+              &:hover {
+                background: $surface-container;
+              }
+
+              &:focus {
+                outline: none;
+              }
+            }
+
+            .dropdown-icon {
+              position: absolute;
+              right: 8px;
+              font-size: 18px;
+              color: $outline;
+              pointer-events: none;
+            }
           }
         }
       }

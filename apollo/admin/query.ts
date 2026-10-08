@@ -93,12 +93,27 @@ export const GET_ALL_PROPERTIES_BY_ADMIN = gql`
 				pricePerNight
 				currency
 				maxGuests
+				bedrooms
+				beds
+				bathrooms
+				propertyRating
+				propertyReviews
+				propertyComments
 				propertyImages
 				propertyViews
 				propertyLikes
 				propertyBookings
 				createdAt
 				updatedAt
+				memberData {
+					_id
+					memberNick
+					memberFullName
+					memberImage
+					memberEmail
+					memberPhone
+					memberType
+				}
 			}
 			metaCounter {
 				total

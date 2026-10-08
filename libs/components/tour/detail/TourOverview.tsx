@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_DESTINATION, GET_PROPERTY_HOST } from '../../../../apollo/user/query';
 import { SUBSCRIBE, UNSUBSCRIBE } from '../../../../apollo/user/mutation';
@@ -28,6 +29,7 @@ const parseAdditionalInfo = (value?: string[] | string): string[] => {
 };
 
 const TourOverview = ({ tour }: TourOverviewProps) => {
+	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const [subscribe, { loading: subscribing }] = useMutation(SUBSCRIBE);
 	const [unsubscribe, { loading: unsubscribing }] = useMutation(UNSUBSCRIBE);
@@ -62,6 +64,16 @@ const TourOverview = ({ tour }: TourOverviewProps) => {
 		}
 	};
 
+	const handleMessageOrganizer = async () => {
+		if (!organizer?._id || isOwnOrganizer) return;
+		if (!user?._id || !getJwtToken()) {
+			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
+			void router.push('/account/login');
+			return;
+		}
+		void router.push(`/chat?memberId=${organizer._id}`);
+	};
+
 	return (
 		<div className="left-column-content">
 			<div className="detail-card tour-about-card">
@@ -88,7 +100,7 @@ const TourOverview = ({ tour }: TourOverviewProps) => {
 			<div className="detail-card organizer-card">
 				<div className="organizer-inner">
 					<div className="organizer-main-info"><div className="organizer-avatar-wrapper"><img src={organizerImage} alt={organizerName} className="organizer-avatar" /></div><div className="organizer-text-info"><div className="organizer-name-row"><h4 className="organizer-name">{organizerName}</h4>{organizer?.memberType === MemberType.AGENT ? <span className="verified-operator-pill"><span className="material-symbols-outlined">verified</span>Agent</span> : null}</div><p className="organizer-desc">{organizer?.memberDesc || (organizer?.memberType === MemberType.AGENT ? 'Verified tour operator' : 'Tour organizer')}</p><div className="organizer-metrics-row"><span><strong>{organizer?.memberFollowers ?? 0}</strong> Followers</span><span>•</span><span><strong>{organizer?.memberTours ?? 0}</strong> Tours</span></div></div></div>
-					<div className="organizer-actions">{organizer?._id ? <Link className="organizer-btn secondary" href={`/member?memberId=${organizer._id}`}>View profile</Link> : null}<button className="organizer-btn chat-btn" type="button" disabled title="1:1 chat will be available soon"><span className="material-symbols-outlined">chat</span>1:1 chat soon</button>{!isOwnOrganizer && organizer?._id ? (
+					<div className="organizer-actions">{organizer?._id ? <Link className="organizer-btn secondary" href={`/member?memberId=${organizer._id}`}>View profile</Link> : null}{!isOwnOrganizer && organizer?._id ? <button className="organizer-btn chat-btn" type="button" onClick={() => void handleMessageOrganizer()}><span className="material-symbols-outlined">chat</span>Message</button> : null}{!isOwnOrganizer && organizer?._id ? (
 						<FollowButton 
 							isFollowing={isFollowing} 
 							isLoading={subscribing || unsubscribing} 

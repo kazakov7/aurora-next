@@ -45,8 +45,8 @@ const MyProfileWishlist: React.FC = () => {
     fetchPolicy: "network-only",
     variables: {
       input: {
-        page: page,
-        limit: 6,
+        page: 1,
+        limit: 50,
       },
     },
     skip: !user?._id,
@@ -62,8 +62,8 @@ const MyProfileWishlist: React.FC = () => {
     fetchPolicy: "network-only",
     variables: {
       input: {
-        page: page,
-        limit: 6,
+        page: 1,
+        limit: 50,
       },
     },
     skip: !user?._id,
@@ -90,7 +90,7 @@ const MyProfileWishlist: React.FC = () => {
       if (activeTab === "TOURS") return item.isTour;
       return true;
     })
-    .slice(0, 6);
+    ;
 
   let totalItems = 0;
   if (activeTab === "HOTELS") {
@@ -100,8 +100,7 @@ const MyProfileWishlist: React.FC = () => {
   } else {
     totalItems = propTotal + tourTotal;
   }
-  const totalPages = Math.ceil(totalItems / 6) || 1;
-
+  
   /** HANDLERS **/
   const handleRemoveFavorite = async (
     e: React.MouseEvent,
@@ -247,49 +246,7 @@ const MyProfileWishlist: React.FC = () => {
         </div>
       )}
 
-      {totalPages > 1 && (
-        <div className="pagination-wrapper">
-          <span className="pagination-info">
-            Showing {(page - 1) * 6 + 1}–{Math.min(page * 6, totalItems)} of{" "}
-            {totalItems} places
-          </span>
-          <div className="pagination-pills">
-            <button
-              type="button"
-              className="nav-arrow-btn"
-              aria-label="Previous page"
-              disabled={page === 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              <span className="material-symbols-outlined">chevron_left</span>
-            </button>
-
-            {Array.from({ length: totalPages }).map((_, i) => {
-              const p = i + 1;
-              return (
-                <button
-                  key={p}
-                  type="button"
-                  className={`page-num-btn ${page === p ? "active" : ""}`}
-                  onClick={() => setPage(p)}
-                >
-                  {p}
-                </button>
-              );
-            })}
-
-            <button
-              type="button"
-              className="nav-arrow-btn"
-              aria-label="Next page"
-              disabled={page === totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              <span className="material-symbols-outlined">chevron_right</span>
-            </button>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 };

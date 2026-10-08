@@ -17,6 +17,11 @@ const LikeButton: React.FC<LikeButtonProps> = ({
 	className = '',
 	style
 }) => {
+	const computedStyle = { ...style };
+	if (isLiked) {
+		delete computedStyle.backgroundColor;
+	}
+
 	return (
 		<button
 			type="button"
@@ -26,7 +31,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({
 				e.stopPropagation();
 				onClick(e);
 			}}
-			style={style}
+			style={computedStyle}
 		>
 			<span className="material-symbols-outlined">favorite</span>
 			{count !== undefined && <span className="like-count">{count.toLocaleString()}</span>}

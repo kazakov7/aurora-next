@@ -529,6 +529,8 @@
 					color: $primary;
 				}
 			}
+
+
 		}
 
 		/* Post Footer */
@@ -678,6 +680,12 @@
 					align-items: center;
 					gap: 10px;
 					min-width: 0;
+					flex: 1;
+					text-decoration: none;
+
+					&:hover .user-name {
+						color: $primary;
+					}
 
 					.rank-number {
 						font-size: 12px;
@@ -748,6 +756,22 @@
 							overflow: hidden;
 							text-overflow: ellipsis;
 							max-width: 150px;
+						}
+					}
+				}
+
+				.item-action-box {
+					flex-shrink: 0;
+
+					.btn-follow-standard.size-sm {
+						min-width: 78px;
+						padding: 4px 10px;
+						font-size: 11px;
+						height: 28px;
+						gap: 3px;
+
+						.material-symbols-outlined {
+							font-size: 15px;
 						}
 					}
 				}

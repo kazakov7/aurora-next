@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import Head from "next/head";
+import Top from "../../libs/components/Top";
 import { useRouter } from "next/router";
 import { useReactiveVar } from "@apollo/client";
 import { userVar } from "../../apollo/store";
-import { DEFAULT_USER_AVATAR } from "../../libs/config";
+
 
 const CheckoutPage = () => {
   const router = useRouter();
@@ -29,82 +30,13 @@ const CheckoutPage = () => {
     }, 1200);
   };
 
-  const avatarSrc = user?.memberImage
-    ? `${process.env.REACT_APP_API_URL}/${user.memberImage}`
-    : DEFAULT_USER_AVATAR;
-
   return (
     <div className="checkout-page-root">
       <Head>
         <title>AURA Travel — Checkout Page</title>
       </Head>
 
-      <header className="checkout-header">
-        <div className="header-container">
-          <div className="logo">AURA</div>
-          <nav className="nav-links">
-            <a
-              href="/"
-              onClick={(e) => {
-                e.preventDefault();
-                router.push("/");
-              }}
-            >
-              Home
-            </a>
-            <a
-              href="#"
-              className="active"
-              onClick={(e) => {
-                e.preventDefault();
-                router.push("/property");
-              }}
-            >
-              Hotels
-            </a>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                router.push("/tour");
-              }}
-            >
-              Tours
-            </a>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                router.push("/destination");
-              }}
-            >
-              Destinations
-            </a>
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                router.push("/community");
-              }}
-            >
-              Community
-            </a>
-          </nav>
-          <div className="header-actions">
-            <div className="search-bar">
-              <span className="material-symbols-outlined search-icon">
-                search
-              </span>
-              <input type="text" placeholder="Explore stays, places..." />
-            </div>
-            <div className="lang-currency">
-              <span className="material-symbols-outlined">language</span>
-              <span>USD / EN</span>
-            </div>
-            <img src={avatarSrc} alt="Profile" className="profile-img" />
-          </div>
-        </div>
-      </header>
+      <Top />
 
       <main className="checkout-main">
         <div className="checkout-container">

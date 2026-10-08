@@ -137,8 +137,8 @@ export const GET_MY_AGENT_APPLICATIONS = gql`
 				_id
 				memberId
 				agentType
-				status
-				comment
+				verificationStatus
+				rejectionReason
 				createdAt
 				updatedAt
 			}
@@ -903,6 +903,12 @@ export const GET_MY_NOTIFICATIONS = gql`
 				_id
 				receiverId
 				authorId
+				authorData {
+					_id
+					memberNick
+					memberFullName
+					memberImage
+				}
 				notificationType
 				notificationStatus
 				notificationGroup
@@ -1080,6 +1086,19 @@ export const GET_AGENTS = gql`
 			metaCounter {
 				total
 			}
+		}
+	}
+`;
+
+export const GET_MEMBER_AGENT = gql`
+	query GetMemberAgent($memberId: String!) {
+		getMemberAgent(memberId: $memberId) {
+			_id
+			agentType
+			companyName
+			companyDesc
+			verificationStatus
+			verifiedAt
 		}
 	}
 `;

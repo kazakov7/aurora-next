@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { BoardArticle } from '../../types/board-article/board-article';
-import { getImageUrl } from '../../config';
+import { getImageUrl, DEFAULT_USER_AVATAR } from '../../config';
 import { sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import LikeButton from '../common/LikeButton';
-import SaveButton from '../common/SaveButton';
 
 interface CommunityCardProps {
 	article: BoardArticle;
@@ -23,17 +22,16 @@ const categoryDisplayMap: Record<string, string> = {
 };
 
 const formatTimeAgo = (dateStr?: Date | string): string => {
-	if (!dateStr) return 'Recently';
+	if (!dateStr) return '';
 	try {
-		const diffMs = Date.now() - new Date(dateStr).getTime();
-		const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-		if (diffHours < 1) return 'Just now';
-		if (diffHours < 24) return `${diffHours} hrs ago`;
-		const diffDays = Math.floor(diffHours / 24);
-		if (diffDays < 30) return `${diffDays} days ago`;
-		return `${Math.floor(diffDays / 30)} mo ago`;
+		return new Date(dateStr).toLocaleDateString('en-US', {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric',
+			timeZone: 'UTC',
+		});
 	} catch {
-		return 'Recently';
+		return '';
 	}
 };
 
@@ -44,25 +42,21 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 	likeCount,
 }) => {
 	const router = useRouter();
-	const [bookmarked, setBookmarked] = useState(false);
-
 	const authorName =
 		article.memberData?.memberFullName ||
 		article.memberData?.memberNick ||
-		'Verified Traveler';
+		'Member';
 
 	const authorAvatar = getImageUrl(
 		article.memberData?.memberImage,
-		'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+		DEFAULT_USER_AVATAR
 	);
 
-	const featuredImage = getImageUrl(
-		article.articleImage,
-		'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&q=80'
-	);
+	const featuredImage = article.articleImage ? getImageUrl(article.articleImage) : undefined;
 
 	const categoryBadge =
-		categoryDisplayMap[article.articleCategory] || article.articleCategory || 'Story';
+		categoryDisplayMap[article.articleCategory] || article.articleCategory || 'Uncategorized';
+	const articleExcerpt = article.articleContent?.replace(/<[^>]+>/g, '').trim() || '';
 
 	// Reading time calculation
 	const wordCount = (article.articleContent || '').trim().split(/\s+/).length;
@@ -81,13 +75,6 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 				sweetTopSmallSuccessAlert('Link copied!');
 			}
 		}
-	};
-
-	const handleBookmarkToggle = (e: React.MouseEvent) => {
-		e.preventDefault();
-		e.stopPropagation();
-		setBookmarked(!bookmarked);
-		sweetTopSmallSuccessAlert(bookmarked ? 'Removed from bookmarks' : 'Saved to bookmarks');
 	};
 
 	const openArticle = () => {
@@ -117,28 +104,15 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 							src={authorAvatar}
 							alt={authorName}
 						/>
-						<span className="verified-badge-pill" title="Verified Explorer">
-							<span className="material-symbols-outlined icon">verified</span>
-						</span>
 					</div>
 
 					<div className="author-details">
-						<div className="name-and-badge">
-							<span className="author-name">{authorName}</span>
-							<span className="badge-pill">Verified Explorer</span>
-						</div>
+						<div className="name-and-badge"><span className="author-name">{authorName}</span></div>
 						<div className="meta-subline">
-							<span>Aura Member</span>
-							<span className="bullet">·</span>
-							<span>{formatTimeAgo(article.createdAt)}</span>
+							{formatTimeAgo(article.createdAt) && <span>{formatTimeAgo(article.createdAt)}</span>}
 						</div>
 					</div>
 				</div>
-
-				<SaveButton 
-					isSaved={bookmarked} 
-					onClick={handleBookmarkToggle} 
-				/>
 			</div>
 
 			{/* Post Body: Badges, Title & Content */}
@@ -152,21 +126,20 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 					<h2 className="article-title">{article.articleTitle}</h2>
 				</Link>
 
-				<p className="article-excerpt">{article.articleContent}</p>
+				{articleExcerpt && <p className="article-excerpt">{articleExcerpt}</p>}
 			</div>
 
 			{/* Featured Photography */}
-			<div className="card-featured-media">
-				<img
-					className="featured-image"
-					src={featuredImage}
-					alt={article.articleTitle}
-				/>
-				<div className="location-pill-overlay">
-					<span className="material-symbols-outlined pin-icon">location_on</span>
-					<span>{categoryBadge}</span>
+			{featuredImage && (
+				<div className="card-featured-media">
+					<img className="featured-image" src={featuredImage} alt={article.articleTitle} />
+					<div className="location-pill-overlay">
+						<span className="material-symbols-outlined pin-icon">location_on</span>
+						<span>{categoryBadge}</span>
+					</div>
+
 				</div>
-			</div>
+			)}
 
 			{/* Post Footer Actions */}
 			<div className="card-footer-actions">
@@ -190,6 +163,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 						onClick={(e) => {
 							e.preventDefault();
 							e.stopPropagation();
+							openArticle();
 						}}
 					>
 						<span className="material-symbols-outlined icon">chat_bubble_outline</span>

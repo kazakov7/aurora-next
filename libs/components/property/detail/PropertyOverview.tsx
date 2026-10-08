@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_DESTINATION, GET_PROPERTY_HOST } from '../../../../apollo/user/query';
 import { SUBSCRIBE, UNSUBSCRIBE } from '../../../../apollo/user/mutation';
@@ -27,6 +28,7 @@ const amenityIconMap: Record<string, string> = {
 
 const PropertyOverview = ({ property }: PropertyOverviewProps) => {
 	const [descExpanded, setDescExpanded] = useState(false);
+	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const amenities = property.amenities || [];
 	const [subscribe, { loading: subscribing }] = useMutation(SUBSCRIBE);
@@ -75,6 +77,16 @@ const PropertyOverview = ({ property }: PropertyOverviewProps) => {
 		} catch (error: unknown) {
 			await sweetErrorAlert(error instanceof Error ? error.message : 'Unable to update follow status.');
 		}
+	};
+
+	const handleMessageHost = async () => {
+		if (!host?._id || isOwnHostProfile) return;
+		if (!user?._id || !getJwtToken()) {
+			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
+			void router.push('/account/login');
+			return;
+		}
+		void router.push(`/chat?memberId=${host._id}`);
 	};
 
 	return (
@@ -152,7 +164,7 @@ const PropertyOverview = ({ property }: PropertyOverviewProps) => {
 					</div>
 					<div className="host-action-buttons">
 						{host?._id ? <Link className="host-btn secondary-btn" href={`/member?memberId=${host._id}`}>View profile</Link> : null}
-						<button className="host-btn chat-btn" type="button" disabled title="1:1 chat will be available soon"><span className="material-symbols-outlined">chat</span>1:1 chat soon</button>
+						{!isOwnHostProfile && host?._id ? <button className="host-btn chat-btn" type="button" onClick={() => void handleMessageHost()}><span className="material-symbols-outlined">chat</span>Message</button> : null}
 						{!isOwnHostProfile && host?._id ? (
 							<FollowButton 
 								isFollowing={isFollowing} 

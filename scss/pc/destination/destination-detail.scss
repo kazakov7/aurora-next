@@ -966,10 +966,10 @@
 						color: $on-surface-variant;
 						margin: 6px 0 0 0;
 						line-height: 1.4;
-						display: -webkit-box;
-						-webkit-line-clamp: 2;
-						-webkit-box-orient: vertical;
+						white-space: nowrap;
 						overflow: hidden;
+						text-overflow: ellipsis;
+						width: 100%;
 					}
 
 					.journeys-badge-pill {

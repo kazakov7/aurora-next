@@ -5,11 +5,12 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import GroupIcon from "@mui/icons-material/Group";
 import SearchIcon from "@mui/icons-material/Search";
 import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
-import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
-import TuneIcon from "@mui/icons-material/Tune";
 import ApartmentIcon from "@mui/icons-material/Apartment";
 import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
+import ExploreRoundedIcon from "@mui/icons-material/ExploreRounded";
+import EventAvailableRoundedIcon from "@mui/icons-material/EventAvailableRounded";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 
 const Hero = () => {
   const router = useRouter();
@@ -114,24 +115,32 @@ const Hero = () => {
               <div className="hero-stats">
                 <div className="stat-item">
                   <div className="stat-value-box">
-                    <StarRoundedIcon className="star-icon" />
-                    <span className="stat-value">4.94</span>
+                    <ExploreRoundedIcon className="stat-icon" />
+                    <span className="stat-value">Discover Places</span>
                   </div>
-                  <span className="stat-label">Total Rating</span>
+                  <span className="stat-label">
+                    Explore amazing destinations
+                  </span>
                 </div>
 
-                <div className="stat-separator"></div>
+                <div className="stat-separator" />
 
                 <div className="stat-item">
-                  <span className="stat-value">105+</span>
-                  <span className="stat-label">Curated Expeditions</span>
+                  <div className="stat-value-box">
+                    <EventAvailableRoundedIcon className="stat-icon" />
+                    <span className="stat-value">Plan & Book</span>
+                  </div>
+                  <span className="stat-label">Book stays & experiences</span>
                 </div>
 
-                <div className="stat-separator"></div>
+                <div className="stat-separator" />
 
                 <div className="stat-item">
-                  <span className="stat-value">44</span>
-                  <span className="stat-label">Global Awards</span>
+                  <div className="stat-value-box">
+                    <GroupsRoundedIcon className="stat-icon" />
+                    <span className="stat-value">Connect & Share</span>
+                  </div>
+                  <span className="stat-label">Meet fellow travelers</span>
                 </div>
               </div>
             </div>
@@ -173,16 +182,46 @@ const Hero = () => {
           {/* BOTTOM SEARCH FILTER BAR */}
           <div className="search-filter-container">
             <div className="filter-bar">
-              {/* TYPE FIELD (was FROM) */}
-              <div
-                className={`filter-item ${openType ? "active" : ""}`}
-                onClick={() => setOpenType(!openType)}
-              >
-                <ApartmentIcon className="item-icon" />
-                <div className="item-text">
-                  <span className="label">STAY TYPE</span>
-                  <span className="value">{type || "All Stays"}</span>
+              {/* TYPE FIELD */}
+              <div className="search-field-wrapper type-wrapper" ref={typeRef}>
+                <div
+                  className={`filter-item ${openType ? "active" : ""}`}
+                  onClick={() => {
+                    setOpenType(!openType);
+                    setOpenLocation(false);
+                    setOpenGuests(false);
+                  }}
+                >
+                  <ApartmentIcon className="item-icon" />
+                  <div className="item-text">
+                    <span className="label">STAY TYPE</span>
+                    <span className="value">{type || "All Stays"}</span>
+                  </div>
                 </div>
+
+                {openType && (
+                  <div className="search-field-dropdown">
+                    <div
+                      onClick={() => {
+                        setType("");
+                        setOpenType(false);
+                      }}
+                    >
+                      All Stays
+                    </div>
+                    {propertyType.map((t: string) => (
+                      <div
+                        onClick={() => {
+                          setType(t);
+                          setOpenType(false);
+                        }}
+                        key={t}
+                      >
+                        <span>{t}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* SWAP BUTTON */}
@@ -198,16 +237,49 @@ const Hero = () => {
                 <SwapHorizIcon />
               </div>
 
-              {/* LOCATION FIELD (was TO) */}
+              {/* LOCATION FIELD */}
               <div
-                className={`filter-item ${openLocation ? "active" : ""}`}
-                onClick={() => setOpenLocation(!openLocation)}
+                className="search-field-wrapper location-wrapper"
+                ref={locationRef}
               >
-                <LocationOnIcon className="item-icon" />
-                <div className="item-text">
-                  <span className="label">LOCATION</span>
-                  <span className="value">{location || "Anywhere"}</span>
+                <div
+                  className={`filter-item ${openLocation ? "active" : ""}`}
+                  onClick={() => {
+                    setOpenLocation(!openLocation);
+                    setOpenType(false);
+                    setOpenGuests(false);
+                  }}
+                >
+                  <LocationOnIcon className="item-icon" />
+                  <div className="item-text">
+                    <span className="label">LOCATION</span>
+                    <span className="value">{location || "Anywhere"}</span>
+                  </div>
                 </div>
+
+                {openLocation && (
+                  <div className="search-field-dropdown">
+                    <div
+                      onClick={() => {
+                        setLocation("");
+                        setOpenLocation(false);
+                      }}
+                    >
+                      Anywhere
+                    </div>
+                    {propertyLocation.map((loc: string) => (
+                      <div
+                        onClick={() => {
+                          setLocation(loc);
+                          setOpenLocation(false);
+                        }}
+                        key={loc}
+                      >
+                        <span>{loc}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* DATES FIELD */}
@@ -228,93 +300,47 @@ const Hero = () => {
 
               {/* GUESTS FIELD */}
               <div
-                className={`filter-item ${openGuests ? "active" : ""}`}
-                onClick={() => setOpenGuests(!openGuests)}
+                className="search-field-wrapper guests-wrapper"
+                ref={guestsRef}
               >
-                <GroupIcon className="item-icon" />
-                <div className="item-text">
-                  <span className="label">TRAVELERS</span>
-                  <span className="value">{guests} Guests</span>
+                <div
+                  className={`filter-item ${openGuests ? "active" : ""}`}
+                  onClick={() => {
+                    setOpenGuests(!openGuests);
+                    setOpenType(false);
+                    setOpenLocation(false);
+                  }}
+                >
+                  <GroupIcon className="item-icon" />
+                  <div className="item-text">
+                    <span className="label">TRAVELERS</span>
+                    <span className="value">{guests} Guests</span>
+                  </div>
                 </div>
+
+                {openGuests && (
+                  <div className="search-field-dropdown">
+                    {[1, 2, 4, 5].map((num: number) => (
+                      <div
+                        onClick={() => {
+                          setGuests(num);
+                          setOpenGuests(false);
+                        }}
+                        key={num}
+                      >
+                        <span>
+                          {num}+ Guest{num > 1 ? "s" : ""}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* SEARCH ACTION BUTTON */}
               <div className="search-submit-btn" onClick={searchHandler}>
                 <SearchIcon />
               </div>
-            </div>
-
-            {/* POPUP DROPDOWNS */}
-            <div
-              className={`filter-type ${openType ? "on" : ""}`}
-              ref={typeRef}
-              style={{ left: "0" }}
-            >
-              <div
-                onClick={() => {
-                  setType("");
-                  setOpenType(false);
-                }}
-              >
-                All Stays
-              </div>
-              {propertyType.map((t: string) => (
-                <div
-                  onClick={() => {
-                    setType(t);
-                    setOpenType(false);
-                  }}
-                  key={t}
-                >
-                  <span>{t}</span>
-                </div>
-              ))}
-            </div>
-
-            <div
-              className={`filter-location ${openLocation ? "on" : ""}`}
-              ref={locationRef}
-              style={{ left: "27%" }}
-            >
-              <div
-                onClick={() => {
-                  setLocation("");
-                  setOpenLocation(false);
-                }}
-              >
-                Anywhere
-              </div>
-              {propertyLocation.map((loc: string) => (
-                <div
-                  onClick={() => {
-                    setLocation(loc);
-                    setOpenLocation(false);
-                  }}
-                  key={loc}
-                >
-                  <span>{loc}</span>
-                </div>
-              ))}
-            </div>
-
-            <div
-              className={`filter-rooms ${openGuests ? "on" : ""}`}
-              ref={guestsRef}
-              style={{ right: "100px" }}
-            >
-              {[1, 2, 4, 5].map((num: number) => (
-                <div
-                  onClick={() => {
-                    setGuests(num);
-                    setOpenGuests(false);
-                  }}
-                  key={num}
-                >
-                  <span>
-                    {num}+ Guest{num > 1 ? "s" : ""}
-                  </span>
-                </div>
-              ))}
             </div>
           </div>
         </div>

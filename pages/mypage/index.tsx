@@ -15,12 +15,16 @@ import MyProfileBookings from '../../libs/components/mypage/MyProfileBookings';
 import MyProfileHistory from '../../libs/components/mypage/MyProfileHistory';
 import MyProfileNotifications from '../../libs/components/mypage/MyProfileNotifications';
 import MyProfileSettings from '../../libs/components/mypage/MyProfileSettings';
+import AgentApplicationPage from '../../libs/components/mypage/AgentApplicationPage';
+import MyHotels from '../../libs/components/mypage/agent/MyHotels';
+import MyTours from '../../libs/components/mypage/agent/MyTours';
+import Reservations from '../../libs/components/mypage/agent/Reservations';
 
 const MyPage: NextPage = () => {
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 
-	const allowedCategories = ['articles', 'followers', 'following', 'wishlist', 'bookings', 'history', 'notifications', 'settings'];
+	const allowedCategories = ['articles', 'followers', 'following', 'wishlist', 'bookings', 'history', 'notifications', 'settings', 'partner', 'myHotels', 'myTours', 'reservations'];
 	const requestedCategory = (router.query?.category as string) || 'articles';
 	const category = allowedCategories.includes(requestedCategory) ? requestedCategory : 'articles';
 
@@ -69,6 +73,14 @@ const MyPage: NextPage = () => {
 				return 'Notifications — AURA Profile';
 			case 'settings':
 				return 'Settings — AURA Profile';
+			case 'partner':
+				return 'Partner Application — AURA Profile';
+			case 'myHotels':
+				return 'My Hotels — AURA Agent';
+			case 'myTours':
+				return 'My Tours — AURA Agent';
+			case 'reservations':
+				return 'Reservations — AURA Agent';
 			default:
 				return 'My Profile — AURA Travel';
 		}
@@ -104,6 +116,10 @@ const MyPage: NextPage = () => {
 							{category === 'history' && <MyProfileHistory />}
 							{category === 'notifications' && <MyProfileNotifications />}
 							{category === 'settings' && <MyProfileSettings />}
+							{category === 'partner' && <AgentApplicationPage />}
+							{category === 'myHotels' && <MyHotels />}
+							{category === 'myTours' && <MyTours />}
+							{category === 'reservations' && <Reservations />}
 						</main>
 					</div>
 				</div>

@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { sweetTopSmallSuccessAlert } from '../../../sweetAlert';
-import SaveButton from '../../common/SaveButton';
 import LikeButton from '../../common/LikeButton';
 
 interface CommunityDetailEngagementBarProps {
@@ -18,14 +17,6 @@ const CommunityDetailEngagementBar: React.FC<CommunityDetailEngagementBarProps> 
 	onLike,
 	onScrollToComments,
 }) => {
-	const [bookmarked, setBookmarked] = useState(false);
-
-	const handleBookmarkToggle = () => {
-		const next = !bookmarked;
-		setBookmarked(next);
-		sweetTopSmallSuccessAlert(next ? 'Saved to bookmarks' : 'Removed from bookmarks');
-	};
-
 	const handleCopyLink = async () => {
 		if (typeof window !== 'undefined') {
 			try {
@@ -72,11 +63,6 @@ const CommunityDetailEngagementBar: React.FC<CommunityDetailEngagementBarProps> 
 					<span className="label-count">{commentsCount} Comments</span>
 				</button>
 
-				{/* Bookmark Button */}
-				<SaveButton 
-					isSaved={bookmarked} 
-					onClick={handleBookmarkToggle} 
-				/>
 			</div>
 
 			<div className="right-actions-group">

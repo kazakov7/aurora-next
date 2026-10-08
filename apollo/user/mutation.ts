@@ -46,6 +46,38 @@ export const LOGIN = gql`
 	}
 `;
 
+export const GOOGLE_AUTH = gql`
+	mutation GoogleAuth($input: GoogleAuthInput!) {
+		googleAuth(input: $input) {
+			_id
+			memberType
+			memberStatus
+			memberAuthType
+			memberEmail
+			memberNick
+			memberFullName
+			memberImage
+			accessToken
+		}
+	}
+`;
+
+export const KAKAO_AUTH = gql`
+	mutation KakaoAuth($input: KakaoAuthInput!) {
+		kakaoAuth(input: $input) {
+			_id
+			memberType
+			memberStatus
+			memberAuthType
+			memberEmail
+			memberNick
+			memberFullName
+			memberImage
+			accessToken
+		}
+	}
+`;
+
 export const UPDATE_MEMBER = gql`
 	mutation UpdateMember($input: MemberUpdate!) {
 		updateMember(input: $input) {
@@ -70,8 +102,7 @@ export const SUBMIT_AGENT_APPLICATION = gql`
 			_id
 			memberId
 			agentType
-			status
-			comment
+			verificationStatus
 			createdAt
 			updatedAt
 		}

@@ -8,10 +8,10 @@ const ChatPage: NextPage = () => {
 	return (
 		<>
 			<Head>
-				<title>Concierge Chat — AURA Travel Marketplace</title>
+				<title>Messages — AURORA Travel Marketplace</title>
 				<meta
 					name="description"
-					content="Direct encrypted concierge and traveler communications across AURA sanctuaries and partners."
+					content="Real-time community and direct messages for authenticated AURORA members."
 				/>
 			</Head>
 

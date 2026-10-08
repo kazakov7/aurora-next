@@ -3,13 +3,16 @@ import { useRouter } from 'next/router';
 import { useMutation, useReactiveVar } from '@apollo/client';
 import { SUBSCRIBE, UNSUBSCRIBE } from '../../../apollo/user/mutation';
 import { userVar } from '../../../apollo/store';
-import { getImageUrl } from '../../config';
-import { sweetConfirmAlert, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { Member } from '../../types/member/member';
+import { DEFAULT_USER_AVATAR, getImageUrl } from '../../config';
+import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import FollowButton from '../common/FollowButton';
 
 interface MemberHeaderProps {
-	member?: any;
+	member: Member;
 	isFollowing: boolean;
 	followersCount: number;
+	articlesCount: number;
 	onFollowChange: (newStatus: boolean) => void;
 }
 
@@ -17,16 +20,25 @@ const MemberHeader: React.FC<MemberHeaderProps> = ({
 	member,
 	isFollowing,
 	followersCount,
+	articlesCount,
 	onFollowChange,
 }) => {
 	const router = useRouter();
 	const currentUser = useReactiveVar(userVar);
 
-	const [subscribeMutation] = useMutation(SUBSCRIBE);
-	const [unsubscribeMutation] = useMutation(UNSUBSCRIBE);
+	/** APOLLO REQUESTS **/
+	const [subscribeMutation, { loading: subscribing }] = useMutation(SUBSCRIBE);
+	const [unsubscribeMutation, { loading: unsubscribing }] = useMutation(UNSUBSCRIBE);
 
-	const targetId = member?._id || 'julian-laurent-id';
+	const targetId = member?._id;
+	const isOwnProfile = currentUser?._id === targetId;
 
+	const formatCount = (count: number) => {
+		if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
+		return String(count || 0);
+	};
+
+	/** HANDLERS **/
 	const handleFollowToggle = async () => {
 		if (!currentUser?._id) {
 			sweetMixinErrorAlert('Please log in to follow members.');
@@ -34,7 +46,7 @@ const MemberHeader: React.FC<MemberHeaderProps> = ({
 			return;
 		}
 
-		if (currentUser._id === targetId) {
+		if (isOwnProfile) {
 			sweetMixinErrorAlert('You cannot follow yourself.');
 			return;
 		}
@@ -43,139 +55,119 @@ const MemberHeader: React.FC<MemberHeaderProps> = ({
 			if (isFollowing) {
 				await unsubscribeMutation({
 					variables: { input: targetId },
+					refetchQueries: ['GetMemberFollowers', 'GetMemberFollowings', 'GetMember'],
 				});
 				onFollowChange(false);
-				sweetTopSmallSuccessAlert('Unfollowed member.', 1000);
+				sweetTopSmallSuccessAlert('Unfollowed member.', 800);
 			} else {
 				await subscribeMutation({
 					variables: { input: targetId },
+					refetchQueries: ['GetMemberFollowers', 'GetMemberFollowings', 'GetMember'],
 				});
 				onFollowChange(true);
-				sweetTopSmallSuccessAlert('You are now following this explorer!', 1000);
+				sweetTopSmallSuccessAlert('Following this explorer!', 800);
 			}
 		} catch (err: any) {
-			// Instant reactive local toggle fallback for template preview
-			onFollowChange(!isFollowing);
-			sweetTopSmallSuccessAlert(
-				!isFollowing ? 'You are now following this explorer!' : 'Unfollowed member.',
-				1000,
-			);
+			sweetMixinErrorAlert(err?.message || 'Action failed.');
 		}
 	};
 
-	const handleMessage = () => {
-		router.push('/chat');
+	const handleMessageClick = async () => {
+		if (!currentUser?._id) {
+			sweetMixinErrorAlert('Please log in to send messages.');
+			router.push('/account/login');
+			return;
+		}
+
+		if (isOwnProfile) {
+			sweetMixinErrorAlert('You cannot message yourself.');
+			return;
+		}
+
+		if (!targetId) return;
+		void router.push(`/chat?memberId=${targetId}`);
 	};
-
-	const profileImg = getImageUrl(
-		member?.memberImage,
-		'https://lh3.googleusercontent.com/aida-public/AB6AXuAvG8_igTxGEGxfWEwC-ZR6slbkBbENporP4AkSgPan8a68g7Py-c1TFvDK_46Mshm5-_WX0T7BuXgVPyIHM1NE9JODugNY3VWNU5yesacugRJYzyfKJcRGtSi9bxRJyTPxYUcOFewn7HoE915tfMapPm7TBrE0xEbupcg5Csw3sfgFZurTDQZCtPwDMh_XD-PUFJ3b1udWR2_8eMYwjvmh9-Q292TyW0pjeveGxxpAxRtTJR-tLfVN',
-	);
-
-	const nick = member?.memberNick || 'Kevin';
-	const handle = `@${nick.toLowerCase().replace(/\s+/g, '')}`;
-	const address = member?.memberAddress || 'South Korea';
-
-	const articlesCount = member?.memberArticles ?? 24;
-	const followingCount = member?.memberFollowings ?? 412;
 
 	return (
 		<section className="member-header-card">
 			<div className="header-content-wrapper">
-				{/* Left: Avatar & Identity Details */}
+				{/* Left: Identity & Bio */}
 				<div className="header-left-bio">
-					{/* Avatar with Verified Badge */}
 					<div className="avatar-wrapper">
 						<div className="avatar-circle">
-							<img alt={nick} className="avatar-img" src={profileImg} />
+							<img
+								className="avatar-img"
+								src={getImageUrl(member?.memberImage, DEFAULT_USER_AVATAR)}
+								alt={member?.memberFullName || member?.memberNick || 'Member'}
+							/>
 						</div>
-						<div className="verified-badge-icon" title="Verified Member">
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-								<path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" />
-							</svg>
-						</div>
+						<span className="online-dot" title="Available Explorer"></span>
 					</div>
 
-					{/* Name, Handle, Badges, Location */}
 					<div className="bio-details">
 						<div className="name-row">
-							<h1>{nick}</h1>
-							<span className="verified-pill">
-								<svg viewBox="0 0 20 20" fill="currentColor">
-									<path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-								</svg>
-								Verified Explorer
+							<h1>{member?.memberFullName || member?.memberNick}</h1>
+							<span
+								className="material-symbols-outlined verified-icon"
+								title="Verified Creator"
+							>
+								verified
 							</span>
-							<span className="top-contributor-pill">Top Contributor</span>
+							<span className="member-handle">@{member?.memberNick}</span>
+							<span className="explorer-badge">
+								<span className="material-symbols-outlined">explore</span>
+								<span>Verified Explorer</span>
+							</span>
 						</div>
 
-						<div className="meta-row">
-							<span className="handle">{handle}</span>
-							<span className="dot">•</span>
-							<span className="location">
-								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-									<path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-									<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-								</svg>
-								{address}
-							</span>
+						<div className="location-row">
+							<span className="material-symbols-outlined">pin_drop</span>
+							<span>{member?.memberAddress || 'Global Citizen'}</span>
 						</div>
+
+						<p className="bio-text">
+							{member?.memberDesc ||
+								'Architectural traveler, high-alpine documentarian, and cultural enthusiast contributing to the AURA luxury collective.'}
+						</p>
 					</div>
 				</div>
 
-				{/* Center/Right: Key Metrics & Actions */}
+				{/* Center & Right: Public Metrics & Primary Actions */}
 				<div className="header-right-section">
-					{/* Key Metrics */}
 					<div className="key-metrics">
 						<div className="metric-item">
-							<div className="metric-number">{articlesCount}</div>
-							<div className="metric-label">Articles</div>
+							<span className="metric-number">{articlesCount}</span>
+							<span className="metric-label">Articles</span>
 						</div>
 						<div className="metric-divider"></div>
 						<div className="metric-item">
-							<div className="metric-number">
-								{followersCount > 1000
-									? `${(followersCount / 1000).toFixed(1)}k`
-									: followersCount}
-							</div>
-							<div className="metric-label">Followers</div>
+							<span className="metric-number">{formatCount(followersCount)}</span>
+							<span className="metric-label">Followers</span>
 						</div>
 						<div className="metric-divider"></div>
 						<div className="metric-item">
-							<div className="metric-number">{followingCount}</div>
-							<div className="metric-label">Following</div>
+							<span className="metric-number">{formatCount(member?.memberFollowings || 0)}</span>
+							<span className="metric-label">Following</span>
 						</div>
 					</div>
 
-					{/* Professional Visitor CTA Action Buttons */}
-					<div className="action-buttons">
-						<button 
-							className={`btn-follow ${isFollowing ? 'following' : ''}`}
-							onClick={handleFollowToggle}
-						>
-							{isFollowing ? (
-								<>
-									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-									</svg>
-									<span>Following</span>
-								</>
-							) : (
-								<>
-									<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-										<path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-									</svg>
-									<span>Follow</span>
-								</>
-							)}
-						</button>
-						<button className="btn-message" onClick={handleMessage}>
-							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-								<path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-							</svg>
-							<span>Message</span>
-						</button>
-					</div>
+					{!isOwnProfile && (
+						<div className="action-buttons">
+							<FollowButton
+								isFollowing={isFollowing}
+								isLoading={subscribing || unsubscribing}
+								onClick={handleFollowToggle}
+							/>
+							<button
+								type="button"
+								className="btn-message"
+								onClick={handleMessageClick}
+							>
+								<span className="material-symbols-outlined">chat_bubble</span>
+								<span>Message</span>
+							</button>
+						</div>
+					)}
 				</div>
 			</div>
 		</section>

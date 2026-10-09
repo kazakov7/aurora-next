@@ -1,23 +1,37 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import GroupIcon from "@mui/icons-material/Group";
 import SearchIcon from "@mui/icons-material/Search";
-import SwapHorizIcon from "@mui/icons-material/SwapHoriz";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import ApartmentIcon from "@mui/icons-material/Apartment";
 import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
 import ExploreRoundedIcon from "@mui/icons-material/ExploreRounded";
 import EventAvailableRoundedIcon from "@mui/icons-material/EventAvailableRounded";
 import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
+import { PropertyType } from "../../enums/property.enum";
+import { Destination } from "../../types/destination/destination";
 
-const Hero = () => {
+interface HeroProps {
+  destinations: Destination[];
+}
+
+/** AGENTS.md §9.1 — enum qiymatlari real API DTO'laridan olinadi **/
+const STAY_TYPES: PropertyType[] = [
+  PropertyType.HOTEL,
+  PropertyType.RESORT,
+  PropertyType.VILLA,
+  PropertyType.APARTMENT,
+];
+
+const Hero = ({ destinations }: HeroProps) => {
   const router = useRouter();
   const [type, setType] = useState("");
   const [location, setLocation] = useState("");
   const [guests, setGuests] = useState(2);
   const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
 
   const [openType, setOpenType] = useState(false);
   const [openLocation, setOpenLocation] = useState(false);
@@ -27,17 +41,10 @@ const Hero = () => {
   const locationRef = useRef<HTMLDivElement>(null);
   const guestsRef = useRef<HTMLDivElement>(null);
 
-  const propertyType = ["HOTEL", "RESORT", "VILLA", "APARTMENT"];
-  const propertyLocation = [
-    "Seoul",
-    "Busan",
-    "Jeju",
-    "Incheon",
-    "Japan",
-    "Greece",
-    "Switzerland",
-    "Italy",
-  ];
+  /** Destinations API'dan keladigan real manzillar **/
+  const locationOptions = destinations
+    .map((d) => d.destinationName)
+    .filter(Boolean);
 
   /** LIFECYCLES **/
   useEffect(() => {
@@ -67,10 +74,12 @@ const Hero = () => {
 
   /** HANDLERS **/
   const searchHandler = () => {
-    const searchObj: any = {};
+    const searchObj: Record<string, unknown> = {};
     if (location) searchObj.propertyCityList = [location];
     if (type) searchObj.propertyTypeList = [type];
     if (guests) searchObj.minGuests = guests;
+    if (checkIn) searchObj.checkIn = checkIn;
+    if (checkOut) searchObj.checkOut = checkOut;
 
     const queryInput = {
       page: 1,
@@ -95,7 +104,7 @@ const Hero = () => {
             <div className="hero-left">
               <div className="badge-pill">
                 <span className="dot">●</span>
-                <span>LET'S MAKE A BEST TRIP EVER</span>
+                <span>LET'S MAKE THE BEST TRIP EVER</span>
                 <FlightTakeoffIcon className="flight-icon" />
               </div>
 
@@ -158,23 +167,6 @@ const Hero = () => {
                   <VerifiedUserIcon className="badge-check" />
                   <span>Curated Guide</span>
                 </div>
-
-                <div className="testimonial-card">
-                  <span className="quote-icon">99</span>
-                  <span className="user-name">Jenny Wilson</span>
-                  <p className="quote-text">
-                    "Curated stays and bespoke expeditions across the world.
-                    Highly recommended."
-                  </p>
-                  <div className="avatars-row">
-                    <div className="avatar-stack">
-                      <span className="avatar av-1">J</span>
-                      <span className="avatar av-2">M</span>
-                      <span className="avatar av-3">ER</span>
-                    </div>
-                    <span className="traveled-count">+75k Traveled</span>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -184,7 +176,8 @@ const Hero = () => {
             <div className="filter-bar">
               {/* TYPE FIELD */}
               <div className="search-field-wrapper type-wrapper" ref={typeRef}>
-                <div
+                <button
+                  type="button"
                   className={`filter-item ${openType ? "active" : ""}`}
                   onClick={() => {
                     setOpenType(!openType);
@@ -197,20 +190,26 @@ const Hero = () => {
                     <span className="label">STAY TYPE</span>
                     <span className="value">{type || "All Stays"}</span>
                   </div>
-                </div>
+                </button>
 
-                {openType && (
-                  <div className="search-field-dropdown">
-                    <div
+                {openType ? (
+                  <div className="search-field-dropdown" role="listbox">
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={!type}
                       onClick={() => {
                         setType("");
                         setOpenType(false);
                       }}
                     >
                       All Stays
-                    </div>
-                    {propertyType.map((t: string) => (
-                      <div
+                    </button>
+                    {STAY_TYPES.map((t) => (
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={type === t}
                         onClick={() => {
                           setType(t);
                           setOpenType(false);
@@ -218,23 +217,10 @@ const Hero = () => {
                         key={t}
                       >
                         <span>{t}</span>
-                      </div>
+                      </button>
                     ))}
                   </div>
-                )}
-              </div>
-
-              {/* SWAP BUTTON */}
-              <div
-                className="swap-btn"
-                onClick={() => {
-                  const tempType = type;
-                  const tempLoc = location;
-                  setType(tempLoc); // Just for UI interaction effect
-                  setLocation(tempType);
-                }}
-              >
-                <SwapHorizIcon />
+                ) : null}
               </div>
 
               {/* LOCATION FIELD */}
@@ -242,7 +228,8 @@ const Hero = () => {
                 className="search-field-wrapper location-wrapper"
                 ref={locationRef}
               >
-                <div
+                <button
+                  type="button"
                   className={`filter-item ${openLocation ? "active" : ""}`}
                   onClick={() => {
                     setOpenLocation(!openLocation);
@@ -255,20 +242,26 @@ const Hero = () => {
                     <span className="label">LOCATION</span>
                     <span className="value">{location || "Anywhere"}</span>
                   </div>
-                </div>
+                </button>
 
-                {openLocation && (
-                  <div className="search-field-dropdown">
-                    <div
+                {openLocation ? (
+                  <div className="search-field-dropdown" role="listbox">
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={!location}
                       onClick={() => {
                         setLocation("");
                         setOpenLocation(false);
                       }}
                     >
                       Anywhere
-                    </div>
-                    {propertyLocation.map((loc: string) => (
-                      <div
+                    </button>
+                    {locationOptions.map((loc) => (
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={location === loc}
                         onClick={() => {
                           setLocation(loc);
                           setOpenLocation(false);
@@ -276,10 +269,10 @@ const Hero = () => {
                         key={loc}
                       >
                         <span>{loc}</span>
-                      </div>
+                      </button>
                     ))}
                   </div>
-                )}
+                ) : null}
               </div>
 
               {/* DATES FIELD */}
@@ -291,8 +284,23 @@ const Hero = () => {
                     <input
                       type="date"
                       value={checkIn}
-                      onChange={(e) => setCheckIn(e.target.value)}
+                      onChange={(e) => {
+                        setCheckIn(e.target.value);
+                        if (checkOut && e.target.value > checkOut) {
+                          setCheckOut("");
+                        }
+                      }}
                       className="date-input"
+                      aria-label="Check-in date"
+                    />
+                    <span className="date-separator">—</span>
+                    <input
+                      type="date"
+                      value={checkOut}
+                      min={checkIn || undefined}
+                      onChange={(e) => setCheckOut(e.target.value)}
+                      className="date-input"
+                      aria-label="Check-out date"
                     />
                   </div>
                 </div>
@@ -303,7 +311,8 @@ const Hero = () => {
                 className="search-field-wrapper guests-wrapper"
                 ref={guestsRef}
               >
-                <div
+                <button
+                  type="button"
                   className={`filter-item ${openGuests ? "active" : ""}`}
                   onClick={() => {
                     setOpenGuests(!openGuests);
@@ -316,12 +325,15 @@ const Hero = () => {
                     <span className="label">TRAVELERS</span>
                     <span className="value">{guests} Guests</span>
                   </div>
-                </div>
+                </button>
 
-                {openGuests && (
-                  <div className="search-field-dropdown">
-                    {[1, 2, 4, 5].map((num: number) => (
-                      <div
+                {openGuests ? (
+                  <div className="search-field-dropdown" role="listbox">
+                    {[1, 2, 3, 4, 5].map((num) => (
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={guests === num}
                         onClick={() => {
                           setGuests(num);
                           setOpenGuests(false);
@@ -331,16 +343,21 @@ const Hero = () => {
                         <span>
                           {num}+ Guest{num > 1 ? "s" : ""}
                         </span>
-                      </div>
+                      </button>
                     ))}
                   </div>
-                )}
+                ) : null}
               </div>
 
               {/* SEARCH ACTION BUTTON */}
-              <div className="search-submit-btn" onClick={searchHandler}>
+              <button
+                type="button"
+                className="search-submit-btn"
+                onClick={searchHandler}
+                aria-label="Search stays"
+              >
                 <SearchIcon />
-              </div>
+              </button>
             </div>
           </div>
         </div>

@@ -1,34 +1,26 @@
 import React from 'react';
 import Link from 'next/link';
 import { Tour } from '../../../types/tour/tour';
-import { getImageUrl } from '../../../config';
+import { DEFAULT_TOUR_IMAGE, getImageUrl } from '../../../config';
+import { ApolloError } from '@apollo/client';
 
 interface DestinationPopularToursProps {
 	destinationName: string;
 	tours: Tour[];
 	onLikeTour?: (tourId: string) => void;
+	loading?: boolean;
+	error?: ApolloError;
 }
 
-const fallbackTourImages = [
-	'https://lh3.googleusercontent.com/aida-public/AB6AXuAcmRnGEorvdr5yd3I6vPiW5QuUqQFvijohi-znk9aduV9brKvMztnQWlAOWbz19bO26kjf6o1X9eAkNo-bVHblKQxA2jEdv0R6QebaWiOACxPseO-VqkO4bIY4CtbEEcXHE9c7EGPBLNKJsREpdQyIM-KFMlR7nUhjebAgXihnu_Zuq8fZDYNMaZSUTW_0HueyAAMmOsBQRDT1DaFZ7hjIPoB2gjpqKLSJ2khi7n5JjBeOHe_GWXJi',
-	'https://lh3.googleusercontent.com/aida-public/AB6AXuA-tCX_tRbldF7RbYNToMTZXR5njlk_MWCb7BflPZQatawTlnK6DNC1w1DGnodHkcjVdxCMaPWSurKNKec_1yrnhf46kgcOxP-Hq7J9pT7SKSK0H1pbfCSrInAfYyQgAs-SEJTSdu7fkPpSsRmxnXSrftmmFC3yXgzLI9N2Q0ZE8sIdy54eM3q10c9UCogDotFniY9QeYrZKYsFfzRbm5aqIBbnVIkNGwX8AI20QoxasVPmgbKOj5aU',
-	'https://lh3.googleusercontent.com/aida-public/AB6AXuAN3_cgo6sKpA7QDW82-P2FuBvbbA3R9Cu7CUt2K8Gv_3rht4Oayf3FcyzptkQkZxcsq1rGaoEn5DP_DlO00Fx9Y8w855LIQFPFQIfVedmVFriCl496LtygxMeS6XWlhzD5ZeL-7_IyMl0g3KlS2mihqqIUnJl0OB0gnetgNe4zBglol0x4s33q-Nf_YLINCzWkDMKTij0Asyeci9v5MwdodWUdaGqZvHPPAomi5zU-FR3JBjUfiyw6',
-	'https://lh3.googleusercontent.com/aida-public/AB6AXuCmEU55DnOzkWpBLEs3B7Hx-_JWziex0iTpcOl5Az4lDKtGMZmOj2G14OX41qEX9VjYEYAQI78XreacFM7DKPqZ6WeWCfD-azd48yVPDwW5FAibN7rTDjphtnyIo4jeyw8JGhIeeDmP2_7rt1sFJ8BbuhfcaXkvLJchlQdA7IdlZN5WfdKZrnqFVSI_WbeiO4jDbBaVVaGw7OtAbBNEw_ojkGY6MJfJOwRVe6ffuvrBu1V_PxhZygD_',
-];
-
-const sampleInclusions = [
-	['Private Guide', 'Hanok Tea', 'Michelin Dining'],
-	['Olle Trail Hike', 'Haenyeo Session', 'Luxury Stay'],
-	['Yacht Charter', 'Street Food Class', 'Hot Springs'],
-	['UNESCO Sites', 'Scholar Lead', 'Hanok Stay'],
-];
 
 const DestinationPopularTours = ({
 	destinationName,
 	tours,
 	onLikeTour,
+	loading,
+	error,
 }: DestinationPopularToursProps) => {
-	if (!tours || tours.length === 0) return null;
+	if (!loading && !error && (!tours || tours.length === 0)) return null;
 
 	const displayTours = tours.slice(0, 4);
 
@@ -48,13 +40,14 @@ const DestinationPopularTours = ({
 
 			{/* Exactly 4 Tour Package Cards in 1 Row on Desktop */}
 			<div className="tours-cards-grid">
+				{loading ? <p>Loading top tours…</p> : null}
+				{!loading && error ? <p>Top tours are unavailable right now.</p> : null}
 				{displayTours.map((tour, idx) => {
-					const fallback = fallbackTourImages[idx % fallbackTourImages.length];
-					const imgUrl = getImageUrl(tour.tourImages?.[0], fallback);
-					const inclusions = sampleInclusions[idx % sampleInclusions.length];
+					const imgUrl = getImageUrl(tour.tourImages?.[0], DEFAULT_TOUR_IMAGE);
+					const inclusions = tour.tourAdditionalInfo?.split(',').map((value) => value.trim()).filter(Boolean).slice(0, 3) || [];
 					const isLiked = tour.meLiked?.[0]?.myFavorite;
-					const priceKRW = tour.tourPrice || 450000;
-					const rating = (tour.tourRating || 4.95).toFixed(2);
+					const priceKRW = tour.tourPrice;
+					const rating = typeof tour.tourRating === 'number' ? tour.tourRating.toFixed(2) : '—';
 					const departure =
 						tour.tourDepartureCity || tour.tourDestinationCity || destinationName;
 
@@ -66,7 +59,7 @@ const DestinationPopularTours = ({
 									alt={tour.tourName}
 									className="tour-img"
 									onError={(e: any) => {
-										e.target.src = fallback;
+										e.target.src = DEFAULT_TOUR_IMAGE;
 									}}
 								/>
 
@@ -91,7 +84,7 @@ const DestinationPopularTours = ({
 
 								<div className="schedule-badge-pill">
 									<span className="material-symbols-outlined icon-clock">schedule</span>
-									<span>4 Days / 3 Nights</span>
+									<span>{tour.tourStartDate && tour.tourEndDate ? 'Scheduled tour' : 'Dates to be announced'}</span>
 								</div>
 							</div>
 
@@ -124,7 +117,7 @@ const DestinationPopularTours = ({
 
 								<div className="card-price-package-row">
 									<div className="price-box">
-										<span className="price-amount">₩{priceKRW.toLocaleString()}</span>
+										<span className="price-amount">{typeof priceKRW === 'number' ? `₩${priceKRW.toLocaleString()}` : 'Price on request'}</span>
 										<span className="price-subtext">per person</span>
 									</div>
 									<Link href={`/tour/detail?id=${tour._id}`} className="view-package-btn">

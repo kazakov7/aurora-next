@@ -904,7 +904,6 @@ export const GET_MY_NOTIFICATIONS = gql`
 				receiverId
 				authorId
 				authorData {
-					_id
 					memberNick
 					memberFullName
 					memberImage

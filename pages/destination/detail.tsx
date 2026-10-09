@@ -16,15 +16,16 @@ import DestinationContinueExploring from '../../libs/components/destination/deta
 import { Destination } from '../../libs/types/destination/destination';
 import { Property } from '../../libs/types/property/property';
 import { Tour } from '../../libs/types/tour/tour';
+import { Member } from '../../libs/types/member/member';
+import { RankingList } from '../../libs/types/ranking/ranking';
 import { Direction, Message } from '../../libs/enums/common.enum';
 
 import {
 	GET_DESTINATION,
 	GET_DESTINATIONS,
-	GET_PROPERTIES,
-	GET_TOURS,
 	GET_DESTINATION_REVIEWS,
 } from '../../apollo/user/query';
+import { GET_TOP_PROPERTIES, GET_TOP_TOURS, GET_TOP_TRAVELERS } from '../../apollo/ranking/query';
 import {
 	LIKE_TARGET_DESTINATION,
 	LIKE_TARGET_PROPERTY,
@@ -116,34 +117,14 @@ const DestinationDetail: NextPage = () => {
 	const siblingCities: Destination[] = siblingCitiesData?.getDestinations?.list || [];
 
 	/** TOP STAYS (PROPERTIES) **/
-	const { data: propertiesData, refetch: refetchProperties } = useQuery(GET_PROPERTIES, {
-		fetchPolicy: 'network-only',
-		variables: {
-			input: {
-				page: 1,
-				limit: 4,
-				sort: 'propertyViews',
-				direction: Direction.DESC,
-				search: {},
-			},
-		},
-	});
-	const topStays: Property[] = propertiesData?.getProperties?.list || [];
+	const { data: propertiesData, loading: propertiesLoading, error: propertiesError, refetch: refetchProperties } = useQuery<{ getTopProperties?: RankingList<Property> }>(GET_TOP_PROPERTIES, { fetchPolicy: 'cache-and-network', variables: { input: { destinationId, limit: 4 } }, skip: !destinationId });
+	const topStays: Property[] = propertiesData?.getTopProperties?.list || [];
 
 	/** POPULAR TOURS **/
-	const { data: toursData, refetch: refetchTours } = useQuery(GET_TOURS, {
-		fetchPolicy: 'network-only',
-		variables: {
-			input: {
-				page: 1,
-				limit: 4,
-				sort: 'tourViews',
-				direction: Direction.DESC,
-				search: {},
-			},
-		},
-	});
-	const popularTours: Tour[] = toursData?.getTours?.list || [];
+	const { data: toursData, loading: toursLoading, error: toursError, refetch: refetchTours } = useQuery<{ getTopTours?: RankingList<Tour> }>(GET_TOP_TOURS, { fetchPolicy: 'cache-and-network', variables: { input: { destinationId, limit: 4 } }, skip: !destinationId });
+	const popularTours: Tour[] = toursData?.getTopTours?.list || [];
+	const { data: travelersData, loading: travelersLoading, error: travelersError, refetch: refetchTravelers } = useQuery<{ getTopTravelers?: RankingList<Member> }>(GET_TOP_TRAVELERS, { fetchPolicy: 'cache-and-network', variables: { input: { destinationId, limit: 4 } }, skip: !destinationId });
+	const topTravelers: Member[] = travelersData?.getTopTravelers?.list || [];
 
 	/** DESTINATION REVIEWS **/
 	const { data: reviewsData, refetch: refetchReviews } = useQuery(GET_DESTINATION_REVIEWS, {
@@ -287,6 +268,8 @@ const DestinationDetail: NextPage = () => {
 			<DestinationTopStays
 				destinationName={destination.destinationName}
 				properties={topStays}
+				loading={propertiesLoading}
+				error={propertiesError}
 				onLikeProperty={handleLikeProperty}
 			/>
 
@@ -294,11 +277,13 @@ const DestinationDetail: NextPage = () => {
 			<DestinationPopularTours
 				destinationName={destination.destinationName}
 				tours={popularTours}
+				loading={toursLoading}
+				error={toursError}
 				onLikeTour={handleLikeTour}
 			/>
 
 			{/* 6. Notable Travelers */}
-			<DestinationTravelers destinationName={destination.destinationName} />
+			<DestinationTravelers destinationName={destination.destinationName} travelers={topTravelers} loading={travelersLoading} error={travelersError} onRefetch={refetchTravelers} />
 
 			{/* 7. Traveler Reviews & Community Notes */}
 			<DestinationReviews

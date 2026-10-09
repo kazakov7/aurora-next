@@ -4,7 +4,9 @@ import { GET_AGENT_TOURS } from "../../../../apollo/user/query";
 import { TourStatus } from "../../../enums/tour.enum";
 import { Direction } from "../../../enums/common.enum";
 import { useRouter } from "next/router";
+import { getImageUrl } from "../../../../libs/config";
 import moment from "moment";
+import { sweetErrorHandling } from "../../../../libs/sweetAlert";
 
 const MyTours = () => {
   const router = useRouter();
@@ -14,6 +16,7 @@ const MyTours = () => {
 
   const { data, loading } = useQuery(GET_AGENT_TOURS, {
     fetchPolicy: "network-only",
+    onError: (err) => sweetErrorHandling(err),
     variables: {
       input: {
         page,
@@ -21,7 +24,6 @@ const MyTours = () => {
         sort: "createdAt",
         direction: Direction.DESC,
         search: {
-          ...(search && { text: search }),
           ...(tourStatus && { tourStatus }),
         },
       },
@@ -61,6 +63,8 @@ const MyTours = () => {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search tour packages by title or location..."
               type="text"
+              disabled
+              title="Text search not supported by backend yet"
             />
           </div>
           <div className="select-box">
@@ -106,7 +110,7 @@ const MyTours = () => {
                     <td>
                       <div className="item-cell">
                         <img
-                          src={tour.tourImages?.[0] ? `${process.env.REACT_APP_API_URL}/${tour.tourImages[0]}` : "/img/placeholder.png"}
+                          src={getImageUrl(tour?.tourImages?.[0], "/img/placeholder.png")}
                           alt={tour.tourName}
                         />
                         <div className="item-info">

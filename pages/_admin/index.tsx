@@ -7,6 +7,7 @@ import {
   GET_ALL_PROPERTIES_BY_ADMIN,
   GET_ALL_TOURS_BY_ADMIN,
   GET_AGENT_APPLICATIONS_BY_ADMIN,
+  GET_ALL_BOOKINGS_BY_ADMIN,
 } from "../../apollo/admin/query";
 import { T } from "../../libs/types/common";
 import { Member } from "../../libs/types/member/member";
@@ -98,6 +99,14 @@ const AdminDashboardOverview: NextPage = () => {
     },
   });
 
+
+  const { data: bookingsData, loading: bookingsLoading } = useQuery(GET_ALL_BOOKINGS_BY_ADMIN, {
+    fetchPolicy: "cache-and-network",
+    variables: { input: { page: 1, limit: 5 } },
+  });
+  const recentBookingsData = bookingsData?.getAllBookingsByAdmin?.list || [];
+  const totalBookings = bookingsData?.getAllBookingsByAdmin?.metaCounter?.[0]?.total || 0;
+
   return (
     <div className="admin-overview dashboard-container">
       {/* TOP SECTION: HEADER / CONTEXT BAR */}
@@ -181,7 +190,7 @@ const AdminDashboardOverview: NextPage = () => {
             </div>
           </div>
           <div className="kpi-bottom">
-            <span className="kpi-value">...</span>
+            <span className="kpi-value">{totalBookings.toLocaleString()}</span>
             <div className="kpi-trend warning">
               <span className="material-symbols-outlined">pending</span>
               <span>Dev</span>
@@ -195,7 +204,7 @@ const AdminDashboardOverview: NextPage = () => {
         <div className="table-header">
           <div className="header-left">
             <h2>Recent Bookings</h2>
-            <span className="table-badge warning">Coming Soon (Mock)</span>
+            <span className="table-badge primary">{totalBookings} Total</span>
           </div>
           <div className="header-right">
             <div className="search-box">
@@ -219,114 +228,47 @@ const AdminDashboardOverview: NextPage = () => {
                 <th className="px-6 text-right">Actions</th>
               </tr>
             </thead>
+            
             <tbody>
-              <tr>
-                <td
-                  colSpan={8}
-                  style={{ textAlign: "center", padding: "24px" }}
-                >
-                  <span style={{ color: "#707881" }}>
-                    Booking API not implemented yet.
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* 3. PENDING AGENT VERIFICATIONS SECTION */}
-      <section className="admin-table-section">
-        <div className="table-header">
-          <div className="header-left">
-            <h2>Pending Agent Verifications</h2>
-            <span className="table-badge warning">
-              {pendingAgents.length} Pending
-            </span>
-          </div>
-          <div className="header-right">
-            <a href="#" className="action-link">
-              View All Verifications
-              <span className="material-symbols-outlined">arrow_forward</span>
-            </a>
-          </div>
-        </div>
-
-        <div className="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th className="px-6">Agent</th>
-                <th>Company</th>
-                <th>Agent Type</th>
-                <th>Requested Date</th>
-                <th>Status</th>
-                <th className="px-6 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingAgents.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    style={{ textAlign: "center", padding: "24px" }}
-                  >
-                    <span style={{ color: "#707881" }}>
-                      No pending applications found!
-                    </span>
-                  </td>
-                </tr>
+              {bookingsLoading ? (
+                <tr><td colSpan={8} style={{ textAlign: "center", padding: "24px" }}><span style={{ color: "#707881" }}>Loading bookings...</span></td></tr>
+              ) : recentBookingsData.length === 0 ? (
+                <tr><td colSpan={8} style={{ textAlign: "center", padding: "24px" }}><span style={{ color: "#707881" }}>No recent bookings found.</span></td></tr>
               ) : (
-                pendingAgents.map((agent: Agent) => (
-                  <tr key={agent._id}>
-                    <td className="px-6">
+                recentBookingsData.map((booking: any) => (
+                  <tr key={booking._id}>
+                    <td className="px-6"><span style={{fontFamily: 'monospace', color: '#006194', fontWeight: 600}}>#{booking._id.substring(booking._id.length - 6).toUpperCase()}</span></td>
+                    <td>
                       <div className="user-avatar-cell">
                         <div className="avatar-circle bg-secondary">
-                          {agent.memberData?.memberNick
-                            ?.substring(0, 2)
-                            .toUpperCase() || "AG"}
+                          {booking.memberData?.memberNick?.substring(0, 2).toUpperCase() || "US"}
                         </div>
                         <div className="user-cell">
-                          <span className="user-name">
-                            {agent.memberData?.memberNick || "Unknown"}
-                          </span>
-                          <span className="user-email">
-                            {agent.memberData?.memberEmail || "N/A"}
-                          </span>
+                          <span className="user-name">{booking.memberData?.memberNick || "Unknown"}</span>
                         </div>
                       </div>
                     </td>
                     <td>
-                      <span className="item-text">{agent.companyName}</span>
+                      <span className={`badge-pill ${booking.bookingCategory === 'HOTEL' ? 'sky' : 'indigo'}`}>{booking.bookingCategory}</span>
                     </td>
                     <td>
-                      <span
-                        className={`badge-pill ${
-                          agent.agentType === "HOTEL" ? "sky" : "indigo"
-                        }`}
-                      >
-                        {agent.agentType}
-                      </span>
+                      <span className="item-text">{booking.propertyData?.propertyName || booking.tourData?.tourName || "Unknown Item"}</span>
                     </td>
+                    <td><span className="date-text">{moment(booking.createdAt).format("MMM DD, YYYY")}</span></td>
+                    <td><strong style={{color: '#1a2b49'}}>{booking.bookingCurrency === 'KRW' ? '₩' : '$'}{booking.bookingTotalPrice.toLocaleString()}</strong></td>
                     <td>
-                      <span className="date-text">
-                        {moment(agent.createdAt).format("MMM DD, YYYY")}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="status-pill amber">
-                        <span className="dot"></span> {agent.verificationStatus}
+                      <span className={`status-pill ${booking.bookingStatus === 'CONFIRMED' ? 'green' : booking.bookingStatus === 'PENDING' ? 'amber' : 'red'}`}>
+                        <span className="dot"></span> {booking.bookingStatus}
                       </span>
                     </td>
                     <td className="px-6 text-right">
-                      <div className="actions-group">
-                        <button className="text-btn">Review</button>
-                      </div>
+                      <div className="actions-group"><button className="text-btn">View</button></div>
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
+
           </table>
         </div>
       </section>

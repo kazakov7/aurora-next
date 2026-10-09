@@ -12,7 +12,7 @@
   .hero-section {
     position: relative;
     width: 100%;
-    margin-top: -150px;
+    margin-top: -50px;
     padding-top: 125px; // space for nav
     background: rgb(241, 243, 255); // Light warm background from design
     overflow: hidden;
@@ -24,7 +24,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding-top: 60px;
+      // padding-top: 100px;
 
       .hero-content-container {
         position: relative;
@@ -232,87 +232,6 @@
                   font-size: 20px;
                 }
               }
-
-              .testimonial-card {
-                position: absolute;
-                top: 40px;
-                right: -40px;
-                background: #ffffff;
-                padding: 20px;
-                border-radius: 16px;
-                width: 240px;
-                box-shadow: 0 16px 32px rgba(0, 0, 0, 0.12);
-
-                .quote-icon {
-                  font-size: 40px;
-                  font-family: serif;
-                  color: #e2e8f0;
-                  position: absolute;
-                  top: 10px;
-                  right: 20px;
-                  line-height: 1;
-                }
-
-                .user-name {
-                  font-weight: 700;
-                  font-size: 14px;
-                  color: #1a2332;
-                  display: block;
-                  margin-bottom: 8px;
-                }
-
-                .quote-text {
-                  font-size: 12px;
-                  color: #5b6678;
-                  line-height: 1.6;
-                  margin-bottom: 16px;
-                  font-style: italic;
-                }
-
-                .avatars-row {
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
-
-                  .avatar-stack {
-                    display: flex;
-
-                    .avatar {
-                      width: 28px;
-                      height: 28px;
-                      border-radius: 50%;
-                      background: #e2e8f0;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      font-size: 10px;
-                      font-weight: 700;
-                      border: 2px solid #ffffff;
-                      margin-left: -8px;
-
-                      &:first-child {
-                        margin-left: 0;
-                        background: #ffb800;
-                        color: #fff;
-                      }
-                      &.av-2 {
-                        background: $primary;
-                        color: #fff;
-                      }
-                      &.av-3 {
-                        background: #10b981;
-                        color: #fff;
-                      }
-                    }
-                  }
-
-                  .traveled-count {
-                    font-size: 11px;
-                    font-weight: 600;
-                    color: $primary;
-                  }
-                }
-              }
             }
           }
         }
@@ -339,8 +258,12 @@
               gap: 12px;
               padding: 12px 24px;
               border-radius: 9999px;
+              border: none;
+              background: none;
+              font-family: inherit;
               cursor: pointer;
               transition: background 0.2s;
+              text-align: left;
 
               &:hover,
               &.active {
@@ -370,6 +293,7 @@
                 .date-inputs {
                   display: flex;
                   align-items: center;
+                  gap: 4px;
 
                   .date-input {
                     border: none;
@@ -380,30 +304,20 @@
                     font-family: inherit;
                     outline: none;
                     cursor: pointer;
+                    width: 110px;
+                    padding: 0;
 
                     &::-webkit-calendar-picker-indicator {
                       display: none;
                     }
                   }
+
+                  .date-separator {
+                    color: #94a3b8;
+                    font-size: 14px;
+                    flex-shrink: 0;
+                  }
                 }
-              }
-            }
-
-            .swap-btn {
-              width: 36px;
-              height: 36px;
-              border-radius: 50%;
-              background: #f8fafc;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              cursor: pointer;
-              color: #64748b;
-              margin: 0 8px;
-              flex-shrink: 0;
-
-              &:hover {
-                background: #e2e8f0;
               }
             }
 
@@ -413,6 +327,7 @@
               border-radius: 50%;
               margin-right: 15px;
               background: $primary;
+              border: none;
               display: flex;
               align-items: center;
               justify-content: center;
@@ -438,7 +353,7 @@
             display: flex;
             flex: 1;
             align-items: center;
-            
+
             .filter-item {
               flex: 1;
               width: 100%;
@@ -463,14 +378,19 @@
             z-index: 1000;
             animation: fadeIn 0.2s ease-out;
 
-            div {
+            button {
               display: block;
+              width: 100%;
               padding: 10px 14px;
               border-radius: 8px;
+              border: none;
+              background: none;
               cursor: pointer;
               font-size: 14px;
               font-weight: 500;
+              font-family: inherit;
               color: #1a2332;
+              text-align: left;
               transition: background 0.15s, color 0.15s;
 
               span {
@@ -542,169 +462,356 @@
         }
       }
 
+      /* --- Bento grid: editorial destination kartalari --- */
       .bento-grid {
         display: grid;
         grid-template-columns: repeat(12, 1fr);
-        gap: 24px;
+        gap: 20px;
 
         .bento-card {
           position: relative;
-          border-radius: 14px;
-          overflow: hidden;
+          isolation: isolate;
           display: flex;
-          flex-direction: column;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-          transition: all 0.3s;
+          overflow: hidden;
+          border-radius: 8px;
+          background: $surface-container-high;
+          cursor: pointer;
+          color: #ffffff;
+          text-decoration: none;
 
-          &.col-span-7 {
-            grid-column: span 7;
+          &:focus-visible {
+            outline: 2px solid $primary;
+            outline-offset: 3px;
+          }
+
+          box-shadow: 0 1px 2px rgba(20, 27, 43, 0.06),
+            0 14px 34px -20px rgba(20, 27, 43, 0.3);
+          transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+
+          // Ustun kengliklari TSX'dagi buildSpans() natijasiga mos keladi
+          @for $i from 1 through 12 {
+            &.span-#{$i} {
+              grid-column: span #{$i};
+            }
+          }
+
+          &.is-feature {
+            min-height: 480px;
+          }
+          &.is-wide,
+          &.is-compact {
             min-height: 380px;
           }
-          &.col-span-5 {
-            grid-column: span 5;
-            min-height: 380px;
-          }
-          &.col-span-4 {
-            grid-column: span 4;
-            min-height: 320px;
-          }
-          &.col-span-8 {
-            grid-column: span 8;
-            min-height: 320px;
-          }
 
-          &:hover .card-bg {
-            transform: scale(1.05);
-          }
-
+          /* --- Rasm qatlami --- */
           .card-bg {
             position: absolute;
             inset: 0;
+            z-index: 0;
+            background-color: $surface-dim;
             background-size: cover;
             background-position: center;
-            transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: scale(1.02);
+            filter: saturate(0.94) contrast(1.04);
+            transition: transform 1.25s cubic-bezier(0.22, 1, 0.36, 1);
           }
 
-          .card-gradient {
+          /* --- Scrim: ko'p to'xtamli (banding yo'q) va yorug' rasmlarda ham
+                 oq matn WCAG AA'dan o'tadigan darajada quyuq --- */
+          .card-scrim {
             position: absolute;
             inset: 0;
-            background: linear-gradient(
-              to top,
-              rgba(20, 27, 43, 0.92) 0%,
-              rgba(20, 27, 43, 0.35) 60%,
-              transparent 100%
-            );
+            z-index: 1;
+            background:
+              // tartib raqami o'qilishi uchun yuqoridan yengil soya
+              linear-gradient(
+                to bottom,
+                rgba(10, 15, 26, 0.42) 0%,
+                rgba(10, 15, 26, 0.12) 15%,
+                rgba(10, 15, 26, 0) 28%
+              ),
+              linear-gradient(
+                to top,
+                rgba(10, 15, 26, 0.95) 0%,
+                rgba(10, 15, 26, 0.88) 14%,
+                rgba(10, 15, 26, 0.74) 30%,
+                rgba(10, 15, 26, 0.52) 46%,
+                rgba(10, 15, 26, 0.24) 66%,
+                rgba(10, 15, 26, 0) 88%
+              );
           }
 
-          .card-gradient-right {
+          &.is-wide .card-scrim {
+            background: linear-gradient(
+                to bottom,
+                rgba(10, 15, 26, 0.42) 0%,
+                rgba(10, 15, 26, 0.12) 15%,
+                rgba(10, 15, 26, 0) 28%
+              ),
+              linear-gradient(
+                to right,
+                rgba(10, 15, 26, 0.94) 0%,
+                rgba(10, 15, 26, 0.86) 26%,
+                rgba(10, 15, 26, 0.6) 48%,
+                rgba(10, 15, 26, 0.24) 68%,
+                rgba(10, 15, 26, 0) 88%
+              ),
+              linear-gradient(
+                to top,
+                rgba(10, 15, 26, 0.5) 0%,
+                rgba(10, 15, 26, 0.16) 32%,
+                rgba(10, 15, 26, 0) 60%
+              );
+          }
+
+          /* --- Editorial tartib raqami --- */
+          .card-index {
             position: absolute;
-            inset: 0;
-            background: linear-gradient(
-              to right,
-              rgba(20, 27, 43, 0.92) 0%,
-              rgba(20, 27, 43, 0.5) 55%,
-              transparent 100%
-            );
+            z-index: 3;
+            top: 26px;
+            left: 32px;
+            font-family: $font-serif;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            color: rgba(255, 255, 255, 0.72);
+
+            &::after {
+              content: "";
+              display: block;
+              width: 18px;
+              height: 1px;
+              margin-top: 7px;
+              background: rgba(255, 255, 255, 0.42);
+            }
           }
 
+          /* --- Matn bloki --- */
           .card-content {
             position: relative;
-            z-index: 10;
+            z-index: 2;
+            width: 100%;
             margin-top: auto;
-            padding: 32px;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            padding: 32px;
             color: #ffffff;
+          }
 
-            .card-badge {
-              padding: 4px 10px;
-              border-radius: 9999px;
-              background: rgba(255, 255, 255, 0.2);
-              backdrop-filter: blur(8px);
-              font-size: 11px;
-              font-weight: 500;
-              text-transform: uppercase;
-              letter-spacing: 0.04em;
-              margin-bottom: 12px;
-            }
+          &.is-feature .card-content {
+            padding: 40px;
+          }
 
-            .card-tag {
-              font-size: 11px;
-              text-transform: uppercase;
-              letter-spacing: 0.05em;
-              color: $secondary-container;
-              font-weight: 600;
-            }
+          &.is-wide .card-content {
+            padding: 40px;
+            max-width: 56%;
+          }
 
-            .card-heading {
-              font-size: 28px;
-              line-height: 36px;
-              font-weight: 600;
-              letter-spacing: -0.02em;
-              color: #ffffff;
-              margin-bottom: 6px;
-            }
+          .card-overline {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: rgba(255, 255, 255, 0.8);
 
-            .card-heading-sm {
-              font-size: 20px;
-              line-height: 28px;
-              font-weight: 600;
-              color: #ffffff;
-              margin-top: 4px;
-              margin-bottom: 4px;
+            &::before {
+              content: "";
+              width: 24px;
+              height: 1px;
+              background: rgba(255, 255, 255, 0.5);
             }
+          }
 
-            .card-desc {
-              font-size: 13px;
-              line-height: 20px;
-              color: rgba(220, 226, 247, 0.9);
-              max-width: 440px;
-            }
+          .card-heading {
+            margin: 0;
+            font-family: $font-serif;
+            font-weight: 600;
+            line-height: 1.08;
+            letter-spacing: -0.01em;
+            color: #ffffff;
+            text-wrap: balance;
+          }
+
+          &.is-feature .card-heading {
+            font-size: 40px;
+          }
+          &.is-wide .card-heading {
+            font-size: 34px;
+          }
+          &.is-compact .card-heading {
+            font-size: 26px;
+          }
+
+          .card-desc {
+            margin: 12px 0 0;
+            max-width: 46ch;
+            font-size: 14px;
+            line-height: 23px;
+            color: rgba(237, 240, 255, 0.82);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+
+          /* --- Hairline bilan ajratilgan meta qatori --- */
+          .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            width: 100%;
+            margin-top: 22px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.18);
 
             .card-stats {
-              display: flex;
-              flex-direction: row;
+              display: inline-flex;
               align-items: center;
-              gap: 16px;
-              margin-top: 24px;
+              gap: 12px;
+              min-height: 16px;
               font-size: 12px;
               font-weight: 500;
-              color: $secondary-container;
+              letter-spacing: 0.02em;
+              color: rgba(255, 255, 255, 0.82);
 
-              .dot {
-                width: 4px;
-                height: 4px;
+              .stat-dot {
+                width: 3px;
+                height: 3px;
                 border-radius: 50%;
-                background: $surface-variant;
+                background: rgba(255, 255, 255, 0.45);
               }
             }
 
-            .card-actions {
-              display: flex;
-              flex-direction: row;
+            .card-cue {
+              display: inline-flex;
               align-items: center;
-              gap: 24px;
-              margin-top: 24px;
+              gap: 8px;
+              font-size: 12px;
+              font-weight: 600;
+              letter-spacing: 0.04em;
+              white-space: nowrap;
+              color: #ffffff;
 
-              .highlight-text {
-                font-size: 14px;
-                font-weight: 600;
-                color: $secondary-container;
+              .cue-label {
+                // Hover'da chiziladigan editorial tagchiziq
+                background-image: linear-gradient(currentColor, currentColor);
+                background-repeat: no-repeat;
+                background-position: 0 100%;
+                background-size: 0% 1px;
+                transition: background-size 0.45s cubic-bezier(0.22, 1, 0.36, 1);
               }
 
-              .view-collection-link {
-                display: inline-flex;
-                align-items: center;
-                gap: 4px;
-                font-size: 12px;
-                color: #ffffff;
-                font-weight: 500;
-
-                &:hover {
-                  text-decoration: underline;
-                }
+              .cue-icon {
+                font-size: 16px;
+                transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
               }
+            }
+          }
+
+          /* --- Hover / focus --- */
+          &:hover,
+          &:focus-within {
+            transform: translateY(-4px);
+            box-shadow: 0 2px 4px rgba(20, 27, 43, 0.08),
+              0 28px 58px -24px rgba(20, 27, 43, 0.44);
+
+            .card-bg {
+              transform: scale(1.07);
+            }
+
+            .card-footer .card-cue {
+              .cue-label {
+                background-size: 100% 1px;
+              }
+              .cue-icon {
+                transform: translateX(4px);
+              }
+            }
+          }
+        }
+
+        .bento-empty-state {
+          grid-column: span 12;
+          padding: 56px 0;
+          text-align: center;
+          font-size: 14px;
+          color: $on-surface-variant;
+        }
+
+        @media (max-width: 1100px) {
+          gap: 16px;
+
+          .bento-card {
+            &[class*="span-"] {
+              grid-column: span 6;
+            }
+
+            &.is-feature,
+            &.is-wide,
+            &.is-compact {
+              min-height: 340px;
+            }
+
+            &.is-feature .card-content,
+            &.is-wide .card-content {
+              padding: 28px;
+              max-width: none;
+            }
+
+            .card-content {
+              padding: 28px;
+            }
+
+            &.is-feature .card-heading,
+            &.is-wide .card-heading {
+              font-size: 27px;
+            }
+            &.is-compact .card-heading {
+              font-size: 23px;
+            }
+          }
+        }
+
+        @media (max-width: 700px) {
+          .bento-card {
+            &[class*="span-"] {
+              grid-column: span 12;
+            }
+
+            .card-index {
+              top: 20px;
+              left: 24px;
+            }
+
+            .card-content,
+            &.is-feature .card-content,
+            &.is-wide .card-content {
+              padding: 24px;
+            }
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .bento-card,
+          .bento-card .card-bg,
+          .bento-card .cue-label,
+          .bento-card .cue-icon {
+            transition: none;
+          }
+
+          .bento-card:hover,
+          .bento-card:focus-within {
+            transform: none;
+
+            .card-bg {
+              transform: scale(1.02);
             }
           }
         }
@@ -785,6 +892,8 @@
           display: flex;
           flex-direction: column;
           transition: all 0.3s;
+          text-decoration: none;
+          color: inherit;
 
           &:hover {
             box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
@@ -821,30 +930,17 @@
               color: $on-surface;
             }
 
-            .favorite-btn {
+            .like-btn-wrapper {
               position: absolute;
-              top: 12px;
-              right: 12px;
-              width: 32px;
-              height: 32px;
+              top: 16px;
+              right: 16px;
+              z-index: 10;
+            }
+
+            .stay-like-btn {
+              background-color: rgba(255, 255, 255, 0.9);
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
               border-radius: 50%;
-              background: rgba(255, 255, 255, 0.85);
-              backdrop-filter: blur(8px);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              border: none;
-              cursor: pointer;
-              color: $outline;
-              transition: color 0.2s;
-
-              &:hover {
-                color: #e92c28;
-              }
-
-              span {
-                font-size: 18px;
-              }
             }
           }
 
@@ -880,6 +976,10 @@
 
                 .star-icon {
                   font-size: 16px;
+
+                  &.filled {
+                    font-variation-settings: "FILL" 1;
+                  }
                 }
 
                 .rating-num {
@@ -1008,6 +1108,8 @@
           display: flex;
           flex-direction: column;
           transition: all 0.3s;
+          text-decoration: none;
+          color: inherit;
 
           &:hover {
             box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
@@ -1060,6 +1162,10 @@
 
               .star-icon {
                 font-size: 16px;
+
+                &.filled {
+                  font-variation-settings: "FILL" 1;
+                }
               }
 
               .rating-text {
@@ -1170,103 +1276,235 @@
         }
       }
 
-      .team-grid {
+      /* --- Curator kartalari: Trending Destinations bilan bir vizual til --- */
+      .curators-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 32px;
+        gap: 28px;
 
-        .team-card {
+        .curator-card {
+          position: relative;
           display: flex;
           flex-direction: column;
-          align-items: center;
-          text-align: center;
-          cursor: pointer;
-          transition: transform 0.3s ease;
+          transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 
-          &:hover {
-            transform: translateY(-8px);
-          }
-
-          .team-avatar-wrap {
+          /* --- Portret --- */
+          .curator-portrait {
+            position: relative;
             width: 100%;
             aspect-ratio: 4 / 5;
-            position: relative;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             overflow: hidden;
-            mask-size: 100% 100%;
-            mask-repeat: no-repeat;
-            mask-position: center;
-            -webkit-mask-size: 100% 100%;
-            -webkit-mask-repeat: no-repeat;
-            -webkit-mask-position: center;
+            border-radius: 8px;
+            background: $surface-container-high;
+            box-shadow: 0 1px 2px rgba(20, 27, 43, 0.06),
+              0 14px 34px -20px rgba(20, 27, 43, 0.3);
+            transition: box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 
-            .team-cover-img {
+            .curator-img {
               width: 100%;
               height: 100%;
               object-fit: cover;
+              display: block;
+              transform: scale(1.02);
+              filter: saturate(0.94) contrast(1.03);
+              transition: transform 1.25s cubic-bezier(0.22, 1, 0.36, 1);
+            }
+
+            // Tartib raqami o'qilishi uchun yuqoridan yengil soya
+            .portrait-sheen {
+              position: absolute;
+              inset: 0;
+              background: linear-gradient(
+                to bottom,
+                rgba(10, 15, 26, 0.42) 0%,
+                rgba(10, 15, 26, 0.12) 16%,
+                rgba(10, 15, 26, 0) 30%
+              );
+            }
+
+            .curator-index {
+              position: absolute;
+              top: 18px;
+              left: 20px;
+              font-family: $font-serif;
+              font-size: 13px;
+              font-weight: 600;
+              letter-spacing: 0.14em;
+              color: rgba(255, 255, 255, 0.78);
+
+              &::after {
+                content: "";
+                display: block;
+                width: 18px;
+                height: 1px;
+                margin-top: 7px;
+                background: rgba(255, 255, 255, 0.45);
+              }
             }
           }
 
-          &[data-shape="0"] .team-avatar-wrap {
-            background-color: #3f24ff;
-            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'%3E%3Crect x='0' y='0' width='200' height='140' rx='60'/%3E%3Crect x='0' y='100' width='200' height='140' rx='60'/%3E%3C/svg%3E");
-            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'%3E%3Crect x='0' y='0' width='200' height='140' rx='60'/%3E%3Crect x='0' y='100' width='200' height='140' rx='60'/%3E%3C/svg%3E");
-          }
-
-          &[data-shape="1"] .team-avatar-wrap {
-            background-color: #fcab6c;
-            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'%3E%3Cpath d='M 0,100 A 100 100 0 0 1 200,100 L 200,240 L 0,240 Z'/%3E%3C/svg%3E");
-            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'%3E%3Cpath d='M 0,100 A 100 100 0 0 1 200,100 L 200,240 L 0,240 Z'/%3E%3C/svg%3E");
-          }
-
-          &[data-shape="2"] .team-avatar-wrap {
-            background-color: #ebe266;
-            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'%3E%3Ccircle cx='100' cy='120' r='100'/%3E%3C/svg%3E");
-            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'%3E%3Ccircle cx='100' cy='120' r='100'/%3E%3C/svg%3E");
-          }
-
-          &[data-shape="3"] .team-avatar-wrap {
-            background-color: #23b6fa;
-            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'%3E%3Crect x='0' y='20' width='200' height='70' rx='35'/%3E%3Crect x='15' y='85' width='170' height='70' rx='35'/%3E%3Crect x='0' y='150' width='200' height='70' rx='35'/%3E%3C/svg%3E");
-            -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 240'%3E%3Crect x='0' y='20' width='200' height='70' rx='35'/%3E%3Crect x='15' y='85' width='170' height='70' rx='35'/%3E%3Crect x='0' y='150' width='200' height='70' rx='35'/%3E%3C/svg%3E");
-          }
-
-          .team-bottom-content {
+          /* --- Matn bloki --- */
+          .curator-body {
             display: flex;
             flex-direction: column;
+            align-items: flex-start;
+            flex: 1;
+          }
+
+          .curator-overline {
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: $secondary;
 
-            .team-name {
-              font-size: 20px;
-              font-weight: 600;
-              color: #141b2b;
-              margin: 0;
+            &::before {
+              content: "";
+              width: 20px;
+              height: 1px;
+              background: $outline-variant;
             }
+          }
 
-            .team-role {
-              font-size: 14px;
-              color: #707881;
+          .curator-name {
+            margin: 0;
+            font-family: $font-serif;
+            font-size: 23px;
+            font-weight: 600;
+            line-height: 1.15;
+            letter-spacing: -0.01em;
+            color: $on-surface;
+            text-wrap: balance;
+
+            .curator-link {
+              color: inherit;
+              text-decoration: none;
+
+              // Butun kartani bosiladigan qiladi (Follow tugmasidan tashqari)
+              &::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                z-index: 1;
+              }
+
+              &:focus-visible::after {
+                outline: 2px solid $primary;
+                outline-offset: 4px;
+                border-radius: 8px;
+              }
             }
+          }
 
-            .team-social-icons {
-              display: flex;
+          .curator-desc {
+            margin: 10px 0 0;
+            font-size: 13px;
+            line-height: 21px;
+            color: $on-surface-variant;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+
+          /* --- Hairline bilan ajratilgan meta qatori --- */
+          .curator-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            width: 100%;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid $outline-variant;
+
+            .curator-stats {
+              display: inline-flex;
               align-items: center;
-              gap: 16px;
-              margin-top: 12px;
-              color: #141b2b;
+              gap: 10px;
+              min-height: 18px;
+              font-size: 12px;
+              color: $on-surface-variant;
 
-              svg {
-                transition: color 0.2s;
-                cursor: pointer;
-                &:hover {
-                  color: $primary;
-                }
+              .stat {
+                display: inline-flex;
+                align-items: baseline;
+                gap: 4px;
+                white-space: nowrap;
+              }
+
+              .stat-value {
+                font-weight: 600;
+                color: $on-surface;
+              }
+
+              .stat-dot {
+                width: 3px;
+                height: 3px;
+                border-radius: 50%;
+                background: $outline-variant;
               }
             }
 
-            .team-follow-wrapper {
-              margin-top: 16px;
+            // Follow tugmasi overlay ustida qolishi kerak
+            .curator-action {
+              position: relative;
+              z-index: 2;
+              display: inline-flex;
+            }
+          }
+
+          /* --- Hover / focus --- */
+          &:hover,
+          &:focus-within {
+            transform: translateY(-4px);
+
+            .curator-portrait {
+              box-shadow: 0 2px 4px rgba(20, 27, 43, 0.08),
+                0 28px 58px -24px rgba(20, 27, 43, 0.44);
+            }
+
+            .curator-img {
+              transform: scale(1.07);
+            }
+          }
+        }
+
+        .curators-empty-state {
+          grid-column: 1 / -1;
+          padding: 56px 0;
+          text-align: center;
+          font-size: 14px;
+          color: $on-surface-variant;
+        }
+
+        @media (max-width: 1100px) {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 24px;
+        }
+
+        @media (max-width: 600px) {
+          grid-template-columns: 1fr;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .curator-card,
+          .curator-card .curator-img,
+          .curator-card .curator-portrait {
+            transition: none;
+          }
+
+          .curator-card:hover,
+          .curator-card:focus-within {
+            transform: none;
+
+            .curator-img {
+              transform: scale(1.02);
             }
           }
         }

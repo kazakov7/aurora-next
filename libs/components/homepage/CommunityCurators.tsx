@@ -1,23 +1,46 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useQuery, useMutation, useReactiveVar } from "@apollo/client";
-import { GET_HOME_EXPLORERS } from "../../../apollo/user/query";
+import { ApolloError, useMutation, useReactiveVar } from "@apollo/client";
 import { SUBSCRIBE, UNSUBSCRIBE } from "../../../apollo/user/mutation";
 import { userVar } from "../../../apollo/store";
 import { getJwtToken } from "../../auth";
-import { Direction, Message } from "../../enums/common.enum";
+import { Message } from "../../enums/common.enum";
 import { Member } from "../../types/member/member";
-import { MembersInquiry } from "../../types/member/member.input";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
 import {
   sweetTopSmallSuccessAlert,
   sweetMixinErrorAlert,
 } from "../../sweetAlert";
 import FollowButton from "../common/FollowButton";
-import { Globe, Mail } from "lucide-react";
 
-const CommunityCurators = () => {
+interface CuratorStat {
+  label: string;
+  value: number;
+}
+
+/** Faqat backend qaytargan raqamlarni ko'rsatadi — bo'sh joy sun'iy to'ldirilmaydi **/
+const buildStats = (curator: Member): CuratorStat[] => {
+  const candidates: CuratorStat[] = [
+    { label: "Followers", value: curator.memberFollowers },
+    { label: "Stays", value: curator.memberProperties },
+    { label: "Tours", value: curator.memberTours },
+    { label: "Articles", value: curator.memberArticles },
+  ];
+
+  return candidates
+    .filter((stat) => typeof stat.value === "number" && stat.value > 0)
+    .slice(0, 2);
+};
+
+interface CommunityCuratorsProps {
+  travelers: Member[];
+  loading?: boolean;
+  error?: ApolloError;
+  onRefetch: () => Promise<unknown>;
+}
+
+const CommunityCurators = ({ travelers, loading, error, onRefetch }: CommunityCuratorsProps) => {
   const router = useRouter();
   const user = useReactiveVar(userVar);
   const [followOverrides, setFollowOverrides] = useState<
@@ -26,25 +49,11 @@ const CommunityCurators = () => {
   const [updatingFollowIds, setUpdatingFollowIds] = useState<
     Record<string, boolean>
   >({});
-  const queryInput: MembersInquiry = {
-    page: 1,
-    limit: 4,
-    sort: "createdAt",
-    direction: Direction.DESC,
-    search: {},
-  };
-
   /** APOLLO REQUESTS **/
   const [subscribe] = useMutation(SUBSCRIBE);
   const [unsubscribe] = useMutation(UNSUBSCRIBE);
 
-  const { data, loading, refetch } = useQuery(GET_HOME_EXPLORERS, {
-    fetchPolicy: "cache-and-network",
-    variables: { input: queryInput },
-    notifyOnNetworkStatusChange: true,
-    ssr: false,
-  });
-  const curators: Member[] = data?.getAllMembers?.list ?? [];
+  const curators = travelers;
 
   /** HANDLERS **/
   const followHandler = async (
@@ -88,7 +97,7 @@ const CommunityCurators = () => {
         await subscribe(mutationOptions);
       }
 
-      await refetch({ input: queryInput }).catch((refetchError) => {
+      await onRefetch().catch((refetchError) => {
         console.log("ERROR, refetch explorers:", refetchError);
       });
       setFollowOverrides((current) => {
@@ -96,6 +105,10 @@ const CommunityCurators = () => {
         delete updated[curatorId];
         return updated;
       });
+      await sweetTopSmallSuccessAlert(
+        nextFollowingStatus ? "Following" : "Unfollowed",
+        800,
+      );
     } catch (err: unknown) {
       setFollowOverrides((current) => ({
         ...current,
@@ -110,18 +123,8 @@ const CommunityCurators = () => {
     }
   };
 
-  const redirectToMemberPage = (memberId: string) => {
-    if (memberId === user?._id) {
-      router.push("/mypage");
-    } else {
-      router.push(`/member?memberId=${memberId}`);
-    }
-  };
-
-  const SHAPE_COLORS = ["#3f24ff", "#fcab6c", "#ebe266", "#23b6fa"];
-
   return (
-    <section className="curators-section team-section">
+    <section className="curators-section">
       <div className="section-container">
         <div className="section-header">
           <div>
@@ -136,7 +139,9 @@ const CommunityCurators = () => {
           </Link>
         </div>
 
-        <div className="team-grid">
+        <div className="curators-grid">
+		  {loading ? <p className="curators-empty-state">Loading top travelers…</p> : null}
+		  {!loading && error ? <p className="curators-empty-state">Top travelers are unavailable right now.</p> : null}
           {curators.map((curator: Member, index: number) => {
             const backendFollowing = Boolean(
               curator.meFollowed?.[0]?.myFollowing,
@@ -148,57 +153,82 @@ const CommunityCurators = () => {
               curator.memberImage,
               DEFAULT_USER_AVATAR,
             );
-
-            const shapeIndex = index % 4;
+            const isSelf = curator._id === user?._id;
+            const stats = buildStats(curator);
 
             return (
-              <div
-                key={curator._id}
-                className="team-card"
-                data-shape={shapeIndex}
-                onClick={() => redirectToMemberPage(curator._id)}
-              >
-                <div className="team-avatar-wrap">
+              <article key={curator._id} className="curator-card">
+                <div className="curator-portrait">
                   <img
                     src={avatarUrl}
-                    alt={curator.memberNick}
-                    className="team-cover-img"
-                    onError={(e: any) => {
-                      e.target.src = DEFAULT_USER_AVATAR;
+                    alt={curator.memberFullName || curator.memberNick}
+                    className="curator-img"
+                    onError={(event) => {
+                      event.currentTarget.src = DEFAULT_USER_AVATAR;
                     }}
                   />
+                  <span className="portrait-sheen" aria-hidden="true" />
+                  <span className="curator-index" aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
                 </div>
 
-                <div className="team-bottom-content">
-                  <h3 className="team-name">
-                    {curator.memberFullName || curator.memberNick}
+                <div className="curator-body">
+                  {curator.memberType ? (
+                    <span className="curator-overline">
+                      {curator.memberType}
+                    </span>
+                  ) : null}
+
+                  <h3 className="curator-name">
+                    <Link
+                      href={isSelf ? "/mypage" : `/member?memberId=${curator._id}`}
+                      className="curator-link"
+                    >
+                      {curator.memberFullName || curator.memberNick}
+                    </Link>
                   </h3>
-                  <div className="team-role">{curator.memberType}</div>
 
-                  <div className="team-social-icons">
-                    <Globe size={18} strokeWidth={1.5} />
-                    <Mail size={18} strokeWidth={1.5} />
+                  {curator.memberDesc ? (
+                    <p className="curator-desc">{curator.memberDesc}</p>
+                  ) : null}
+
+                  <div className="curator-footer">
+                    <span className="curator-stats">
+                      {stats.map((stat, statIndex) => (
+                        <React.Fragment key={stat.label}>
+                          {statIndex > 0 ? (
+                            <span className="stat-dot" aria-hidden="true" />
+                          ) : null}
+                          <span className="stat">
+                            <span className="stat-value">{stat.value}</span>
+                            <span className="stat-label">{stat.label}</span>
+                          </span>
+                        </React.Fragment>
+                      ))}
+                    </span>
+
+                    {!isSelf ? (
+                      <span className="curator-action">
+                        <FollowButton
+                          isFollowing={isFollowing}
+                          isLoading={isUpdatingFollow}
+                          onClick={(event) =>
+                            followHandler(event, curator._id, isFollowing)
+                          }
+                          size="sm"
+                        />
+                      </span>
+                    ) : null}
                   </div>
-
-                  {user?._id !== curator._id && (
-                    <div className="team-follow-wrapper">
-                      <FollowButton
-                        isFollowing={isFollowing}
-                        isLoading={isUpdatingFollow}
-                        onClick={(e) =>
-                          followHandler(e, curator._id, isFollowing)
-                        }
-                        size="sm"
-                      />
-                    </div>
-                  )}
                 </div>
-              </div>
+              </article>
             );
           })}
-          {!loading && curators.length === 0 && (
-            <p className="curators-empty-state">No team members found.</p>
-          )}
+
+          {!loading && !error && curators.length === 0 ? (
+			<p className="curators-empty-state">No ranked travelers available yet.</p>
+          ) : null}
         </div>
       </div>
     </section>

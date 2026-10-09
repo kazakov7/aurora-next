@@ -6,7 +6,7 @@ export interface Notification {
 	receiverId: string;
 	authorId?: string;
 	authorData?: {
-		_id: string;
+		_id?: string;
 		memberNick?: string;
 		memberFullName?: string;
 		memberImage?: string;

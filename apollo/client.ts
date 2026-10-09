@@ -44,7 +44,7 @@ class LoggingWebSocket {
 }
 
 function createIsomorphicLink() {
-	const graphqlUri = process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql';
+	const graphqlUri = process.env.NEXT_PUBLIC_AURORA_GRAPHQL_URL || process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql';
 
 	if (typeof window === 'undefined') {
 		return new HttpLink({
@@ -71,7 +71,7 @@ function createIsomorphicLink() {
 		});
 
 		const wsLink = new WebSocketLink({
-			uri: process.env.REACT_APP_API_WS || 'ws://127.0.0.1:3007',
+			uri: process.env.NEXT_PUBLIC_AURORA_SOCKET_URL || process.env.REACT_APP_API_WS || 'ws://127.0.0.1:3007',
 			options: {
 				reconnect: false,
 				timeout: 30000,

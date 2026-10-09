@@ -5,7 +5,7 @@ import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import { getJwtToken, updateUserInfo } from '../../auth';
 import Link from 'next/link';
-import { DEFAULT_USER_AVATAR } from '../../config';
+import { DEFAULT_USER_AVATAR, REACT_APP_API_URL } from '../../config';
 
 const withAdminLayout = (Component: any) => {
 	return (props: any) => {
@@ -85,10 +85,6 @@ const withAdminLayout = (Component: any) => {
 										<span className="material-symbols-outlined">calendar_month</span>
 										<span>Bookings</span>
 									</Link>
-									<Link href="/_admin/notifications" className={`nav-item ${activePath === 'notifications' ? 'active' : ''}`}>
-										<span className="material-symbols-outlined">notifications</span>
-										<span>Notifications</span>
-									</Link>
 								</div>
 								
 								<div className="nav-group">
@@ -97,39 +93,15 @@ const withAdminLayout = (Component: any) => {
 										<span className="material-symbols-outlined">forum</span>
 										<span>Community</span>
 									</Link>
-									<Link href="/_admin/reviews" className={`nav-item ${activePath === 'reviews' ? 'active' : ''}`}>
-										<span className="material-symbols-outlined">rate_review</span>
-										<span>Comments & Reviews</span>
-									</Link>
 									<Link href="/_admin/cs" className={`nav-item ${activePath.startsWith('cs') ? 'active' : ''}`}>
 										<span className="material-symbols-outlined">campaign</span>
 										<span>Notices</span>
 									</Link>
 								</div>
 								
-								<div className="nav-group">
-									<span className="group-label">System</span>
-									<Link href="/_admin/support" className={`nav-item ${activePath === 'support' ? 'active' : ''}`}>
-										<span className="material-symbols-outlined">support_agent</span>
-										<span>Support Tickets</span>
-									</Link>
-									<Link href="/_admin/settings" className={`nav-item ${activePath === 'settings' ? 'active' : ''}`}>
-										<span className="material-symbols-outlined">settings</span>
-										<span>Settings</span>
-									</Link>
-								</div>
 							</nav>
 						</div>
 
-						<div className="sidebar-bottom">
-							<div className="engine-status">
-								<div className="status-dot"></div>
-								<div className="status-text">
-									<span className="status-title">Engine Online</span>
-									<span className="status-version">v2.4.0-stable</span>
-								</div>
-							</div>
-						</div>
 					</aside>
 
 					<div className="admin-content-wrapper">
@@ -144,19 +116,14 @@ const withAdminLayout = (Component: any) => {
 							</div>
 							
 							<div className="header-right">
-								<Link href="/_admin/notifications" className="notif-btn" aria-label="Notifications">
-									<span className="material-symbols-outlined">notifications</span>
-									<span className="notif-badge"></span>
-								</Link>
-								<div className="divider-vertical"></div>
 								<div className="user-profile">
 									<div className="user-info">
 										<span className="user-name">{user.memberNick}</span>
-										<span className="user-role">Super Admin</span>
+										<span className="user-role">{user.memberType}</span>
 									</div>
 									<img 
 										className="user-avatar" 
-										src={user.memberImage ? `http://localhost:3007/${user.memberImage}` : DEFAULT_USER_AVATAR} 
+										src={user.memberImage ? `${REACT_APP_API_URL}/${user.memberImage}` : DEFAULT_USER_AVATAR} 
 										alt="Profile" 
 									/>
 								</div>

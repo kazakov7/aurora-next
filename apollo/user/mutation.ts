@@ -320,16 +320,26 @@ export const CANCEL_TOUR_BOOKING = gql`
 
 export const START_PROPERTY_PAYMENT = gql`
 	mutation StartPropertyPayment($input: StartPropertyPaymentInput!) {
-		startPropertyPayment(input: $input) {
+	startPropertyPayment(input: $input) {
 			clientSecret
+			payment {
+				_id
+				bookingId
+				paymentStatus
+			}
 		}
 	}
 `;
 
 export const START_TOUR_PAYMENT = gql`
 	mutation StartTourPayment($input: StartTourPaymentInput!) {
-		startTourPayment(input: $input) {
+	startTourPayment(input: $input) {
 			clientSecret
+			payment {
+				_id
+				bookingId
+				paymentStatus
+			}
 		}
 	}
 `;

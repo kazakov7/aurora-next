@@ -7,7 +7,6 @@ import { Message } from '../../../enums/common.enum';
 import { Property } from '../../../types/property/property';
 import { PropertyStatus } from '../../../enums/property.enum';
 import { sweetErrorAlert } from '../../../sweetAlert';
-import PropertyPaymentModal, { isStripePaymentConfigured } from './PropertyPaymentModal';
 
 interface PropertyReservationWidgetProps {
 	property: Property;
@@ -100,7 +99,16 @@ const PropertyReservationWidget = ({ property, refetchProperty }: PropertyReserv
 			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
 			return;
 		}
-		router.push('/checkout');	};
+		if (!property._id || !isBookable || nights < 1 || guestCount < 1 || guestCount > maxGuestsAllowed) {
+			await sweetErrorAlert('Please choose valid booking dates and guest count.');
+			return;
+		}
+		try {
+			await router.push({ pathname: '/checkout', query: { type: 'property', id: property._id, checkIn, checkOut, guests: guestCount } });
+		} catch (error) {
+			await sweetErrorAlert('Unable to open secure checkout. Please try again.');
+		}
+	};
 
 	const handlePaymentConfirmed = async () => {
 		await refetchProperty();

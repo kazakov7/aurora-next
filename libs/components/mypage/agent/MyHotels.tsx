@@ -4,7 +4,9 @@ import { GET_AGENT_PROPERTIES } from "../../../../apollo/user/query";
 import { PropertyType, PropertyStatus } from "../../../enums/property.enum";
 import { Direction } from "../../../enums/common.enum";
 import { useRouter } from "next/router";
+import { getImageUrl } from "../../../../libs/config";
 import moment from "moment";
+import { sweetErrorHandling } from "../../../../libs/sweetAlert";
 
 const MyHotels = () => {
   const router = useRouter();
@@ -15,6 +17,7 @@ const MyHotels = () => {
 
   const { data, loading } = useQuery(GET_AGENT_PROPERTIES, {
     fetchPolicy: "network-only",
+    onError: (err) => sweetErrorHandling(err),
     variables: {
       input: {
         page,
@@ -22,8 +25,6 @@ const MyHotels = () => {
         sort: "createdAt",
         direction: Direction.DESC,
         search: {
-          ...(search && { text: search }),
-          ...(propertyType && { propertyType }),
           ...(propertyStatus && { propertyStatus }),
         },
       },
@@ -63,12 +64,16 @@ const MyHotels = () => {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search properties by name or region..."
               type="text"
+              disabled
+              title="Text search not supported by backend yet"
             />
           </div>
           <div className="select-box">
             <select
               value={propertyType}
               onChange={(e) => setPropertyType(e.target.value as PropertyType)}
+              disabled
+              title="Type filter not supported by backend yet"
             >
               <option value="">All Properties</option>
               {Object.values(PropertyType).map(pt => (
@@ -119,7 +124,7 @@ const MyHotels = () => {
                     <td>
                       <div className="item-cell">
                         <img
-                          src={prop.propertyImages?.[0] ? `${process.env.REACT_APP_API_URL}/${prop.propertyImages[0]}` : "/img/placeholder.png"}
+                          src={getImageUrl(prop?.propertyImages?.[0], "/img/placeholder.png")}
                           alt={prop.propertyName}
                         />
                         <div className="item-info">
@@ -135,7 +140,7 @@ const MyHotels = () => {
                     </td>
                     <td>
                       <span className="type-badge">
-                        {prop.propertyType.replace(/_/g, ' ')}
+                        {(prop.propertyType || '').replace(/_/g, ' ')}
                       </span>
                     </td>
                     <td>

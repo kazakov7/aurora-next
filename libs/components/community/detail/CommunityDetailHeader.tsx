@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import { useReactiveVar } from '@apollo/client';
-import { userVar } from '../../../../apollo/store';
 import { BoardArticle } from "../../../types/board-article/board-article";
 import { getImageUrl, DEFAULT_USER_AVATAR } from "../../../config";
 import { sweetTopSmallSuccessAlert } from "../../../sweetAlert";
@@ -37,9 +35,6 @@ const CommunityDetailHeader: React.FC<CommunityDetailHeaderProps> = ({
   isFollowing,
   onFollow,
 }) => {
-  const user = useReactiveVar(userVar);
-  const isOwnArticle = user?._id === article.memberId;
-
   const authorName =
     article.memberData?.memberFullName ||
     article.memberData?.memberNick ||
@@ -95,13 +90,11 @@ const CommunityDetailHeader: React.FC<CommunityDetailHeaderProps> = ({
         </div>
 
         <div className="author-actions-right">
-          {!isOwnArticle && (
-            <FollowButton
-              isFollowing={!!isFollowing}
-              onClick={onFollow || (() => {})}
-              size="sm"
-            />
-          )}
+          <FollowButton
+            isFollowing={!!isFollowing}
+            onClick={onFollow || (() => {})}
+            size="sm"
+          />
           <button
             type="button"
             className="share-icon-btn"

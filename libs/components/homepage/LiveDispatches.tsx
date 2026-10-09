@@ -2,10 +2,12 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import { Destination } from '../../types/destination/destination';
 import { getImageUrl } from '../../config';
+import { ApolloError } from '@apollo/client';
 
 interface LiveDispatchesProps {
 	destinations: Destination[];
 	loading?: boolean;
+	error?: ApolloError;
 }
 
 const destinationCardSizes = ['small', 'medium', 'featured', 'medium', 'small'];
@@ -15,12 +17,8 @@ const formatViewCount = (views: number) => {
 	return `${(views / 1000).toFixed(views % 1000 === 0 ? 0 : 1)}k`;
 };
 
-const LiveDispatches = ({ destinations: destinationList, loading }: LiveDispatchesProps) => {
+const LiveDispatches = ({ destinations, loading, error }: LiveDispatchesProps) => {
 	const router = useRouter();
-	const destinations =
-		destinationList.length === 5
-			? [destinationList[1], destinationList[2], destinationList[0], destinationList[3], destinationList[4]]
-			: destinationList;
 
 	/** HANDLERS **/
 	const navigateToDestination = (destinationId: string) => {
@@ -34,12 +32,14 @@ const LiveDispatches = ({ destinations: destinationList, loading }: LiveDispatch
 		<section className="live-dispatches-section">
 			<div className="section-container">
 				<div className="section-header">
-					<span className="section-tag">Where Travelers Are Going</span>
+					<span className="section-tag">Live Dispatches</span>
 					<h2 className="section-title">Where Travelers Are Going</h2>
-					<p className="section-subtitle">Discover the destinations attracting AURA travelers right now.</p>
+					<p className="section-subtitle">Discover the destinations attracting AURORA travelers right now.</p>
 				</div>
 
 				<div className="travelers-destination-grid">
+					{loading ? <p className="destinations-empty-state">Loading destinations…</p> : null}
+					{!loading && error ? <p className="destinations-empty-state">Popular destinations are unavailable right now.</p> : null}
 					{destinations.map((destination, index) => {
 						const imageUrl = getImageUrl(destination.destinationImages?.[0]);
 						const cardSize = destinationCardSizes[index] ?? 'small';
@@ -63,7 +63,7 @@ const LiveDispatches = ({ destinations: destinationList, loading }: LiveDispatch
 							</button>
 						);
 					})}
-					{!loading && destinationList.length === 0 && <p className="destinations-empty-state">No destinations available yet.</p>}
+					{!loading && !error && destinations.length === 0 && <p className="destinations-empty-state">No ranked destinations available yet.</p>}
 				</div>
 			</div>
 		</section>

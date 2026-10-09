@@ -1,6 +1,6 @@
-export const REACT_APP_API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3007';
-export const REACT_APP_API_GRAPHQL_URL = process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql';
-export const REACT_APP_API_WS = process.env.REACT_APP_API_WS || 'ws://127.0.0.1:3007';
+export const REACT_APP_API_URL = process.env.NEXT_PUBLIC_AURORA_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:3007';
+export const REACT_APP_API_GRAPHQL_URL = process.env.NEXT_PUBLIC_AURORA_GRAPHQL_URL || process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql';
+export const REACT_APP_API_WS = process.env.NEXT_PUBLIC_AURORA_SOCKET_URL || process.env.REACT_APP_API_WS || 'ws://127.0.0.1:3007';
 export const DEFAULT_USER_AVATAR = '/img/profile/default-user.png';
 export const DEFAULT_PROPERTY_IMAGE = '/img/banner/hero-hotels.jpg';
 export const DEFAULT_TOUR_IMAGE = '/img/banner/hero-tour.jpg';

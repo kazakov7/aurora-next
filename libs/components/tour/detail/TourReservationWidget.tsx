@@ -7,7 +7,6 @@ import { Message } from '../../../enums/common.enum';
 import { Tour } from '../../../types/tour/tour';
 import { sweetErrorAlert } from '../../../sweetAlert';
 import { formatApiDate } from '../../../utils';
-import PropertyPaymentModal, { isStripePaymentConfigured } from '../../property/detail/PropertyPaymentModal';
 
 interface TourReservationWidgetProps {
 	tour: Tour;
@@ -46,7 +45,16 @@ const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps
 			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
 			return;
 		}
-		router.push('/checkout');	};
+		if (!tour._id || seatsLeft < 1 || travelers < 1 || travelers > seatsLeft) {
+			await sweetErrorAlert('This tour no longer has enough available seats.');
+			return;
+		}
+		try {
+			await router.push({ pathname: '/checkout', query: { type: 'tour', id: tour._id, guests: travelers } });
+		} catch (error) {
+			await sweetErrorAlert('Unable to open secure checkout. Please try again.');
+		}
+	};
 	const handlePaymentConfirmed = async () => {
 		await refetchTour();
 		setCheckoutKey('');

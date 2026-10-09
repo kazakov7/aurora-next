@@ -4,382 +4,399 @@
 }
 
 #mobile-wrap {
-	.property-detail-page {
-		.host-profile-card {
-			.host-action-buttons {
-				display: grid;
-				grid-template-columns: 1fr;
-				gap: 8px;
-				margin-top: 14px;
+  .property-detail-page {
+    .host-profile-card {
+      .host-action-buttons {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: 14px;
 
-				.host-btn {
-					display: inline-flex;
-					align-items: center;
-					justify-content: center;
-					gap: 6px;
-					min-height: 42px;
-					border-radius: 8px;
-					font-size: 13px;
-					font-weight: 700;
-					text-decoration: none;
-				}
+        .host-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          min-height: 42px;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 700;
+          text-decoration: none;
+        }
 
-				.chat-btn {
-					border: 1px solid $outline-variant;
-					background: $surface-container-low;
-					color: $on-surface-variant;
-				}
+        .chat-btn {
+          border: 1px solid $outline-variant;
+          background: $surface-container-low;
+          color: $on-surface-variant;
+        }
 
-				.follow-host-btn {
-					border: 1px solid $primary;
-					background: $primary;
-					color: #ffffff;
+        .follow-host-btn {
+          border: 1px solid $primary;
+          background: $primary;
+          color: #ffffff;
 
-					&.following {
-						border-color: $outline-variant;
-						background: $surface-container-low;
-						color: $on-surface;
-					}
-				}
-			}
-		}
+          &.following {
+            border-color: $outline-variant;
+            background: $surface-container-low;
+            color: $on-surface;
+          }
+        }
+      }
+    }
 
-		.location-card {
-			.map-preview-banner {
-				position: relative;
-				height: 240px;
-				overflow: hidden;
-				border-radius: 12px;
+    .location-card {
+      .map-preview-banner {
+        position: relative;
+        height: 240px;
+        overflow: hidden;
+        border-radius: 12px;
 
-				.location-map-frame {
-					width: 100%;
-					height: 100%;
-					border: 0;
-				}
+        .location-map-frame {
+          width: 100%;
+          height: 100%;
+          border: 0;
+        }
 
-				.map-open-link {
-					position: absolute;
-					right: 10px;
-					bottom: 10px;
-					display: inline-flex;
-					align-items: center;
-					gap: 5px;
-					padding: 8px 10px;
-					border-radius: 7px;
-					background: rgba(255, 255, 255, 0.94);
-					color: $on-surface;
-					font-size: 12px;
-					font-weight: 700;
-					text-decoration: none;
-				}
-			}
-		}
-	}
+        .map-open-link {
+          position: absolute;
+          right: 10px;
+          bottom: 10px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 8px 10px;
+          border-radius: 7px;
+          background: rgba(255, 255, 255, 0.94);
+          color: $on-surface;
+          font-size: 12px;
+          font-weight: 700;
+          text-decoration: none;
+        }
+      }
+    }
+  }
 
-	.tour-detail-page {
-		.departure-card {
-			.tour-location-map {
-				position: relative;
-				height: 240px;
-				overflow: hidden;
-				border-radius: 12px;
+  .tour-detail-page {
+    .departure-card {
+      .tour-location-map {
+        position: relative;
+        height: 240px;
+        overflow: hidden;
+        border-radius: 12px;
 
-				.tour-location-map-frame { width: 100%; height: 100%; border: 0; }
-				.tour-map-open-link {
-					position: absolute;
-					right: 10px;
-					bottom: 10px;
-					display: inline-flex;
-					align-items: center;
-					gap: 5px;
-					padding: 8px 10px;
-					border-radius: 7px;
-					background: rgba(255, 255, 255, 0.94);
-					color: $on-surface;
-					font-size: 12px;
-					font-weight: 700;
-					text-decoration: none;
-				}
-			}
-		}
+        .tour-location-map-frame {
+          width: 100%;
+          height: 100%;
+          border: 0;
+        }
+        .tour-map-open-link {
+          position: absolute;
+          right: 10px;
+          bottom: 10px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 8px 10px;
+          border-radius: 7px;
+          background: rgba(255, 255, 255, 0.94);
+          color: $on-surface;
+          font-size: 12px;
+          font-weight: 700;
+          text-decoration: none;
+        }
+      }
+    }
 
-		.organizer-card .organizer-actions {
-			display: grid;
-			grid-template-columns: 1fr;
-			gap: 8px;
-			margin-top: 14px;
+    .organizer-card .organizer-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 14px;
 
-			.organizer-btn {
-				display: inline-flex;
-				align-items: center;
-				justify-content: center;
-				gap: 6px;
-				min-height: 42px;
-				border-radius: 8px;
-				font-size: 13px;
-				font-weight: 700;
-				text-decoration: none;
-			}
+      .organizer-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 42px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+      }
 
-			.chat-btn { border: 1px solid $outline-variant; background: $surface-container-low; color: $on-surface-variant; }
-			.follow-organizer-btn { border: 1px solid $primary; background: $primary; color: #ffffff; &.following { border-color: $outline-variant; background: $surface-container-low; color: $on-surface; } }
-		}
-	}
+      .chat-btn {
+        border: 1px solid $outline-variant;
+        background: $surface-container-low;
+        color: $on-surface-variant;
+      }
+      .follow-organizer-btn {
+        border: 1px solid $primary;
+        background: $primary;
+        color: #ffffff;
+        &.following {
+          border-color: $outline-variant;
+          background: $surface-container-low;
+          color: $on-surface;
+        }
+      }
+    }
+  }
 
-	.property-payment-modal {
-		position: fixed;
-		inset: 0;
-		z-index: 1200;
-		display: grid;
-		place-items: end center;
-		padding: 16px;
+  .property-payment-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: grid;
+    place-items: end center;
+    padding: 16px;
 
-		.payment-modal-backdrop {
-			position: absolute;
-			inset: 0;
-			background: rgba(20, 26, 34, 0.54);
-		}
+    .payment-modal-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(20, 26, 34, 0.54);
+    }
 
-		.payment-modal-content {
-			position: relative;
-			z-index: 1;
-			width: 100%;
-			max-height: calc(100vh - 32px);
-			overflow-y: auto;
-			padding: 22px 18px;
-			border-radius: 18px;
-			background: $surface-container-lowest;
+    .payment-modal-content {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+      padding: 22px 18px;
+      border-radius: 18px;
+      background: $surface-container-lowest;
 
-			.payment-modal-heading {
-				display: flex;
-				align-items: flex-start;
-				justify-content: space-between;
-				gap: 12px;
-				margin-bottom: 20px;
+      .payment-modal-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 20px;
 
-				.payment-modal-eyebrow {
-					display: block;
-					margin-bottom: 4px;
-					color: $primary;
-					font-size: 10px;
-					font-weight: 700;
-					letter-spacing: 0.08em;
-					text-transform: uppercase;
-				}
+        .payment-modal-eyebrow {
+          display: block;
+          margin-bottom: 4px;
+          color: $primary;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
 
-				h2 {
-					margin: 0;
-					color: $on-surface;
-					font-size: 21px;
-				}
+        h2 {
+          margin: 0;
+          color: $on-surface;
+          font-size: 21px;
+        }
 
-				.payment-close-btn {
-					display: grid;
-					width: 34px;
-					height: 34px;
-					place-items: center;
-					border: 0;
-					border-radius: 50%;
-					background: $surface-container-low;
-					color: $on-surface;
+        .payment-close-btn {
+          display: grid;
+          width: 34px;
+          height: 34px;
+          place-items: center;
+          border: 0;
+          border-radius: 50%;
+          background: $surface-container-low;
+          color: $on-surface;
 
-					&:disabled {
-						opacity: 0.55;
-					}
-				}
-			}
+          &:disabled {
+            opacity: 0.55;
+          }
+        }
+      }
 
-			.property-payment-form {
-				display: flex;
-				flex-direction: column;
-				gap: 20px;
+      .property-payment-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
 
-				.payment-modal-actions {
-					display: grid;
-					grid-template-columns: 1fr 1fr;
-					gap: 10px;
+        .payment-modal-actions {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
 
-					button {
-						min-height: 44px;
-						border-radius: 9px;
-						font-size: 13px;
-						font-weight: 700;
-					}
+          button {
+            min-height: 44px;
+            border-radius: 9px;
+            font-size: 13px;
+            font-weight: 700;
+          }
 
-					.payment-cancel-btn {
-						border: 1px solid $outline-variant;
-						background: transparent;
-						color: $on-surface;
-					}
+          .payment-cancel-btn {
+            border: 1px solid $outline-variant;
+            background: transparent;
+            color: $on-surface;
+          }
 
-					.payment-confirm-btn {
-						border: 1px solid $primary;
-						background: $primary;
-						color: #ffffff;
-					}
-				}
-			}
-		}
-	}
+          .payment-confirm-btn {
+            border: 1px solid $primary;
+            background: $primary;
+            color: #ffffff;
+          }
+        }
+      }
+    }
+  }
 
-	.curators-section {
-		padding: 48px 16px;
-		background: $surface-container-low;
+  .curators-section {
+    padding: 48px 16px;
+    background: $surface-container-low;
 
-		.section-header {
-			margin-bottom: 28px;
+    .section-header {
+      margin-bottom: 28px;
 
-			.section-tag {
-				color: $secondary;
-				font-size: 10px;
-				font-weight: 600;
-				letter-spacing: 0.08em;
-				text-transform: uppercase;
-			}
+      .section-tag {
+        color: $secondary;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
 
-			.section-title {
-				margin-top: 5px;
-				color: $on-surface;
-				font-size: 30px;
-				line-height: 38px;
-			}
+      .section-title {
+        margin-top: 5px;
+        color: $on-surface;
+        font-size: 30px;
+        line-height: 38px;
+      }
 
-			.section-subtitle {
-				margin-top: 7px;
-				color: $on-surface-variant;
-				font-size: 14px;
-				line-height: 20px;
-			}
-		}
+      .section-subtitle {
+        margin-top: 7px;
+        color: $on-surface-variant;
+        font-size: 14px;
+        line-height: 20px;
+      }
+    }
 
-		.curators-grid {
-			display: grid;
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: 12px;
+    .curators-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
 
-			.curators-empty-state {
-				grid-column: 1 / -1;
-				color: $on-surface-variant;
-				text-align: center;
-			}
+      .curators-empty-state {
+        grid-column: 1 / -1;
+        color: $on-surface-variant;
+        text-align: center;
+      }
 
-			.curator-card {
-				display: flex;
-				min-height: 236px;
-				flex-direction: column;
-				gap: 14px;
-				padding: 16px;
-				border: 1px solid rgba(191, 199, 210, 0.55);
-				border-radius: 14px;
-				background: $surface-container-lowest;
+      .curator-card {
+        display: flex;
+        min-height: 236px;
+        flex-direction: column;
+        gap: 14px;
+        padding: 16px;
+        border: 1px solid rgba(191, 199, 210, 0.55);
+        border-radius: 14px;
+        background: $surface-container-lowest;
 
-				.curator-avatar-wrap {
-					width: 52px;
-					height: 52px;
-					overflow: hidden;
-					border: 2px solid $surface-container-high;
-					border-radius: 50%;
-				}
+        .curator-avatar-wrap {
+          width: 52px;
+          height: 52px;
+          overflow: hidden;
+          border: 2px solid $surface-container-high;
+          border-radius: 50%;
+        }
 
-				.curator-avatar {
-					width: 100%;
-					height: 100%;
-					object-fit: cover;
-				}
+        .curator-avatar {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
 
-				.curator-avatar-initial {
-					display: flex;
-					width: 100%;
-					height: 100%;
-					align-items: center;
-					justify-content: center;
-					background: $surface-container;
-					color: $primary;
-					font-size: 20px;
-					font-weight: 600;
-				}
+        .curator-avatar-initial {
+          display: flex;
+          width: 100%;
+          height: 100%;
+          align-items: center;
+          justify-content: center;
+          background: $surface-container;
+          color: $primary;
+          font-size: 20px;
+          font-weight: 600;
+        }
 
-				.curator-card-heading {
-					display: flex;
-					align-items: flex-start;
-					justify-content: space-between;
-					gap: 8px;
+        .curator-card-heading {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 8px;
 
-					.curator-name {
-						margin: 0;
-						color: $on-surface;
-						font-size: 14px;
-						line-height: 18px;
-					}
+          .curator-name {
+            margin: 0;
+            color: $on-surface;
+            font-size: 14px;
+            line-height: 18px;
+          }
 
-					.curator-handle {
-						display: block;
-						margin-top: 3px;
-						color: $outline;
-						font-size: 10px;
-					}
+          .curator-handle {
+            display: block;
+            margin-top: 3px;
+            color: $outline;
+            font-size: 10px;
+          }
 
-					.curator-type {
-						padding: 4px 6px;
-						border-radius: 9999px;
-						background: $surface-container;
-						color: $primary;
-						font-size: 9px;
-					}
-				}
+          .curator-type {
+            padding: 4px 6px;
+            border-radius: 9999px;
+            background: $surface-container;
+            color: $primary;
+            font-size: 9px;
+          }
+        }
 
-				.curator-role {
-					display: -webkit-box;
-					overflow: hidden;
-					margin: 10px 0 0;
-					color: $on-surface-variant;
-					font-size: 11px;
-					line-height: 16px;
-					-webkit-box-orient: vertical;
-					-webkit-line-clamp: 2;
-				}
+        .curator-role {
+          display: -webkit-box;
+          overflow: hidden;
+          margin: 10px 0 0;
+          color: $on-surface-variant;
+          font-size: 11px;
+          line-height: 16px;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+        }
 
-				.curator-stats {
-					display: flex;
-					flex-direction: column;
-					gap: 4px;
-					margin-top: 12px;
-					padding-top: 10px;
-					border-top: 1px solid $surface-container-high;
+        .curator-stats {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          margin-top: 12px;
+          padding-top: 10px;
+          border-top: 1px solid $surface-container-high;
 
-					span {
-						color: $outline;
-						font-size: 10px;
-					}
-				}
+          span {
+            color: $outline;
+            font-size: 10px;
+          }
+        }
 
-				.follow-btn {
-					width: 100%;
-					margin-top: auto;
-					padding: 8px;
-					border: 1px solid $primary;
-					border-radius: 8px;
-					background: transparent;
-					color: $primary;
-					font-size: 11px;
-					font-weight: 600;
+        .follow-btn {
+          width: 100%;
+          margin-top: auto;
+          padding: 8px;
+          border: 1px solid $primary;
+          border-radius: 8px;
+          background: transparent;
+          color: $primary;
+          font-size: 11px;
+          font-weight: 600;
 
-					&.following {
-						border-color: $surface-container-high;
-						background: $surface-container-high;
-						color: $on-surface;
-					}
-				}
-			}
-		}
-	}
+          &.following {
+            border-color: $surface-container-high;
+            background: $surface-container-high;
+            color: $on-surface;
+          }
+        }
+      }
+    }
+  }
 
-	.live-dispatches-section {
+  .live-dispatches-section {
     padding: 56px 0;
     background: $surface-container-low;
 
     .section-container {
-      padding: 0 16px;
+      //   padding: 0 16px;
     }
 
     .section-header {

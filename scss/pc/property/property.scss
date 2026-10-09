@@ -47,7 +47,7 @@
       z-index: 10;
       max-width: $container-width;
       margin: 0 auto;
-      padding: 100px 24px 0;
+      padding: 100px 0;
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -109,7 +109,7 @@
   .property-main-container {
     max-width: $container-width;
     margin: 0 auto;
-    padding: 48px 24px 64px;
+    padding: 48px 0px 64px;
     width: 100%;
 
     .property-layout-flex {

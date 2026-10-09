@@ -72,7 +72,7 @@ button {
       max-width: $container-width;
       height: 100%;
       margin: 0 auto;
-      padding: 0 24px;
+
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -272,7 +272,6 @@ button {
     .footer-container {
       max-width: $container-width;
       margin: 0 auto;
-      padding: 0 24px;
 
       .footer-top-grid {
         display: grid;

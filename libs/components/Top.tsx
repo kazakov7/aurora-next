@@ -45,7 +45,7 @@ const Top = () => {
         <div className="nav-left">
           <Link href="/" className="logo-link">
             <section style={{ height: 80 }}>
-              <AuroraLogo3D />
+              <AuroraLogo3D align="left" />
             </section>
           </Link>
 

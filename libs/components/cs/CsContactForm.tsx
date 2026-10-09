@@ -1,0 +1,305 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useMutation, useReactiveVar } from '@apollo/client';
+import { userVar } from '../../../apollo/store';
+import { CREATE_SUPPORT_TICKET } from '../../../apollo/user/mutation';
+import { getJwtToken } from '../../auth';
+import { SupportCategory } from '../../enums/support.enum';
+import { SupportTicketInput } from '../../types/support/support.input';
+import { SupportTicket } from '../../types/support/support';
+import { sweetMixinErrorAlert } from '../../sweetAlert';
+
+const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
+const ALLOWED_ATTACHMENT_TYPES = ['image/png', 'image/jpg', 'image/jpeg'];
+
+const CATEGORY_OPTIONS: { value: SupportCategory; label: string }[] = [
+	{ value: SupportCategory.BOOKING, label: 'Booking Issue' },
+	{ value: SupportCategory.PROPERTY, label: 'Hotel & Stay Issue' },
+	{ value: SupportCategory.TOUR, label: 'Tour & Experience Issue' },
+	{ value: SupportCategory.ACCOUNT, label: 'Account & Security Issue' },
+	{ value: SupportCategory.TECHNICAL, label: 'Technical Problem' },
+	{ value: SupportCategory.OTHER, label: 'Other Request' },
+];
+
+const emptyInput: SupportTicketInput = {
+	ticketCategory: SupportCategory.BOOKING,
+	ticketName: '',
+	ticketEmail: '',
+	ticketSubject: '',
+	ticketMessage: '',
+};
+
+const CsContactForm = () => {
+	const router = useRouter();
+	const user = useReactiveVar(userVar);
+	const fileInputRef = useRef<HTMLInputElement>(null);
+	const [input, setInput] = useState<SupportTicketInput>(emptyInput);
+	const [fileName, setFileName] = useState<string>('');
+	const [uploading, setUploading] = useState<boolean>(false);
+	const [submitting, setSubmitting] = useState<boolean>(false);
+	const [createdTicket, setCreatedTicket] = useState<SupportTicket | null>(null);
+
+	/** APOLLO REQUESTS **/
+	const [createSupportTicket] = useMutation(CREATE_SUPPORT_TICKET);
+
+	/** LIFECYCLES **/
+	useEffect(() => {
+		if (!user?._id) return;
+		setInput((prev) => ({
+			...prev,
+			ticketName: prev.ticketName || user.memberFullName || user.memberNick || '',
+			ticketEmail: prev.ticketEmail || user.memberEmail || '',
+		}));
+	}, [user?._id]);
+
+	/** HANDLERS **/
+	const handleChange = (field: keyof SupportTicketInput, value: string) => {
+		setInput((prev) => ({ ...prev, [field]: value }));
+	};
+
+	const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		if (!ALLOWED_ATTACHMENT_TYPES.includes(file.type)) {
+			sweetMixinErrorAlert('Only JPG and PNG images are supported.');
+			e.target.value = '';
+			return;
+		}
+		if (file.size > MAX_ATTACHMENT_SIZE) {
+			sweetMixinErrorAlert('Attachment must be smaller than 10MB.');
+			e.target.value = '';
+			return;
+		}
+
+		try {
+			setUploading(true);
+			const formData = new FormData();
+			formData.append(
+				'operations',
+				JSON.stringify({
+					query: `mutation ImageUploader($file: Upload!, $target: String!) {
+						imageUploader(file: $file, target: $target)
+					}`,
+					variables: { file: null, target: 'support' },
+				}),
+			);
+			formData.append('map', JSON.stringify({ '0': ['variables.file'] }));
+			formData.append('0', file);
+
+			const response = await fetch(process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql', {
+				method: 'POST',
+				headers: {
+					'apollo-require-preflight': 'true',
+					Authorization: `Bearer ${getJwtToken()}`,
+				},
+				body: formData,
+			});
+			const json = await response.json();
+			const uploadedPath = json.data?.imageUploader;
+			if (!uploadedPath) throw new Error(json.errors?.[0]?.message || 'Upload failed');
+
+			setInput((prev) => ({ ...prev, ticketAttachment: uploadedPath }));
+			setFileName(`Attached: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+		} catch (err: any) {
+			console.log('Error, handleFileSelect:', err);
+			sweetMixinErrorAlert(err.message || 'Attachment upload failed');
+			if (fileInputRef.current) fileInputRef.current.value = '';
+		} finally {
+			setUploading(false);
+		}
+	};
+
+	const handleRemoveAttachment = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setInput((prev) => ({ ...prev, ticketAttachment: undefined }));
+		setFileName('');
+		if (fileInputRef.current) fileInputRef.current.value = '';
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!user?._id) {
+			router.push('/account/login');
+			return;
+		}
+		if (input.ticketMessage.trim().length < 10) {
+			sweetMixinErrorAlert('Please describe your request in at least 10 characters.');
+			return;
+		}
+
+		try {
+			setSubmitting(true);
+			const { data } = await createSupportTicket({
+				variables: {
+					input: {
+						...input,
+						ticketName: input.ticketName.trim(),
+						ticketEmail: input.ticketEmail.trim(),
+						ticketSubject: input.ticketSubject.trim(),
+						ticketMessage: input.ticketMessage.trim(),
+					},
+				},
+			});
+			setCreatedTicket(data?.createSupportTicket ?? null);
+		} catch (err: any) {
+			console.log('Error, handleSubmit:', err);
+			sweetMixinErrorAlert(err.message);
+		} finally {
+			setSubmitting(false);
+		}
+	};
+
+	const handleReset = () => {
+		setCreatedTicket(null);
+		setFileName('');
+		setInput({
+			...emptyInput,
+			ticketName: user.memberFullName || user.memberNick || '',
+			ticketEmail: user.memberEmail || '',
+		});
+		if (fileInputRef.current) fileInputRef.current.value = '';
+	};
+
+	if (!user?._id) {
+		return (
+			<div className="form-panel">
+				<div className="success-banner login-required">
+					<div className="icon-wrapper">
+						<span className="material-symbols-outlined">lock</span>
+					</div>
+					<div className="text-wrapper">
+						<h4>Sign in to contact support</h4>
+						<p>Support requests are available to registered members so we can follow up on your bookings and reply in your notifications.</p>
+					</div>
+					<button className="submit-another-btn" type="button" onClick={() => router.push('/account/login')}>
+						Sign In
+					</button>
+				</div>
+			</div>
+		);
+	}
+
+	if (createdTicket) {
+		return (
+			<div className="form-panel">
+				<div className="success-banner">
+					<div className="icon-wrapper">
+						<span className="material-symbols-outlined">task_alt</span>
+					</div>
+					<div className="text-wrapper">
+						<h4>Ticket #{createdTicket._id.slice(-8).toUpperCase()} Submitted</h4>
+						<p>Thank you! Your request "{createdTicket.ticketSubject}" has been sent to our support team. You will be notified as soon as an admin replies.</p>
+					</div>
+					<button className="submit-another-btn" type="button" onClick={handleReset}>
+						Submit Another Inquiry
+					</button>
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div className="form-panel">
+			<form onSubmit={handleSubmit} className="support-form">
+				<div className="form-row">
+					<div className="form-group">
+						<label>Full Name</label>
+						<input
+							type="text"
+							placeholder="e.g. Elena Rostova"
+							value={input.ticketName}
+							onChange={(e) => handleChange('ticketName', e.target.value)}
+							minLength={2}
+							maxLength={100}
+							required
+						/>
+					</div>
+					<div className="form-group">
+						<label>Email Address</label>
+						<input
+							type="email"
+							placeholder="e.g. elena@example.com"
+							value={input.ticketEmail}
+							onChange={(e) => handleChange('ticketEmail', e.target.value)}
+							required
+						/>
+					</div>
+				</div>
+				<div className="form-row">
+					<div className="form-group">
+						<label>Request Category</label>
+						<select value={input.ticketCategory} onChange={(e) => handleChange('ticketCategory', e.target.value)} required>
+							{CATEGORY_OPTIONS.map((option) => (
+								<option key={option.value} value={option.value}>
+									{option.label}
+								</option>
+							))}
+						</select>
+					</div>
+					<div className="form-group">
+						<label>Subject</label>
+						<input
+							type="text"
+							placeholder="Brief summary of inquiry"
+							value={input.ticketSubject}
+							onChange={(e) => handleChange('ticketSubject', e.target.value)}
+							minLength={3}
+							maxLength={200}
+							required
+						/>
+					</div>
+				</div>
+				<div className="form-group">
+					<label>Detailed Message</label>
+					<textarea
+						rows={5}
+						placeholder="Please provide detailed information and booking reference IDs if applicable..."
+						value={input.ticketMessage}
+						onChange={(e) => handleChange('ticketMessage', e.target.value)}
+						minLength={10}
+						maxLength={5000}
+						required
+					></textarea>
+				</div>
+				<div className="form-group">
+					<label>Optional Attachment</label>
+					<div className="drop-zone" onClick={() => !uploading && fileInputRef.current?.click()}>
+						<span className="material-symbols-outlined">{uploading ? 'sync' : 'attach_file'}</span>
+						<div className="drop-text">
+							<p className={fileName ? 'has-file' : ''}>
+								{uploading ? 'Uploading...' : fileName || 'Attach a screenshot (max 10MB)'}
+							</p>
+							<p className="subtitle">Supported: JPG, PNG</p>
+						</div>
+						{fileName && !uploading && (
+							<span className="material-symbols-outlined remove-attachment" onClick={handleRemoveAttachment}>
+								close
+							</span>
+						)}
+						<input type="file" hidden ref={fileInputRef} accept=".png,.jpg,.jpeg" onChange={handleFileSelect} />
+					</div>
+				</div>
+
+				<div className="form-actions">
+					<p className="secure-text">Your request is linked to your account as @{user.memberNick}.</p>
+					<button type="submit" className="submit-btn" disabled={submitting || uploading}>
+						{submitting ? (
+							<>
+								<span className="material-symbols-outlined spin">sync</span>
+								<span>Sending...</span>
+							</>
+						) : (
+							<>
+								<span>Submit Request</span>
+								<span className="material-symbols-outlined">arrow_forward</span>
+							</>
+						)}
+					</button>
+				</div>
+			</form>
+		</div>
+	);
+};
+
+export default CsContactForm;

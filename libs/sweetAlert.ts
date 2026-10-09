@@ -106,3 +106,15 @@ export const sweetMixinSuccessAlert = async (msg: string, duration: number = 200
 export const sweetBasicAlert = async (text: string) => {
 	Swal.fire(text);
 };
+
+export const sweetLoginRequiredAlert = async (msg: string) => {
+	await Swal.fire({
+		icon: 'info',
+		text: msg,
+		color: '#212121',
+		confirmButtonColor: '#006194',
+		confirmButtonText: 'OK',
+		allowOutsideClick: false,
+		allowEscapeKey: false,
+	});
+};

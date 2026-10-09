@@ -469,6 +469,30 @@ export const CREATE_NOTICE = gql`
 `;
 
 /**************************
+ *     SUPPORT TICKET     *
+ *************************/
+
+export const CREATE_SUPPORT_TICKET = gql`
+	mutation CreateSupportTicket($input: SupportTicketInput!) {
+		createSupportTicket(input: $input) {
+			_id
+			ticketCategory
+			ticketStatus
+			ticketName
+			ticketEmail
+			ticketSubject
+			ticketMessage
+			ticketAttachment
+			ticketReply
+			repliedAt
+			memberId
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+/**************************
  *         UPLOAD         *
  *************************/
 

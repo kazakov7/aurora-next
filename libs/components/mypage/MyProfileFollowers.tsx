@@ -8,7 +8,6 @@ import { Follower } from "../../types/follow/follow";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
 import {
   sweetMixinErrorAlert,
-  sweetTopSmallSuccessAlert,
 } from "../../sweetAlert";
 import FollowButton from "../common/FollowButton";
 
@@ -60,11 +59,9 @@ const MyProfileFollowers: React.FC = () => {
       if (isCurrentlyFollowing) {
         setFollowStatusMap((prev) => ({ ...prev, [targetId]: false }));
         await unsubscribeMutation({ variables: { input: targetId }, refetchQueries: ["GetMember"] });
-        sweetTopSmallSuccessAlert(`Unfollowed ${targetNick}`, 800);
       } else {
         setFollowStatusMap((prev) => ({ ...prev, [targetId]: true }));
         await subscribeMutation({ variables: { input: targetId }, refetchQueries: ["GetMember"] });
-        sweetTopSmallSuccessAlert(`Following ${targetNick}`, 800);
       }
       await refetch();
     } catch (err: any) {

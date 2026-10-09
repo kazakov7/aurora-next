@@ -5,7 +5,7 @@ import { SUBSCRIBE, UNSUBSCRIBE } from '../../../apollo/user/mutation';
 import { userVar } from '../../../apollo/store';
 import { Member } from '../../types/member/member';
 import { DEFAULT_USER_AVATAR, getImageUrl } from '../../config';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { sweetMixinErrorAlert } from '../../sweetAlert';
 import FollowButton from '../common/FollowButton';
 
 interface MemberHeaderProps {
@@ -58,14 +58,12 @@ const MemberHeader: React.FC<MemberHeaderProps> = ({
 					refetchQueries: ['GetMemberFollowers', 'GetMemberFollowings', 'GetMember'],
 				});
 				onFollowChange(false);
-				sweetTopSmallSuccessAlert('Unfollowed member.', 800);
 			} else {
 				await subscribeMutation({
 					variables: { input: targetId },
 					refetchQueries: ['GetMemberFollowers', 'GetMemberFollowings', 'GetMember'],
 				});
 				onFollowChange(true);
-				sweetTopSmallSuccessAlert('Following this explorer!', 800);
 			}
 		} catch (err: any) {
 			sweetMixinErrorAlert(err?.message || 'Action failed.');

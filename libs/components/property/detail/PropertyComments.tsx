@@ -10,7 +10,6 @@ import { Direction, Message } from "../../../enums/common.enum";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../../config";
 import {
   sweetErrorAlert,
-  sweetTopSmallSuccessAlert,
 } from "../../../sweetAlert";
 import { formatApiDate } from "../../../utils";
 
@@ -86,8 +85,9 @@ const PropertyComments = ({
       });
 
       setCommentText("");
-      await sweetTopSmallSuccessAlert("Your evaluation has been posted!");
-      await refetchComments();
+      // A new comment lands on the first page; changing the page refetches by itself
+      if (currentPage !== 1) setCurrentPage(1);
+      else await refetchComments();
       if (refetchProperty) await refetchProperty();
     } catch (err: any) {
       await sweetErrorAlert(err.message || "Failed to post comment.");

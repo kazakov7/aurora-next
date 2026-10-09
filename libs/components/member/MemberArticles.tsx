@@ -8,7 +8,7 @@ import { userVar } from '../../../apollo/store';
 import { Member } from '../../types/member/member';
 import { BoardArticle } from '../../types/board-article/board-article';
 import { DEFAULT_ARTICLE_IMAGE, getImageUrl } from '../../config';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { sweetMixinErrorAlert } from '../../sweetAlert';
 
 interface MemberArticlesProps {
 	member: Member;
@@ -69,7 +69,6 @@ const MemberArticles: React.FC<MemberArticlesProps> = ({ member, onArticlesCount
 		try {
 			await likeArticleMutation({ variables: { input: articleId } });
 			await refetch();
-			sweetTopSmallSuccessAlert('Bookmark updated.', 700);
 		} catch (err: any) {
 			sweetMixinErrorAlert(err?.message || 'Action failed.');
 		}

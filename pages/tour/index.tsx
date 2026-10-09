@@ -14,7 +14,7 @@ import { Direction, Message } from '../../libs/enums/common.enum';
 import { GET_TOURS } from '../../apollo/user/query';
 import { LIKE_TARGET_TOUR } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
 
 const defaultInput: ToursInquiry = {
 	page: 1,
@@ -118,7 +118,6 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 				variables: { tourId },
 			});
 			await refetchTours({ input: searchFilter });
-			await sweetTopSmallSuccessAlert('Saved to wishlist!', 800);
 		} catch (err: any) {
 			console.log('ERROR, likeTourHandler:', err.message);
 			sweetMixinErrorAlert(err.message);

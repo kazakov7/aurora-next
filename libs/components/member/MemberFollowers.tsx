@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import FollowButton from "../common/FollowButton";
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useReactiveVar } from '@apollo/client';
 import { GET_MEMBER_FOLLOWERS } from '../../../apollo/user/query';
@@ -157,29 +158,11 @@ const MemberFollowers: React.FC<MemberFollowersProps> = ({ member, onFollowersCo
 
 								<div className="row-right">
 									{!isSelf && (
-										<button
-											type="button"
-											className="shrink-0 flex items-center gap-1 px-4 py-1.5 rounded-full font-label-sm text-label-sm font-medium transition-colors"
-											style={{
-												backgroundColor: isFollowing ? '#e9edff' : '#006194',
-												color: isFollowing ? '#141b2b' : '#ffffff',
-												border: 'none',
-												cursor: 'pointer',
-											}}
+										<FollowButton
+											isFollowing={isFollowing}
 											onClick={(e) => handleToggleFollow(e, fData._id, isFollowing)}
-										>
-											{isFollowing ? (
-												<>
-													<span className="material-symbols-outlined" style={{ fontSize: 16, color: '#006194', fontVariationSettings: "'FILL' 1" }}>check</span>
-													<span>Following</span>
-												</>
-											) : (
-												<>
-													<span className="material-symbols-outlined" style={{ fontSize: 16 }}>add</span>
-													<span>Follow</span>
-												</>
-											)}
-										</button>
+											size="sm"
+										/>
 									)}
 								</div>
 							</div>

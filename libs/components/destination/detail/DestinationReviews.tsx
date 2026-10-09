@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useMutation, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../../apollo/store';
 import { CREATE_DESTINATION_REVIEW } from '../../../../apollo/user/mutation';
-import { sweetErrorAlert, sweetTopSmallSuccessAlert } from '../../../sweetAlert';
+import { sweetErrorAlert } from '../../../sweetAlert';
 import { Message } from '../../../enums/common.enum';
 import { DEFAULT_USER_AVATAR, getImageUrl } from '../../../config';
 import moment from 'moment';
@@ -80,7 +80,6 @@ const DestinationReviews = ({
 
 			setReviewText('');
 			onReviewAdded();
-			await sweetTopSmallSuccessAlert('Your note has been posted!', 1000);
 		} catch (err: any) {
 			console.log('ERROR, createDestinationReview:', err.message);
 			sweetErrorAlert(err.message);

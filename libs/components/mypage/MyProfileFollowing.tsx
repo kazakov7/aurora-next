@@ -6,7 +6,7 @@ import { SUBSCRIBE, UNSUBSCRIBE } from '../../../apollo/user/mutation';
 import { userVar } from '../../../apollo/store';
 import { Following } from '../../types/follow/follow';
 import { DEFAULT_USER_AVATAR, getImageUrl } from '../../config';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { sweetMixinErrorAlert } from '../../sweetAlert';
 import FollowButton from '../common/FollowButton';
 
 const MyProfileFollowing: React.FC = () => {
@@ -50,11 +50,9 @@ const MyProfileFollowing: React.FC = () => {
 			if (currentlyFollowing) {
 				setFollowStatusMap((prev) => ({ ...prev, [targetId]: false }));
 				await unsubscribeMutation({ variables: { input: targetId }, refetchQueries: ['GetMember'] });
-				sweetTopSmallSuccessAlert(`Unfollowed ${targetNick}`, 800);
 			} else {
 				setFollowStatusMap((prev) => ({ ...prev, [targetId]: true }));
 				await subscribeMutation({ variables: { input: targetId }, refetchQueries: ['GetMember'] });
-				sweetTopSmallSuccessAlert(`Following ${targetNick}`, 800);
 			}
 			await refetch();
 		} catch (err: any) {

@@ -125,9 +125,11 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 			if (editArticle) {
 				const updateInput: BoardArticleUpdate = {
 					_id: editArticle._id,
+					articleCategory: category,
+
 					articleTitle: title.trim(),
 					articleContent: content.trim(),
-					articleImage: imageUrl.trim() || undefined,
+					articleImage: editArticle ? (imageUrl ? imageUrl : "") : (imageUrl || undefined),
 					articleStatus: BoardArticleStatus.PUBLISHED,
 				};
 				await updateBoardArticle({ variables: { input: updateInput }, refetchQueries: ['GetMember'] });
@@ -137,7 +139,7 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 					articleCategory: category,
 					articleTitle: title.trim(),
 					articleContent: content.trim(),
-					articleImage: imageUrl.trim() || undefined,
+					articleImage: editArticle ? (imageUrl ? imageUrl : "") : (imageUrl || undefined),
 				};
 				await createBoardArticle({ variables: { input }, refetchQueries: ['GetMember'] });
 				sweetTopSmallSuccessAlert('Your story has been dispatched successfully!');
@@ -184,7 +186,7 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 							value={category}
 							onChange={(e) => setCategory(e.target.value as BoardArticleCategory)}
 							className="form-select"
-							disabled={!!editArticle} // typically category is not edited
+							disabled={false} // typically category is not edited
 						>
 							<option value={BoardArticleCategory.TOUR}>Itinerary & Expeditions (TOUR)</option>
 							<option value={BoardArticleCategory.HOTEL}>Hotel & Stay Reviews (HOTEL)</option>

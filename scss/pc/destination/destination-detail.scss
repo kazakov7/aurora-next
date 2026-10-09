@@ -55,7 +55,7 @@
 				width: 100%;
 				max-width: $container-width;
 				margin: 0 auto;
-				padding: 0 24px 48px;
+				padding-bottom: 48px;
 				display: flex;
 				flex-direction: column;
 				gap: 16px;
@@ -299,7 +299,7 @@
 			.about-grid-layout {
 				max-width: $container-width;
 				margin: 0 auto;
-				padding: 0 24px;
+				
 				display: grid;
 				grid-template-columns: 1fr;
 				gap: 48px;
@@ -586,7 +586,7 @@
 			.section-header-row {
 				max-width: $container-width;
 				margin: 0 auto 32px;
-				padding: 0 24px;
+				
 				display: flex;
 				align-items: flex-end;
 				justify-content: space-between;
@@ -630,7 +630,7 @@
 			.tours-cards-grid {
 				max-width: $container-width;
 				margin: 0 auto;
-				padding: 0 24px;
+				
 				display: grid;
 				grid-template-columns: repeat(4, 1fr);
 				gap: 24px;
@@ -890,7 +890,7 @@
 			.section-header-box {
 				max-width: $container-width;
 				margin: 0 auto 32px;
-				padding: 0 24px;
+				
 
 				.travelers-heading {
 					font-size: 36px;
@@ -910,7 +910,7 @@
 			.travelers-cards-grid {
 				max-width: $container-width;
 				margin: 0 auto;
-				padding: 0 24px;
+				
 				display: grid;
 				grid-template-columns: repeat(4, 1fr);
 				gap: 24px;
@@ -1452,7 +1452,7 @@
 			.section-header-box {
 				max-width: $container-width;
 				margin: 0 auto 32px;
-				padding: 0 24px;
+				
 
 				.continue-heading {
 					font-size: 36px;
@@ -1472,7 +1472,7 @@
 			.continue-cards-grid {
 				max-width: $container-width;
 				margin: 0 auto;
-				padding: 0 24px;
+				
 				display: grid;
 				grid-template-columns: repeat(3, 1fr);
 				gap: 24px;

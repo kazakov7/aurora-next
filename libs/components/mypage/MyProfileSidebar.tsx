@@ -67,10 +67,15 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
     },
   });
 
-    const latestApplication = agentData?.getMyAgentApplications?.list?.[0];
-  const myAgentType = latestApplication?.verificationStatus === AgentVerificationStatus.APPROVED ? latestApplication.agentType : null;
-  const hasPending = latestApplication?.verificationStatus === AgentVerificationStatus.PENDING;
-  const hasRejected = latestApplication?.verificationStatus === AgentVerificationStatus.REJECTED;
+  const latestApplication = agentData?.getMyAgentApplications?.list?.[0];
+  const myAgentType =
+    latestApplication?.verificationStatus === AgentVerificationStatus.APPROVED
+      ? latestApplication.agentType
+      : null;
+  const hasPending =
+    latestApplication?.verificationStatus === AgentVerificationStatus.PENDING;
+  const hasRejected =
+    latestApplication?.verificationStatus === AgentVerificationStatus.REJECTED;
   const isApprovedAgent = user?.memberType === "AGENT" && myAgentType;
 
   // Partner tab label
@@ -145,8 +150,14 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
     },
     {
       id: "history",
-      label: "Travel History",
+      label: "Visited hotels",
       icon: "explore",
+      trailingIcon: "chevron_right",
+    },
+    {
+      id: "visitedTours",
+      label: "Visited tours",
+      icon: "map",
       trailingIcon: "chevron_right",
     },
     {
@@ -155,19 +166,19 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
       icon: "notifications",
       badge: `${unreadCount} unread`,
     },
-        {
+    {
       id: "settings",
       label: "Settings",
       icon: "tune",
     },
   ];
-  
+
   if (user?.memberType === "USER" && !isApprovedAgent) {
-      navItems.splice(navItems.length - 1, 0, {
-          id: "partner",
-          label: partnerTabLabel,
-          icon: "storefront",
-      });
+    navItems.splice(navItems.length - 1, 0, {
+      id: "partner",
+      label: partnerTabLabel,
+      icon: "storefront",
+    });
   }
 
   return (

@@ -8,7 +8,7 @@ import { userVar } from '../../../../apollo/store';
 import { Tour } from '../../../types/tour/tour';
 import { getImageUrl } from '../../../config';
 import { Message } from '../../../enums/common.enum';
-import { sweetErrorAlert, sweetTopSmallSuccessAlert } from '../../../sweetAlert';
+import { sweetErrorAlert } from '../../../sweetAlert';
 import { getDateDuration } from '../../../utils';
 
 interface SimilarToursProps { currentTourId: string; destinationCity?: string; }
@@ -32,7 +32,6 @@ const SimilarTours = ({ currentTourId, destinationCity }: SimilarToursProps) => 
 		try {
 			await likeTargetTour({ variables: { tourId } });
 			await refetch();
-			await sweetTopSmallSuccessAlert('Saved to favorites', 800);
 		} catch (error: unknown) {
 			await sweetErrorAlert(error instanceof Error ? error.message : 'Unable to update favorite.');
 		}

@@ -10,7 +10,6 @@ import { Direction, Message } from "../../../enums/common.enum";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../../config";
 import {
   sweetErrorAlert,
-  sweetTopSmallSuccessAlert,
 } from "../../../sweetAlert";
 
 interface TourCommentsProps {
@@ -40,7 +39,8 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
       input: {
         page: currentPage,
         limit: 5,
-        sort: sortType === "highest" ? "commentRating" : "createdAt",
+        // Comments have no rating field, so the backend only sorts them by date
+        sort: "createdAt",
         direction: Direction.DESC,
         search: {
           commentRefId: tour?._id || "",
@@ -82,8 +82,9 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
       });
 
       setCommentText("");
-      await sweetTopSmallSuccessAlert("Your evaluation has been posted!");
-      await refetchComments();
+      // A new comment lands on the first page; changing the page refetches by itself
+      if (currentPage !== 1) setCurrentPage(1);
+      else await refetchComments();
       if (refetchTour) await refetchTour();
     } catch (err: any) {
       await sweetErrorAlert(err.message || "Failed to post comment.");
@@ -117,7 +118,6 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
               value={sortType}
               onChange={(e) => setSortType(e.target.value)}
             >
-              <option value="highest">Highest Rated</option>
               <option value="newest">Most Recent</option>
               <option value="detailed">Detailed Feedback</option>
             </select>

@@ -10,8 +10,21 @@ import { sweetErrorAlert } from '../libs/sweetAlert';
 import { Message } from '../libs/enums/common.enum';
 import { socketVar } from './store';
 
-/** Auth forms show their own error messages **/
-const SILENT_ERROR_OPERATIONS = ['Login', 'Signup', 'GoogleAuth', 'KakaoAuth'];
+/** Auth forms and like/follow/comment handlers show their own error messages **/
+const SILENT_ERROR_OPERATIONS = [
+	'Login',
+	'Signup',
+	'GoogleAuth',
+	'KakaoAuth',
+	'LikeTargetProperty',
+	'LikeTargetTour',
+	'LikeTargetDestination',
+	'LikeTargetArticle',
+	'Subscribe',
+	'Unsubscribe',
+	'CreateComment',
+	'CreateDestinationReview',
+];
 const AUTH_TOKEN_ERRORS = ['jwt expired', 'invalid signature', 'jwt malformed', 'invalid token', 'You are not authenticated, please login first!'];
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;

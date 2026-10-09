@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ChatConversation, ChatMessage, ChatMember } from "./chat.types";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
+import router from "next/router";
 
 interface ChatThreadProps {
   conversation?: ChatConversation;
@@ -202,6 +203,12 @@ const ChatThread: React.FC<ChatThreadProps> = ({
                     )}
                     alt={senderName}
                     className="msg-avatar"
+                    onClick={() => {
+                      console.log(senderName);
+                      router.push(
+                        `/member?memberId=${message.senderData?._id}`,
+                      );
+                    }}
                   />
                 ) : null}
                 <div className="msg-content-col">

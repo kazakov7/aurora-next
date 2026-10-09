@@ -16,7 +16,6 @@ import { LIKE_TARGET_PROPERTY } from "../../apollo/user/mutation";
 import { userVar } from "../../apollo/store";
 import {
   sweetMixinErrorAlert,
-  sweetTopSmallSuccessAlert,
 } from "../../libs/sweetAlert";
 
 const defaultInput: PropertiesInquiry = {
@@ -143,7 +142,6 @@ const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
         variables: { propertyId },
       });
       await refetchProperties({ input: searchFilter });
-      await sweetTopSmallSuccessAlert("Saved to favorites!", 800);
     } catch (err: any) {
       console.log("ERROR, likePropertyHandler:", err.message);
       sweetMixinErrorAlert(err.message);

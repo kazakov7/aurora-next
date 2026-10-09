@@ -14,7 +14,7 @@ import { Tour } from '../../libs/types/tour/tour';
 import { GET_TOUR } from '../../apollo/user/query';
 import { LIKE_TARGET_TOUR } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
-import { sweetErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import { sweetErrorAlert } from '../../libs/sweetAlert';
 import { Message } from '../../libs/enums/common.enum';
 
 const TourDetail: NextPage = () => {
@@ -46,7 +46,6 @@ const TourDetail: NextPage = () => {
 		}
 		try {
 			await likeTargetTour({ variables: { tourId: tour._id } });
-			await sweetTopSmallSuccessAlert(isLiked ? 'Removed from favorites' : 'Saved to favorites');
 			await refetchTour();
 		} catch (err: any) {
 			await sweetErrorAlert(err.message || 'Error occurred');

@@ -209,12 +209,6 @@ const AdminAgentVerificationPage: NextPage = () => {
             operators.
           </p>
         </div>
-        <div className="header-actions">
-          <button className="export-btn" type="button">
-            <span className="material-symbols-outlined">file_download</span>
-            Export Log
-          </button>
-        </div>
       </div>
 
       {/* MAIN TABLE SECTION */}
@@ -648,8 +642,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                       ).toLowerCase()}@swissretreats.ch`}
                   </span>
                   <span className="applicant-phone">
-                    {selectedAgent.memberData?.memberPhone ||
-                      "+41 27 966 8100"}
+                    {selectedAgent.memberData?.memberPhone || "+41 27 966 8100"}
                   </span>
                 </div>
               </div>
@@ -676,7 +669,9 @@ const AdminAgentVerificationPage: NextPage = () => {
                 <h4 className="group-heading">Corporate Credentials</h4>
                 <div className="credentials-card">
                   <div className="field-row">
-                    <span className="field-label">Registered Business Name</span>
+                    <span className="field-label">
+                      Registered Business Name
+                    </span>
                     <span className="field-value">
                       {selectedAgent.companyName ||
                         "Swiss Alpine Atelier & Expeditions AG"}
@@ -744,9 +739,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                               .substring(0, 6) || "CHE"
                           }.pdf`}
                         </span>
-                        <span className="doc-sub">
-                          1.8 MB · Validated Hash
-                        </span>
+                        <span className="doc-sub">1.8 MB · Validated Hash</span>
                       </div>
                     </div>
                     <button

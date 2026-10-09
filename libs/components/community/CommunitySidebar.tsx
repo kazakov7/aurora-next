@@ -6,7 +6,7 @@ import { SUBSCRIBE, UNSUBSCRIBE } from '../../../apollo/user/mutation';
 import { GET_MEMBER_FOLLOWINGS } from '../../../apollo/user/query';
 import { userVar } from '../../../apollo/store';
 import { getImageUrl, DEFAULT_USER_AVATAR } from '../../config';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { sweetMixinErrorAlert } from '../../sweetAlert';
 import FollowButton from '../common/FollowButton';
 
 export interface HostItem {
@@ -98,10 +98,8 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
 		try {
 			if (isCurrentlyFollowing) {
 				await unsubscribeMutation({ variables: { input: targetId } });
-				sweetTopSmallSuccessAlert('Unfollowed.', 700);
 			} else {
 				await subscribeMutation({ variables: { input: targetId } });
-				sweetTopSmallSuccessAlert('Following!', 700);
 			}
 			await refetchFollowings?.();
 		} catch (err: any) {

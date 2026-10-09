@@ -14,7 +14,6 @@ import {
 } from "../../config";
 import {
   sweetMixinErrorAlert,
-  sweetTopSmallSuccessAlert,
 } from "../../sweetAlert";
 import { Property } from "../../types/property/property";
 import { Tour } from "../../types/tour/tour";
@@ -115,7 +114,6 @@ const MyProfileWishlist: React.FC = () => {
         await likePropertyMutation({ variables: { propertyId: item._id } });
         await refetchProps();
       }
-      sweetTopSmallSuccessAlert("Removed from Wishlist.", 800);
     } catch (err: any) {
       sweetMixinErrorAlert(err.message || "Action failed.");
     }

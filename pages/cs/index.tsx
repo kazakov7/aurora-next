@@ -1,47 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { NextPage } from 'next';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
-import { useRouter } from 'next/router';
+import CsContactForm from '../../libs/components/cs/CsContactForm';
 
 const CS: NextPage = () => {
 	const device = useDeviceDetect();
-	const router = useRouter();
-	const fileInputRef = useRef<HTMLInputElement>(null);
-	const [fileName, setFileName] = useState<string>('');
-	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-	const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 	const [searchQuery, setSearchQuery] = useState<string>('');
 
+	/** HANDLERS **/
 	const handleSearchTrigger = () => {
 		if (!searchQuery.trim()) return;
 		const faqSection = document.getElementById('faq');
 		if (faqSection) {
 			faqSection.scrollIntoView({ behavior: 'smooth' });
-		}
-	};
-
-	const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const files = e.target.files;
-		if (files && files.length > 0) {
-			setFileName(`Attached: ${files[0].name} (${(files[0].size / 1024 / 1024).toFixed(2)} MB)`);
-		}
-	};
-
-	const handleSupportSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		setIsSubmitting(true);
-		setTimeout(() => {
-			setIsSubmitting(false);
-			setIsSubmitted(true);
-		}, 600);
-	};
-
-	const resetSupportForm = () => {
-		setIsSubmitted(false);
-		setFileName('');
-		if (fileInputRef.current) {
-			fileInputRef.current.value = '';
 		}
 	};
 
@@ -321,82 +293,7 @@ const CS: NextPage = () => {
 								</div>
 								
 								{/* Right Form Panel */}
-								<div className="form-panel">
-									{isSubmitted ? (
-										<div className="success-banner">
-											<div className="icon-wrapper">
-												<span className="material-symbols-outlined">task_alt</span>
-											</div>
-											<div className="text-wrapper">
-												<h4>Ticket #AUR-8921 Dispatched</h4>
-												<p>Thank you! Your inquiry has been routed to our Geneva support desk. A specialist will reply via email and the live chat within 15 minutes.</p>
-											</div>
-											<button className="submit-another-btn" onClick={resetSupportForm}>Submit Another Inquiry</button>
-										</div>
-									) : (
-										<form onSubmit={handleSupportSubmit} className="support-form">
-											<div className="form-row">
-												<div className="form-group">
-													<label>Full Name</label>
-													<input type="text" placeholder="e.g. Elena Rostova" required />
-												</div>
-												<div className="form-group">
-													<label>Email Address</label>
-													<input type="email" placeholder="e.g. elena@auratravel.com" required />
-												</div>
-											</div>
-											<div className="form-row">
-												<div className="form-group">
-													<label>Request Category</label>
-													<select required>
-														<option value="Booking Issue">Booking Issue</option>
-														<option value="Hotel Issue">Hotel & Sanctuary Issue</option>
-														<option value="Tour Issue">Tour & Expedition Issue</option>
-														<option value="Account Issue">Account & Security Issue</option>
-														<option value="Technical Problem">Technical Problem</option>
-														<option value="Other">Other Bespoke Request</option>
-													</select>
-												</div>
-												<div className="form-group">
-													<label>Subject</label>
-													<input type="text" placeholder="Brief summary of inquiry" required />
-												</div>
-											</div>
-											<div className="form-group">
-												<label>Detailed Message</label>
-												<textarea rows={5} placeholder="Please provide detailed information, booking reference IDs if applicable, or specific flight numbers..." required></textarea>
-											</div>
-											<div className="form-group">
-												<label>Optional Attachments</label>
-												<div className="drop-zone" onClick={() => fileInputRef.current?.click()}>
-													<span className="material-symbols-outlined">attach_file</span>
-													<div className="drop-text">
-														<p className={fileName ? 'has-file' : ''}>{fileName || 'Attach documents or screenshots (max 25MB)'}</p>
-														<p className="subtitle">Supported: PDF, JPG, PNG, HEIC</p>
-													</div>
-													<input type="file" hidden ref={fileInputRef} onChange={handleFileSelect} />
-												</div>
-											</div>
-											
-											<div className="form-actions">
-												<p className="secure-text">Protected by Swiss cryptographic privacy protocols.</p>
-												<button type="submit" className="submit-btn" disabled={isSubmitting}>
-													{isSubmitting ? (
-														<>
-															<span className="material-symbols-outlined spin">sync</span>
-															<span>Transmitting...</span>
-														</>
-													) : (
-														<>
-															<span>Submit Request</span>
-															<span className="material-symbols-outlined">arrow_forward</span>
-														</>
-													)}
-												</button>
-											</div>
-										</form>
-									)}
-								</div>
+								<CsContactForm />
 							</div>
 						</section>
 

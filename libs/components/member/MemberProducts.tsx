@@ -7,7 +7,7 @@ import { Member } from '../../types/member/member';
 import { userVar } from '../../../apollo/store';
 import PropertyCard from '../property/PropertyCard';
 import TourCard from '../tour/TourCard';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { sweetMixinErrorAlert } from '../../sweetAlert';
 import { Message } from '../../enums/common.enum';
 
 interface MemberProductsProps {
@@ -64,8 +64,7 @@ const MemberProducts: React.FC<MemberProductsProps> = ({ member }) => {
 			return;
 		}
 		try {
-			await likeTargetProperty({ variables: { input: id } });
-			sweetTopSmallSuccessAlert('Success!', 700);
+			await likeTargetProperty({ variables: { propertyId: id } });
 			refetchProps();
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message || 'Action failed');
@@ -80,8 +79,7 @@ const MemberProducts: React.FC<MemberProductsProps> = ({ member }) => {
 			return;
 		}
 		try {
-			await likeTargetTour({ variables: { input: id } });
-			sweetTopSmallSuccessAlert('Success!', 700);
+			await likeTargetTour({ variables: { tourId: id } });
 			refetchTours();
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message || 'Action failed');

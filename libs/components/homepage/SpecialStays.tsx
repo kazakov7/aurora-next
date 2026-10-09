@@ -6,7 +6,7 @@ import { userVar } from '../../../apollo/store';
 import { Property } from '../../types/property/property';
 import { Message } from '../../enums/common.enum';
 import { getImageUrl } from '../../config';
-import { sweetTopSmallSuccessAlert, sweetMixinErrorAlert } from '../../sweetAlert';
+import { sweetMixinErrorAlert } from '../../sweetAlert';
 import LikeButton from '../common/LikeButton';
 
 interface SpecialStaysProps {
@@ -35,7 +35,6 @@ const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
 			setFavoriteOverrides((current) => ({ ...current, [propertyId]: !wasLiked }));
 			setUpdatingFavoriteIds((current) => ({ ...current, [propertyId]: true }));
 			await likeTargetProperty({ variables: { propertyId } });
-			await sweetTopSmallSuccessAlert(wasLiked ? 'Removed from favorites' : 'Saved to favorites!', 800);
 		} catch (err: unknown) {
 			setFavoriteOverrides((current) => ({ ...current, [propertyId]: wasLiked }));
 			const errorMessage = err instanceof Error ? err.message : 'Unable to update favorite status.';

@@ -14,7 +14,7 @@ import { Property } from '../../libs/types/property/property';
 import { GET_PROPERTY } from '../../apollo/user/query';
 import { LIKE_TARGET_PROPERTY } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
-import { sweetErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import { sweetErrorAlert } from '../../libs/sweetAlert';
 import { Message } from '../../libs/enums/common.enum';
 
 const PropertyDetail: NextPage = () => {
@@ -46,7 +46,6 @@ const PropertyDetail: NextPage = () => {
 		}
 		try {
 			await likeTargetProperty({ variables: { propertyId: property._id } });
-			await sweetTopSmallSuccessAlert(isLiked ? 'Removed from favorites' : 'Saved to favorites');
 			await refetchProperty();
 		} catch (err: any) {
 			await sweetErrorAlert(err.message || 'Error occurred');

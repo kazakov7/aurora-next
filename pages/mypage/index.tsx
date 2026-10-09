@@ -13,6 +13,7 @@ import MyProfileFollowers from '../../libs/components/mypage/MyProfileFollowers'
 import MyProfileFollowing from '../../libs/components/mypage/MyProfileFollowing';
 import MyProfileWishlist from '../../libs/components/mypage/MyProfileWishlist';
 import MyProfileBookings from '../../libs/components/mypage/MyProfileBookings';
+import MyProfileVisitedTours from "../../libs/components/mypage/MyProfileVisitedTours";
 import MyProfileHistory from '../../libs/components/mypage/MyProfileHistory';
 import MyProfileNotifications from '../../libs/components/mypage/MyProfileNotifications';
 import MyProfileSettings from '../../libs/components/mypage/MyProfileSettings';
@@ -25,7 +26,7 @@ const MyPage: NextPage = () => {
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 
-	const allowedCategories = ['articles', 'followers', 'following', 'wishlist', 'bookings', 'history', 'notifications', 'settings', 'partner', 'myHotels', 'myTours', 'reservations'];
+	const allowedCategories = ['articles', 'followers', 'following', 'wishlist', 'bookings', 'history', 'visitedTours', 'notifications', 'settings', 'partner', 'myHotels', 'myTours', 'reservations'];
 	const requestedCategory = (router.query?.category as string) || 'articles';
 	const category = allowedCategories.includes(requestedCategory) ? requestedCategory : 'articles';
 
@@ -113,7 +114,8 @@ const MyPage: NextPage = () => {
 							{category === 'following' && <MyProfileFollowing />}
 							{category === 'wishlist' && <MyProfileWishlist />}
 							{category === 'bookings' && <MyProfileBookings />}
-							{category === 'history' && <MyProfileHistory />}
+							{category === "history" && <MyProfileHistory />}
+							{category === "visitedTours" && <MyProfileVisitedTours />}
 							{category === 'notifications' && <MyProfileNotifications />}
 							{category === 'settings' && <MyProfileSettings />}
 							{category === 'partner' && <AgentApplicationPage />}

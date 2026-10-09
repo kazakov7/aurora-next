@@ -12,10 +12,10 @@ import CommunityDetailEngagementBar from '../../libs/components/community/detail
 import CommunityDetailComments from '../../libs/components/community/detail/CommunityDetailComments';
 import CommunityDetailRelated from '../../libs/components/community/detail/CommunityDetailRelated';
 import { BoardArticle } from '../../libs/types/board-article/board-article';
-import { GET_BOARD_ARTICLE } from '../../apollo/user/query';
+import { GET_BOARD_ARTICLE, GET_PROPERTY_HOST } from '../../apollo/user/query';
 import { LIKE_TARGET_ARTICLE, SUBSCRIBE, UNSUBSCRIBE } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
 
 const categoryLabelMap: Record<string, { label: string; key: string }> = {
 	TOUR: { label: 'Itineraries', key: 'itineraries' },
@@ -55,7 +55,19 @@ const CommunityDetailPage: NextPage = () => {
 		skip: !articleId,
 	});
 
-	/** 2. MUTATIONS **/
+	/** 2. AUTHOR FOLLOW STATE: article memberData does not carry meFollowed **/
+	const authorId = article?.memberData?._id || '';
+	const { data: authorData, refetch: refetchAuthor } = useQuery(GET_PROPERTY_HOST, {
+		fetchPolicy: 'network-only',
+		variables: { input: authorId },
+		skip: !authorId || !user?._id,
+	});
+
+	useEffect(() => {
+		setIsFollowing(!!authorData?.getMember?.meFollowed?.[0]?.myFollowing);
+	}, [authorData]);
+
+	/** 3. MUTATIONS **/
 	const [likeTargetArticle] = useMutation(LIKE_TARGET_ARTICLE);
 	const [subscribe] = useMutation(SUBSCRIBE);
 	const [unsubscribe] = useMutation(UNSUBSCRIBE);
@@ -69,9 +81,6 @@ const CommunityDetailPage: NextPage = () => {
 
 			const meLiked = art.meLiked && art.meLiked.length > 0 ? art.meLiked[0].myFavorite : false;
 			setIsLiked(!!meLiked);
-
-			const meFollowed = art.memberData?.meFollowed && art.memberData.meFollowed.length > 0 ? art.memberData.meFollowed[0].myFollowing : false;
-			setIsFollowing(!!meFollowed);
 		}
 	}, [data]);
 
@@ -92,8 +101,6 @@ const CommunityDetailPage: NextPage = () => {
 				variables: { input: article._id },
 			});
 			await refetch();
-
-			sweetTopSmallSuccessAlert(nextLiked ? 'Liked story!' : 'Unliked story');
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message || 'Error occurred while liking');
 			refetch();
@@ -114,12 +121,10 @@ const CommunityDetailPage: NextPage = () => {
 		try {
 			if (!isFollowing) {
 				await subscribe({ variables: { input: article.memberData._id } });
-				sweetTopSmallSuccessAlert('Followed successfully!');
 			} else {
 				await unsubscribe({ variables: { input: article.memberData._id } });
-				sweetTopSmallSuccessAlert('Unfollowed successfully!');
 			}
-			await refetch();
+			await refetchAuthor();
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message || 'Unable to update follow status.');
 		}
@@ -177,6 +182,7 @@ const CommunityDetailPage: NextPage = () => {
 							commentsCount={commentsCount}
 							isFollowing={isFollowing}
 							onFollow={handleFollow}
+							showFollowButton={user?._id !== article?.memberData?._id}
 						/>
 
 						{/* Cover Media */}

@@ -123,6 +123,9 @@
 	   3. LEFT COLUMN: FILTER SIDEBAR
 	   ========================================================================== */
   .filter-sidebar {
+    position: sticky;
+    top: 88px;
+
     width: 260px;
     flex-shrink: 0;
     background: $surface-container-lowest;

@@ -27,7 +27,6 @@ import { LIKE_TARGET_ARTICLE } from "../../apollo/user/mutation";
 import { userVar } from "../../apollo/store";
 import {
   sweetMixinErrorAlert,
-  sweetTopSmallSuccessAlert,
 } from "../../libs/sweetAlert";
 
 const categoryParamMap: Record<string, BoardArticleCategory | undefined> = {
@@ -310,8 +309,6 @@ const CommunityPage: NextPage = () => {
         variables: { input: articleId },
       });
       await refetchArticles();
-
-      sweetTopSmallSuccessAlert(wasLiked ? "Unliked story" : "Liked story!", 800);
     } catch (err: any) {
       setLikedMap((prev) => ({ ...prev, [articleId]: wasLiked }));
       setLikeCountMap((prev) => ({ ...prev, [articleId]: currentCount }));

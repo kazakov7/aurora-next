@@ -293,8 +293,8 @@
 	   4. COMMUNITY CARDS
 	   ========================================================================== */
   .community-cards-stack {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 24px;
   }
 
@@ -533,6 +533,8 @@
 
     /* Post Footer */
     .card-footer-actions {
+      margin-top: auto;
+
       display: flex;
       align-items: center;
       justify-content: space-between;

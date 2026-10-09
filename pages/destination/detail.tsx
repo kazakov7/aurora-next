@@ -32,7 +32,7 @@ import {
 	LIKE_TARGET_TOUR,
 } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
-import { sweetErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import { sweetErrorAlert } from '../../libs/sweetAlert';
 
 const DestinationDetail: NextPage = () => {
 	const router = useRouter();
@@ -171,9 +171,11 @@ const DestinationDetail: NextPage = () => {
 				variables: { destinationId: targetId },
 			});
 			await refetchDestination();
-			await sweetTopSmallSuccessAlert('Saved to wishlist!', 800);
 		} catch (err: any) {
 			console.log('ERROR, handleLikeDestination:', err.message);
+			// Roll back the optimistic toggle
+			setIsLiked(isLiked);
+			setLikesCount(destination?.destinationLikes || 0);
 			sweetErrorAlert(err.message);
 		}
 	};
@@ -185,7 +187,6 @@ const DestinationDetail: NextPage = () => {
 				variables: { propertyId },
 			});
 			await refetchProperties();
-			await sweetTopSmallSuccessAlert('Saved stay to favorites!', 800);
 		} catch (err: any) {
 			console.log('ERROR, handleLikeProperty:', err.message);
 			sweetErrorAlert(err.message);
@@ -199,7 +200,6 @@ const DestinationDetail: NextPage = () => {
 				variables: { tourId },
 			});
 			await refetchTours();
-			await sweetTopSmallSuccessAlert('Saved tour to wishlist!', 800);
 		} catch (err: any) {
 			console.log('ERROR, handleLikeTour:', err.message);
 			sweetErrorAlert(err.message);

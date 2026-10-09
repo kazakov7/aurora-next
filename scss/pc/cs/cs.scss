@@ -814,6 +814,17 @@
                   .material-symbols-outlined {
                     color: $outline;
                     font-size: 24px;
+
+                    &.remove-attachment {
+                      font-size: 18px;
+                      border-radius: 50%;
+                      padding: 2px;
+
+                      &:hover {
+                        color: #ba1a1a;
+                        background: rgba(186, 26, 26, 0.08);
+                      }
+                    }
                   }
 
                   .drop-text {

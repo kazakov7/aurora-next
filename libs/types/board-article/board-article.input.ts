@@ -37,6 +37,8 @@ export interface BoardArticleInput {
 
 export interface BoardArticleUpdate {
 	_id: string;
+	articleCategory?: BoardArticleCategory;
+
 	articleTitle?: string;
 	articleContent?: string;
 	articleImage?: string;

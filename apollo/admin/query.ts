@@ -250,3 +250,32 @@ export const GET_ALL_BOOKINGS_BY_ADMIN = gql`
 		}
 	}
 `;
+
+/**************************
+ *     SUPPORT TICKET     *
+ *************************/
+
+export const GET_ALL_SUPPORT_TICKETS_BY_ADMIN = gql`
+	query GetAllSupportTicketsByAdmin($input: SupportTicketsInquiry!) {
+		getAllSupportTicketsByAdmin(input: $input) {
+			list {
+				_id
+				ticketCategory
+				ticketStatus
+				ticketName
+				ticketEmail
+				ticketSubject
+				ticketMessage
+				ticketAttachment
+				ticketReply
+				repliedAt
+				memberId
+				createdAt
+				updatedAt
+			}
+			metaCounter {
+				total
+			}
+		}
+	}
+`;

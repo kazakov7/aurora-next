@@ -244,7 +244,7 @@
           border-radius: 9999px; // Pill shape
           padding: 8px;
           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
-          margin-bottom: 300px;
+          margin-bottom: 100px;
 
           .filter-bar {
             display: flex;
@@ -421,7 +421,7 @@
       width: 100%;
       max-width: $container-width;
       margin: 0 auto;
-      // padding: 0 24px;
+      // 
 
       .section-header {
         display: flex;
@@ -831,7 +831,7 @@
       width: 100%;
       max-width: $container-width;
       margin: 0 auto;
-      // padding: 0 24px;
+      // 
 
       .section-header {
         display: flex;
@@ -1055,7 +1055,7 @@
       width: 100%;
       max-width: $container-width;
       margin: 0 auto;
-      // padding: 0 24px;
+      // 
 
       .section-header {
         display: flex;
@@ -1236,7 +1236,7 @@
       width: 100%;
       max-width: $container-width;
       margin: 0 auto;
-      // padding: 0 24px;
+      // 
 
       .section-header {
         display: flex;
@@ -1524,7 +1524,7 @@
       width: 100%;
       max-width: $container-width;
       margin: 0 auto;
-      // padding: 0 24px;
+      // 
 
       .partners-header {
         text-align: center;
@@ -1595,8 +1595,15 @@
             display: flex;
             width: max-content;
             animation-name: marqueeScroll;
+            animation-duration: 25s;
+
             animation-timing-function: linear;
             animation-iteration-count: infinite;
+
+            &:hover {
+              animation-play-state: paused;
+            }
+
 
             &.reverse {
               animation-direction: reverse;
@@ -1666,6 +1673,10 @@
                 color: $on-surface-variant;
                 line-height: 20px;
                 margin-bottom: 16px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                width: 100%;
               }
 
               .partner-badge {
@@ -1696,7 +1707,7 @@
       width: 100%;
       max-width: $container-width;
       margin: 0 auto;
-      // padding: 0 24px;
+      // 
 
       .section-header {
         margin-bottom: 48px;

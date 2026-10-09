@@ -10,6 +10,7 @@ interface CommunityDetailHeaderProps {
   likeCount: number;
   commentsCount: number;
   isFollowing?: boolean;
+  showFollowButton?: boolean;
   onFollow?: () => void;
 }
 
@@ -33,6 +34,7 @@ const CommunityDetailHeader: React.FC<CommunityDetailHeaderProps> = ({
   likeCount,
   commentsCount,
   isFollowing,
+  showFollowButton = true,
   onFollow,
 }) => {
   const authorName =
@@ -90,11 +92,7 @@ const CommunityDetailHeader: React.FC<CommunityDetailHeaderProps> = ({
         </div>
 
         <div className="author-actions-right">
-          <FollowButton
-            isFollowing={!!isFollowing}
-            onClick={onFollow || (() => {})}
-            size="sm"
-          />
+          {showFollowButton && (<FollowButton isFollowing={!!isFollowing} onClick={onFollow || (() => {})} size="sm" />)}
           <button
             type="button"
             className="share-icon-btn"

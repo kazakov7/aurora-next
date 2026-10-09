@@ -195,3 +195,27 @@ export const REMOVE_NOTICE_BY_ADMIN = gql`
 		removeNoticeByAdmin(noticeId: $noticeId)
 	}
 `;
+
+/**************************
+ *     SUPPORT TICKET     *
+ *************************/
+
+export const UPDATE_SUPPORT_TICKET_BY_ADMIN = gql`
+	mutation UpdateSupportTicketByAdmin($input: SupportTicketUpdate!) {
+		updateSupportTicketByAdmin(input: $input) {
+			_id
+			ticketCategory
+			ticketStatus
+			ticketName
+			ticketEmail
+			ticketSubject
+			ticketMessage
+			ticketAttachment
+			ticketReply
+			repliedAt
+			memberId
+			createdAt
+			updatedAt
+		}
+	}
+`;

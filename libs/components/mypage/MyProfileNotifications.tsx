@@ -67,7 +67,8 @@ const MyProfileNotifications = () => {
 	const { data: followingData, refetch: refetchFollowing } = useQuery(GET_MY_FOLLOWING_IDS, {
 		fetchPolicy: 'network-only',
 		skip: !user?._id || !hasFollowNotifications,
-		variables: { input: { page: 1, limit: Math.max(user?.memberFollowings ?? 0, 1), search: { followerId: user?._id } } },
+		// The JWT following count goes stale after new follows, so keep a wider window
+		variables: { input: { page: 1, limit: Math.max(user?.memberFollowings ?? 0, 100), search: { followerId: user?._id } } },
 	});
 	const followingIds = useMemo(
 		() => new Set<string>((followingData?.getMemberFollowings?.list ?? []).map((follow: { followingId: string }) => follow.followingId)),

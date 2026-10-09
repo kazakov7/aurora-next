@@ -9,7 +9,6 @@ import { Message } from "../../enums/common.enum";
 import { Member } from "../../types/member/member";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
 import {
-  sweetTopSmallSuccessAlert,
   sweetMixinErrorAlert,
 } from "../../sweetAlert";
 import FollowButton from "../common/FollowButton";
@@ -95,10 +94,6 @@ const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps
         ...current,
         [curatorId]: (current[curatorId] ?? 0) + (nextFollowingStatus ? 1 : -1),
       }));
-      await sweetTopSmallSuccessAlert(
-        nextFollowingStatus ? "Following" : "Unfollowed",
-        800,
-      );
     } catch (err: unknown) {
       setFollowOverrides((current) => ({
         ...current,

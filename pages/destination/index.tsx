@@ -13,7 +13,7 @@ import { Direction, Message } from '../../libs/enums/common.enum';
 import { GET_DESTINATIONS } from '../../apollo/user/query';
 import { LIKE_TARGET_DESTINATION } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
 
 const continentCountryMap: Record<string, string> = {
 	all: '',
@@ -159,7 +159,6 @@ const DestinationList: NextPage = () => {
 				variables: { destinationId },
 			});
 			await refetchDestinations({ input: searchFilter });
-			await sweetTopSmallSuccessAlert('Saved to wishlist!', 800);
 		} catch (err: any) {
 			console.log('ERROR, likeDestinationHandler:', err.message);
 			sweetMixinErrorAlert(err.message);

@@ -229,12 +229,7 @@ const AdminPropertiesPage: NextPage = () => {
 					<h1>Hotels & Properties Management</h1>
 					<p>Review, approve, and moderate property listings.</p>
 				</div>
-				<div className="header-actions">
-					<button className="export-btn" type="button" onClick={exportCSV}>
-						<span className="material-symbols-outlined">download</span>
-						Export CSV
-					</button>
-				</div>
+
 			</div>
 
 			<section className="admin-table-section">

@@ -7,7 +7,7 @@ import { LIKE_TARGET_PROPERTY } from '../../../../apollo/user/mutation';
 import { userVar } from '../../../../apollo/store';
 import { Property } from '../../../types/property/property';
 import { getImageUrl } from '../../../config';
-import { sweetErrorAlert, sweetTopSmallSuccessAlert } from '../../../sweetAlert';
+import { sweetErrorAlert } from '../../../sweetAlert';
 import { Message } from '../../../enums/common.enum';
 
 interface SimilarPropertiesProps {
@@ -46,7 +46,6 @@ const SimilarProperties = ({ currentPropertyId, city }: SimilarPropertiesProps) 
 		try {
 			await likeTargetProperty({ variables: { propertyId: propId } });
 			await refetch();
-			await sweetTopSmallSuccessAlert('Saved to wishlist!');
 		} catch (err: any) {
 			await sweetErrorAlert(err.message || 'Error occurred');
 		}

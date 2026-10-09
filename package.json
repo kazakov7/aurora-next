@@ -34,7 +34,8 @@
     "socket.io-client": "^4.8.1",
     "subscriptions-transport-ws": "^0.9.19",
     "sweetalert2": "^11.10.5",
-    "swiper": "^8.4.7"
+    "swiper": "^8.4.7",
+    "three": "^0.160.0"
   },
   "devDependencies": {
     "@types/apollo-upload-client": "^17.0.2",
@@ -42,6 +43,7 @@
     "@types/numeral": "^2.0.5",
     "@types/react": "^18.2.61",
     "@types/react-dom": "^18.2.19",
+    "@types/three": "^0.160.0",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.0",
     "prettier": "2.7.1",

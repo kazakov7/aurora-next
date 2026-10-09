@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import AuroraLogo3D from "./AuroraLogo3D";
 
 const Footer = () => {
   return (
@@ -8,9 +9,11 @@ const Footer = () => {
         <div className="footer-top-grid">
           {/* Brand Column */}
           <div className="brand-col">
-            <div className="brand-logo">
-              <span className="logo-text">AURA</span>
-            </div>
+            {/* <div className="brand-logo"> */}
+            <section style={{ height: 120 }}>
+              <AuroraLogo3D align="left" />
+            </section>
+            {/* </div> */}
             <p className="brand-desc">
               Extraordinary journeys, effortlessly curated. Engineered for
               discerning modern travelers seeking discretion, purity, and

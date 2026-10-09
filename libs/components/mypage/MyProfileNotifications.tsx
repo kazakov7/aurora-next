@@ -1,11 +1,12 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Stack, Box, Pagination } from '@mui/material';
 import { useQuery, useMutation, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
-import { GET_MY_NOTIFICATIONS, GET_UNREAD_NOTIFICATION_COUNT } from '../../../apollo/user/query';
+import { GET_MY_FOLLOWING_IDS, GET_MY_NOTIFICATIONS, GET_UNREAD_NOTIFICATION_COUNT } from '../../../apollo/user/query';
 import { MARK_NOTIFICATION_AS_READ, MARK_ALL_NOTIFICATIONS_AS_READ, SUBSCRIBE } from '../../../apollo/user/mutation';
-import { Notification, Notifications } from '../../types/notification/notification';
-import { NotificationStatus } from '../../enums/notification.enum';
+import { Notification } from '../../types/notification/notification';
+import { NotificationGroup, NotificationStatus, NotificationType } from '../../enums/notification.enum';
+import { MemberType } from '../../enums/member.enum';
 import { sweetErrorHandling } from '../../sweetAlert';
 import { useRouter } from 'next/router';
 import moment from 'moment';
@@ -19,20 +20,27 @@ interface NotificationsInquiry {
 	};
 }
 
+const PAGE_LIMIT = 10;
+
+const CONTENT_ROUTES: Partial<Record<NotificationGroup, string>> = {
+	[NotificationGroup.PROPERTY]: '/property/detail',
+	[NotificationGroup.TOUR]: '/tour/detail',
+	[NotificationGroup.ARTICLE]: '/community/detail',
+};
+
 const MyProfileNotifications = () => {
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
-
-	const [inquiry, setInquiry] = useState<NotificationsInquiry>({
-		page: 1,
-		limit: 10,
-		search: {},
-	});
-
-	const [notifications, setNotifications] = useState<Notification[]>([]);
-	const [total, setTotal] = useState<number>(0);
-	const [unreadCount, setUnreadCount] = useState<number>(0);
 	const [expandedNotificationId, setExpandedNotificationId] = useState<string | null>(null);
+
+	/** URL STATE **/
+	const page = Math.max(1, Number(router.query.page) || 1);
+	const statusFilter = router.query.status === NotificationStatus.WAIT ? NotificationStatus.WAIT : undefined;
+	const inquiry = useMemo<NotificationsInquiry>(() => ({
+		page,
+		limit: PAGE_LIMIT,
+		search: statusFilter ? { notificationStatus: statusFilter } : {},
+	}), [page, statusFilter]);
 
 	/** APOLLO REQUESTS **/
 	const { loading, data, refetch } = useQuery(GET_MY_NOTIFICATIONS, {
@@ -51,18 +59,24 @@ const MyProfileNotifications = () => {
 		skip: !user?._id,
 	});
 
+	const notifications: Notification[] = data?.getMyNotifications?.list || [];
+	const total: number = data?.getMyNotifications?.metaCounter?.[0]?.total || 0;
+	const unreadCount: number = unreadData?.getUnreadNotificationCount || 0;
+	const hasFollowNotifications = notifications.some((notif) => notif.notificationType === NotificationType.FOLLOW);
+
+	const { data: followingData, refetch: refetchFollowing } = useQuery(GET_MY_FOLLOWING_IDS, {
+		fetchPolicy: 'network-only',
+		skip: !user?._id || !hasFollowNotifications,
+		variables: { input: { page: 1, limit: Math.max(user?.memberFollowings ?? 0, 1), search: { followerId: user?._id } } },
+	});
+	const followingIds = useMemo(
+		() => new Set<string>((followingData?.getMemberFollowings?.list ?? []).map((follow: { followingId: string }) => follow.followingId)),
+		[followingData],
+	);
+
 	const [markNotificationAsRead] = useMutation(MARK_NOTIFICATION_AS_READ);
 	const [markAllNotificationsAsRead] = useMutation(MARK_ALL_NOTIFICATIONS_AS_READ);
 	const [subscribe] = useMutation(SUBSCRIBE);
-
-	useEffect(() => {
-		setNotifications(data?.getMyNotifications?.list || []);
-		setTotal(data?.getMyNotifications?.metaCounter?.[0]?.total || 0);
-	}, [data]);
-
-	useEffect(() => {
-		setUnreadCount(unreadData?.getUnreadNotificationCount || 0);
-	}, [unreadData]);
 
 	const handleRealtimeNotification = useCallback(() => {
 		void refetch();
@@ -71,16 +85,27 @@ const MyProfileNotifications = () => {
 	useNotificationRealtime({ memberId: user?._id, onNotification: handleRealtimeNotification });
 
 	/** HANDLERS **/
+	const updateQuery = (next: { page?: number; status?: NotificationStatus }) => {
+		const query: Record<string, string> = { category: 'notifications' };
+		const nextStatus = 'status' in next ? next.status : statusFilter;
+		const nextPage = next.page ?? page;
+		if (nextStatus) query.status = nextStatus;
+		if (nextPage > 1) query.page = String(nextPage);
+		void router.push({ pathname: '/mypage', query }, undefined, { shallow: true, scroll: false });
+	};
+
+	/** LIFECYCLES **/
+	useEffect(() => {
+		if (loading || !data || notifications.length || page === 1) return;
+		updateQuery({ page: Math.max(1, Math.ceil(total / PAGE_LIMIT)) });
+	}, [loading, data]);
+
 	const handleFilterChange = (status?: NotificationStatus) => {
-		setInquiry({
-			...inquiry,
-			page: 1,
-			search: { notificationStatus: status },
-		});
+		updateQuery({ status, page: 1 });
 	};
 
 	const handlePaginationChange = (event: React.ChangeEvent<unknown>, value: number) => {
-		setInquiry({ ...inquiry, page: value });
+		updateQuery({ page: value });
 	};
 
 	const handleMarkAsRead = async (id: string) => {
@@ -102,18 +127,35 @@ const MyProfileNotifications = () => {
 		}
 	};
 
+	const getNotificationLink = (notification: Notification): string | null => {
+		const { notificationType, notificationGroup, notificationRefId, authorId } = notification;
+		if (notificationType === NotificationType.BOOKING) {
+			if (user?.memberType === MemberType.ADMIN) return '/_admin/bookings';
+			// Owner notifications are authored by the guest; the guest's own notification has no author
+			return authorId ? '/mypage?category=reservations' : '/mypage?category=bookings';
+		}
+		const contentRoute = CONTENT_ROUTES[notificationGroup];
+		if (contentRoute && notificationRefId && [NotificationType.LIKE, NotificationType.COMMENT, NotificationType.REVIEW].includes(notificationType)) {
+			return `${contentRoute}?id=${notificationRefId}`;
+		}
+		return null;
+	};
+
 	const handleNotificationAction = async (notification: Notification) => {
-		if (notification.notificationType === 'FOLLOW' && notification.authorId) {
+		if (notification.notificationType === NotificationType.FOLLOW && notification.authorId) {
 			try {
 				await subscribe({ variables: { input: notification.authorId }, refetchQueries: ['GetMember'] });
+				await refetchFollowing();
 				await refetch();
 			} catch (err) {
 				await sweetErrorHandling(err);
 			}
 			return;
 		}
-		if (notification.notificationType === 'BOOKING') {
-			await router.push({ pathname: '/mypage', query: { category: 'bookings' } });
+		const link = getNotificationLink(notification);
+		if (link) {
+			if (notification.notificationStatus === NotificationStatus.WAIT) await handleMarkAsRead(notification._id);
+			await router.push(link);
 		}
 	};
 
@@ -238,11 +280,14 @@ const MyProfileNotifications = () => {
 								{notif.notificationStatus === NotificationStatus.WAIT && (
 									<Box className="unread-dot" />
 								)}
-								{notif.notificationType === 'FOLLOW' && (
+								{notif.notificationType === 'FOLLOW' && notif.authorId && followingData && !followingIds.has(notif.authorId) && (
 									<button className="action-btn" onClick={(event) => { event.stopPropagation(); void handleNotificationAction(notif); }}>Follow Back</button>
 								)}
 								{notif.notificationType === 'BOOKING' && (
 									<button className="action-btn-primary" onClick={(event) => { event.stopPropagation(); void handleNotificationAction(notif); }}>View Booking</button>
+								)}
+								{notif.notificationType !== 'BOOKING' && getNotificationLink(notif) && (
+									<button className="action-btn-primary" onClick={(event) => { event.stopPropagation(); void handleNotificationAction(notif); }}>View</button>
 								)}
 								<button className="more-btn" aria-label="Mark notification as read" disabled={notif.notificationStatus === NotificationStatus.READ} onClick={(event) => { event.stopPropagation(); void handleMarkAsRead(notif._id); }}>
 									<span className="material-symbols-outlined">check</span>

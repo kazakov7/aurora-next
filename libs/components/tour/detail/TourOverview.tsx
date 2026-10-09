@@ -53,10 +53,9 @@ const TourOverview = ({ tour }: TourOverviewProps) => {
 	/** HANDLERS **/
 	const handleFollow = async () => {
 		if (!organizer?._id || isOwnOrganizer) return;
-		const accessToken = getJwtToken();
-		if (!user?._id || !accessToken) { await sweetErrorAlert(Message.NOT_AUTHENTICATED); return; }
+		if (!user?._id || !getJwtToken()) { await sweetErrorAlert(Message.NOT_AUTHENTICATED); return; }
 		try {
-			const options = { variables: { input: organizer._id }, context: { headers: { Authorization: `Bearer ${accessToken}`, 'apollo-require-preflight': 'true' } } };
+			const options = { variables: { input: organizer._id } };
 			if (isFollowing) await unsubscribe(options); else await subscribe(options);
 			await refetchOrganizer();
 		} catch (error: unknown) {

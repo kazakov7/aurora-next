@@ -14,7 +14,8 @@ const KakaoCallbackPage: NextPage = () => {
 	const [kakaoAuth] = useMutation(KAKAO_AUTH);
 
 	useEffect(() => {
-		if (!router.isReady) return;
+		if (!router.isReady || processedRef.current) return;
+		processedRef.current = true;
 		const code = typeof router.query.code === 'string' ? router.query.code : '';
 		const state = typeof router.query.state === 'string' ? router.query.state : '';
 		const providerError = typeof router.query.error === 'string' ? router.query.error : '';
@@ -28,9 +29,6 @@ const KakaoCallbackPage: NextPage = () => {
 			setMessage('This Kakao sign-in request is invalid or has expired.');
 			return;
 		}
-		if (processedRef.current) return;
-		processedRef.current = true;
-
 		void (async () => {
 			try {
 				const { data } = await kakaoAuth({

@@ -13,12 +13,11 @@ interface SpecialStaysProps {
 	properties: Property[];
 	loading?: boolean;
 	error?: Error;
-	onRefetch: () => Promise<unknown>;
 }
 
 const formatKrw = (price?: number) => (typeof price === 'number' ? `₩${price.toLocaleString()}` : 'Price on request');
 
-const SpecialStays = ({ properties, loading, error, onRefetch }: SpecialStaysProps) => {
+const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
 	const user = useReactiveVar(userVar);
 	const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
 	const [updatingFavoriteIds, setUpdatingFavoriteIds] = useState<Record<string, boolean>>({});
@@ -27,13 +26,15 @@ const SpecialStays = ({ properties, loading, error, onRefetch }: SpecialStaysPro
 
 	/** HANDLERS **/
 	const likePropertyHandler = async (event: React.MouseEvent, propertyId: string, wasLiked: boolean) => {
+		// The card is a Link, so the anchor navigation must be cancelled as well
+		event.preventDefault();
 		event.stopPropagation();
+		if (updatingFavoriteIds[propertyId]) return;
 		try {
 			if (!user?._id) throw new Error(Message.NOT_AUTHENTICATED);
 			setFavoriteOverrides((current) => ({ ...current, [propertyId]: !wasLiked }));
 			setUpdatingFavoriteIds((current) => ({ ...current, [propertyId]: true }));
 			await likeTargetProperty({ variables: { propertyId } });
-			await onRefetch();
 			await sweetTopSmallSuccessAlert(wasLiked ? 'Removed from favorites' : 'Saved to favorites!', 800);
 		} catch (err: unknown) {
 			setFavoriteOverrides((current) => ({ ...current, [propertyId]: wasLiked }));
@@ -58,7 +59,7 @@ const SpecialStays = ({ properties, loading, error, onRefetch }: SpecialStaysPro
 				</div>
 
 				<div className="stays-grid">
-					{loading ? <p className="stays-empty-state">Loading top stays…</p> : null}
+					{loading && !properties.length ? <p className="stays-empty-state">Loading top stays…</p> : null}
 					{!loading && error ? <p className="stays-empty-state">Top stays are unavailable right now.</p> : null}
 					{properties.map((stay) => {
 						const isLiked = favoriteOverrides[stay._id] ?? Boolean(stay.meLiked?.[0]?.myFavorite);

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useMutation, useReactiveVar } from "@apollo/client";
 import { UPDATE_MEMBER } from "../../../apollo/user/mutation";
 import { userVar } from "../../../apollo/store";
+import { getJwtToken, setJwtToken, updateUserInfo } from "../../auth";
 import {
   sweetMixinErrorAlert,
   sweetTopSmallSuccessAlert,
@@ -37,7 +38,7 @@ const MyProfileSettings: React.FC = () => {
         if (!file) return;
         setUploadingImage(true);
 
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+        const token = getJwtToken();
         const formData = new FormData();
         formData.append(
             'operations',
@@ -103,6 +104,11 @@ const MyProfileSettings: React.FC = () => {
       });
 
       if (result.data?.updateMember) {
+        const { accessToken } = result.data.updateMember;
+        if (accessToken) {
+          setJwtToken(accessToken);
+          updateUserInfo(accessToken);
+        }
         userVar({ ...userVar(), ...result.data.updateMember });
         sweetTopSmallSuccessAlert("Profile updated successfully!", 1000);
       }

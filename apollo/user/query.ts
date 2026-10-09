@@ -179,6 +179,17 @@ export const GET_MEMBER_FOLLOWINGS = gql`
 	}
 `;
 
+export const GET_MY_FOLLOWING_IDS = gql`
+	query GetMyFollowingIds($input: FollowInquiry!) {
+		getMemberFollowings(input: $input) {
+			list {
+				_id
+				followingId
+			}
+		}
+	}
+`;
+
 export const GET_MEMBER_FOLLOWERS = gql`
 	query GetMemberFollowers($input: FollowInquiry!) {
 		getMemberFollowers(input: $input) {

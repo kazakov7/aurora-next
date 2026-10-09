@@ -23,6 +23,7 @@ import { Tour } from "../libs/types/tour/tour";
 import { Member } from "../libs/types/member/member";
 import { RankingAgent, RankingList } from "../libs/types/ranking/ranking";
 import { AgentType } from "../libs/enums/agent.enum";
+import AuroraLogo3D from "@/libs/components/AuroraLogo3D";
 
 const rankingOptions = {
   fetchPolicy: "cache-and-network" as const,
@@ -83,18 +84,17 @@ const Home: NextPage = () => {
         properties={properties.data?.getTopProperties?.list ?? []}
         loading={properties.loading}
         error={properties.error}
-        onRefetch={properties.refetch}
       />
       <Experiences
         tours={tours.data?.getTopTours?.list ?? []}
         loading={tours.loading}
         error={tours.error}
       />
+      ;
       <CommunityCurators
         travelers={travelers.data?.getTopTravelers?.list ?? []}
         loading={travelers.loading}
         error={travelers.error}
-        onRefetch={travelers.refetch}
       />
       <TravelPartners
         hotelAgents={hotelAgents.data?.getTopAgents?.list ?? []}

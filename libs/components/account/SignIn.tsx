@@ -60,8 +60,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 				setJwtToken(data.login.accessToken);
 				updateUserInfo(data.login.accessToken);
 				await sweetTopSmallSuccessAlert(`Welcome back, ${data.login.memberNick}!`, 800);
-				const target = (router.query.referrer as string) || '/mypage';
-				await router.push(target);
+				await router.push(getSafeAuthRedirect(router.query.referrer));
 			}
 		} catch (err: any) {
 			console.error('Login error:', err);

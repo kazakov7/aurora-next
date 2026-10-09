@@ -10,5 +10,6 @@ export enum Message {
 	UPDATE_FAILED = 'Update failed!',
 	REMOVE_FAILED = 'Remove failed!',
 	NOT_AUTHENTICATED = 'Please login first!',
+	SESSION_EXPIRED = 'Your session has expired, please login again!',
 	INSERT_ALL_INPUTS = 'Please provide all inputs',
 }

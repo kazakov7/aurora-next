@@ -1,19 +1,14 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Head from 'next/head';
 import Top from '../Top';
 import Footer from '../Footer';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
-import { getJwtToken, updateUserInfo } from '../../auth';
+import useAuthSession from '../../hooks/useAuthSession';
 
 const withLayoutBasic = (Component: any) => {
 	return (props: any) => {
 		const device = useDeviceDetect();
-
-		/** LIFECYCLES **/
-		useEffect(() => {
-			const jwt = getJwtToken();
-			if (jwt) updateUserInfo(jwt);
-		}, []);
+		useAuthSession();
 
 		if (device === 'mobile') {
 			return (

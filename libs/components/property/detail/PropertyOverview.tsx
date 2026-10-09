@@ -60,17 +60,13 @@ const PropertyOverview = ({ property }: PropertyOverviewProps) => {
 	/** HANDLERS **/
 	const handleFollow = async () => {
 		if (!host?._id || isOwnHostProfile) return;
-		const accessToken = getJwtToken();
-		if (!user?._id || !accessToken) {
+		if (!user?._id || !getJwtToken()) {
 			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
 			return;
 		}
 
 		try {
-			const mutationOptions = {
-				variables: { input: host._id },
-				context: { headers: { Authorization: `Bearer ${accessToken}`, 'apollo-require-preflight': 'true' } },
-			};
+			const mutationOptions = { variables: { input: host._id } };
 			if (isFollowing) await unsubscribe(mutationOptions);
 			else await subscribe(mutationOptions);
 			await refetchHost();

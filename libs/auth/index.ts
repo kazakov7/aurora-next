@@ -1,27 +1,39 @@
 import decodeJWT from 'jwt-decode';
-import { userVar } from '../../apollo/store';
+import { initialUser, userVar } from '../../apollo/store';
 import { CustomJwtPayload } from '../types/customJwtPayload';
 import { DEFAULT_USER_AVATAR } from '../config';
-import { useRouter } from 'next/router';
 
+export const ACCESS_TOKEN_KEY = 'accessToken';
 
+export const isTokenExpired = (jwtToken: string): boolean => {
+	try {
+		const { exp } = decodeJWT<CustomJwtPayload>(jwtToken);
+		return !!exp && exp * 1000 <= Date.now();
+	} catch (err) {
+		return true;
+	}
+};
 
 export function getJwtToken(): string {
 	if (typeof window !== 'undefined') {
-		return localStorage.getItem('accessToken') ?? '';
+		const token = localStorage.getItem(ACCESS_TOKEN_KEY) ?? '';
+		if (token && isTokenExpired(token)) {
+			localStorage.removeItem(ACCESS_TOKEN_KEY);
+			return '';
+		}
+		return token;
 	}
 	return '';
 }
 
 export function setJwtToken(token: string): void {
 	if (typeof window !== 'undefined') {
-		localStorage.setItem('accessToken', token);
-		localStorage.setItem('login', Date.now().toString());
+		localStorage.setItem(ACCESS_TOKEN_KEY, token);
 	}
 }
 
 export const updateUserInfo = (jwtToken: string) => {
-	if (!jwtToken) return false;
+	if (!jwtToken || isTokenExpired(jwtToken)) return false;
 
 	try {
 		const claims = decodeJWT<CustomJwtPayload>(jwtToken);
@@ -61,11 +73,16 @@ export const updateUserInfo = (jwtToken: string) => {
 		return false;
 	}
 };
+export const clearAuthSession = (): void => {
+	if (typeof window !== 'undefined') {
+		localStorage.removeItem(ACCESS_TOKEN_KEY);
+	}
+	userVar({ ...initialUser });
+};
+
 export const logOut = (): void => {
 	if (typeof window !== 'undefined') {
-		localStorage.removeItem('accessToken');
-		localStorage.setItem('logout', Date.now().toString());
-
+		clearAuthSession();
 		window.location.href = '/';
 	}
 };

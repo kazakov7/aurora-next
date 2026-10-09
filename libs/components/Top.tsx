@@ -3,26 +3,29 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useQuery, useReactiveVar } from "@apollo/client";
 import { userVar } from "../../apollo/store";
-import { getJwtToken, updateUserInfo, logOut } from "../auth";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../config";
 import { GET_UNREAD_NOTIFICATION_COUNT } from "../../apollo/user/query";
 import { useNotificationRealtime } from "../hooks/useNotificationRealtime";
+import AuroraLogo3D from "./AuroraLogo3D";
 
 const Top = () => {
   const router = useRouter();
   const user = useReactiveVar(userVar);
   const [activePath, setActivePath] = useState("home");
-  const { data: unreadData, refetch: refetchUnread } = useQuery(GET_UNREAD_NOTIFICATION_COUNT, { skip: !user?._id, fetchPolicy: 'network-only' });
+  const { data: unreadData, refetch: refetchUnread } = useQuery(
+    GET_UNREAD_NOTIFICATION_COUNT,
+    { skip: !user?._id, fetchPolicy: "network-only" },
+  );
   const unreadCount = unreadData?.getUnreadNotificationCount ?? 0;
-  const handleRealtimeNotification = useCallback(() => { void refetchUnread(); }, [refetchUnread]);
-  useNotificationRealtime({ memberId: user?._id, onNotification: handleRealtimeNotification });
+  const handleRealtimeNotification = useCallback(() => {
+    void refetchUnread();
+  }, [refetchUnread]);
+  useNotificationRealtime({
+    memberId: user?._id,
+    onNotification: handleRealtimeNotification,
+  });
 
   /** LIFECYCLES **/
-  useEffect(() => {
-    const jwt = getJwtToken();
-    if (jwt) updateUserInfo(jwt);
-  }, []);
-
   useEffect(() => {
     const pathname = router.pathname;
     if (pathname === "/") setActivePath("home");
@@ -41,7 +44,9 @@ const Top = () => {
         {/* Logo & Navigation */}
         <div className="nav-left">
           <Link href="/" className="logo-link">
-            <span className="logo-text">AURA</span>
+            <section style={{ height: 80 }}>
+              <AuroraLogo3D />
+            </section>
           </Link>
 
           <nav className="nav-menu">
@@ -145,7 +150,11 @@ const Top = () => {
               type="button"
             >
               <span className="material-symbols-outlined">notifications</span>
-              {unreadCount > 0 && <span className="notification-dot">{unreadCount > 9 ? '9+' : unreadCount}</span>}
+              {unreadCount > 0 && (
+                <span className="notification-dot">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
             </button>
           </Link>
 
@@ -160,10 +169,7 @@ const Top = () => {
             <div className="user-profile-menu">
               <Link href="/mypage" className="avatar-link">
                 <img
-                  src={getImageUrl(
-                    user?.memberImage,
-					DEFAULT_USER_AVATAR,
-                  )}
+                  src={getImageUrl(user?.memberImage, DEFAULT_USER_AVATAR)}
                   alt="Profile"
                   className="avatar-img"
                 />
@@ -172,7 +178,7 @@ const Top = () => {
           ) : (
             <Link href="/account/join" className="avatar-link">
               <img
-				src={DEFAULT_USER_AVATAR}
+                src={DEFAULT_USER_AVATAR}
                 alt="Profile"
                 className="avatar-img"
               />

@@ -6,6 +6,7 @@ import { BoardArticleCategory, BoardArticleStatus } from '../../enums/board-arti
 import { BoardArticleInput, BoardArticleUpdate } from '../../types/board-article/board-article.input';
 import { BoardArticle } from '../../types/board-article/board-article';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { getJwtToken } from '../../auth';
 import { Messages, getImageUrl } from '../../config';
 
 interface WriteStoryModalProps {
@@ -57,7 +58,7 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 			if (!image) return;
 			setUploadingImage(true);
 
-			const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+			const token = getJwtToken();
 			const formData = new FormData();
 			formData.append(
 				'operations',

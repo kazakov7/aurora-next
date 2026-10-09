@@ -5,6 +5,7 @@ import Head from 'next/head';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../apollo/store';
+import { getJwtToken } from '../../libs/auth';
 import MyProfileHeader from '../../libs/components/mypage/MyProfileHeader';
 import MyProfileSidebar from '../../libs/components/mypage/MyProfileSidebar';
 import MyProfileArticles from '../../libs/components/mypage/MyProfileArticles';
@@ -31,8 +32,7 @@ const MyPage: NextPage = () => {
 	/** LIFECYCLES **/
 	useEffect(() => {
 		if (router.isReady && !user._id) {
-			const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-			if (!token) {
+			if (!getJwtToken()) {
 				router.replace('/account/login').then();
 			}
 		}

@@ -4,6 +4,7 @@ import { useQuery, useReactiveVar } from "@apollo/client";
 import { userVar } from "../../../apollo/store";
 import { GET_MEMBER } from "../../../apollo/user/query";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
+import { setJwtToken, updateUserInfo } from "../../auth";
 
 
 interface MyProfileHeaderProps {
@@ -28,6 +29,12 @@ const MyProfileHeader: React.FC<MyProfileHeaderProps> = ({
   useEffect(() => {
     const member = data?.getMember;
     if (!member) return;
+
+    // Own profile reads return a fresh JWT so role changes (e.g. agent approval) apply without re-login
+    if (member.accessToken) {
+      setJwtToken(member.accessToken);
+      updateUserInfo(member.accessToken);
+    }
 
     const current = userVar();
 

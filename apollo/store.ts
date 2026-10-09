@@ -3,7 +3,7 @@ import { CustomJwtPayload } from '../libs/types/customJwtPayload';
 
 export const themeVar = makeVar({});
 
-export const userVar = makeVar<CustomJwtPayload>({
+export const initialUser: CustomJwtPayload = {
 	_id: '',
 	memberType: '',
 	memberStatus: '',
@@ -27,6 +27,8 @@ export const userVar = makeVar<CustomJwtPayload>({
 	memberArticles: 0,
 	memberPoints: 0,
 	memberRank: 0,
-});
+};
+
+export const userVar = makeVar<CustomJwtPayload>(initialUser);
 
 export const socketVar = makeVar<WebSocket | null>(null);

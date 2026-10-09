@@ -92,6 +92,7 @@ export const UPDATE_MEMBER = gql`
 			memberAddress
 			memberDesc
 			updatedAt
+			accessToken
 		}
 	}
 `;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useQuery } from "@apollo/client";
+import { useQuery, useReactiveVar } from "@apollo/client";
 import { GET_AGENT_PROPERTY_BOOKINGS, GET_AGENT_TOUR_BOOKINGS, GET_MY_AGENT_APPLICATIONS } from "../../../../apollo/user/query";
 import { AgentType, AgentVerificationStatus } from "../../../enums/agent.enum";
 import { BookingStatus } from "../../../enums/booking.enum";
@@ -10,7 +10,7 @@ import { userVar } from "../../../../apollo/store";
 
 const Reservations = () => {
   const router = useRouter();
-  const user = userVar();
+  const user = useReactiveVar(userVar);
   
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");

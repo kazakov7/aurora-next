@@ -5,9 +5,14 @@ import createUploadLink from 'apollo-upload-client/public/createUploadLink.js';
 import { WebSocketLink } from '@apollo/client/link/ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { onError } from '@apollo/client/link/error';
-import { getJwtToken } from '../libs/auth';
+import { clearAuthSession, getJwtToken } from '../libs/auth';
 import { sweetErrorAlert } from '../libs/sweetAlert';
+import { Message } from '../libs/enums/common.enum';
 import { socketVar } from './store';
+
+/** Auth forms show their own error messages **/
+const SILENT_ERROR_OPERATIONS = ['Login', 'Signup', 'GoogleAuth', 'KakaoAuth'];
+const AUTH_TOKEN_ERRORS = ['jwt expired', 'invalid signature', 'jwt malformed', 'invalid token', 'You are not authenticated, please login first!'];
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
 
@@ -73,6 +78,7 @@ function createIsomorphicLink() {
 		const wsLink = new WebSocketLink({
 			uri: process.env.NEXT_PUBLIC_AURORA_SOCKET_URL || process.env.REACT_APP_API_WS || 'ws://127.0.0.1:3007',
 			options: {
+				lazy: true,
 				reconnect: false,
 				timeout: 30000,
 				connectionParams: () => ({ headers: getHeaders() }),
@@ -80,12 +86,23 @@ function createIsomorphicLink() {
 			webSocketImpl: LoggingWebSocket,
 		});
 
-		const errorLink = onError(({ graphQLErrors, networkError }) => {
+		const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
 			if (graphQLErrors) {
+				const isSilent = SILENT_ERROR_OPERATIONS.includes(operation.operationName);
+				const hadToken = !!operation.getContext().headers?.Authorization;
+				let sessionExpired = false;
 				graphQLErrors.forEach(({ message }) => {
 					console.log(`[GraphQL error]: ${message}`);
-					if (!message.includes('input')) sweetErrorAlert(message);
+					if (hadToken && AUTH_TOKEN_ERRORS.includes(message)) {
+						sessionExpired = true;
+						return;
+					}
+					if (!isSilent && !message.includes('input')) sweetErrorAlert(message);
 				});
+				if (sessionExpired) {
+					clearAuthSession();
+					sweetErrorAlert(Message.SESSION_EXPIRED);
+				}
 			}
 			if (networkError) console.log(`[Network error]: ${networkError}`);
 		});

@@ -87,9 +87,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
           1000,
         );
 
-        const target = (router.query.referrer as string) || "/mypage";
-
-        await router.push(target);
+        await router.push(getSafeAuthRedirect(router.query.referrer));
       }
     } catch (err: any) {
       console.error("Sign up error:", err);

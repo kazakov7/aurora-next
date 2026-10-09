@@ -10,6 +10,7 @@ import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-
 import { loadStripe } from "@stripe/stripe-js";
 import { sweetErrorAlert, sweetTopSmallSuccessAlert } from "../../libs/sweetAlert";
 import { getImageUrl } from "../../libs/config";
+import useAuthSession from "../../libs/hooks/useAuthSession";
 
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
@@ -87,6 +88,7 @@ const CheckoutForm = ({ onPaymentSubmitted, paymentAmount, currency }: CheckoutF
 const CheckoutPage = () => {
   const router = useRouter();
   const user = useReactiveVar(userVar);
+  useAuthSession();
   const type = typeof router.query.type === 'string' ? router.query.type : '';
   const id = typeof router.query.id === 'string' ? router.query.id : '';
   const checkIn = typeof router.query.checkIn === 'string' ? router.query.checkIn : '';

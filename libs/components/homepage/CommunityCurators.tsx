@@ -37,10 +37,9 @@ interface CommunityCuratorsProps {
   travelers: Member[];
   loading?: boolean;
   error?: ApolloError;
-  onRefetch: () => Promise<unknown>;
 }
 
-const CommunityCurators = ({ travelers, loading, error, onRefetch }: CommunityCuratorsProps) => {
+const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps) => {
   const router = useRouter();
   const user = useReactiveVar(userVar);
   const [followOverrides, setFollowOverrides] = useState<
@@ -49,6 +48,9 @@ const CommunityCurators = ({ travelers, loading, error, onRefetch }: CommunityCu
   const [updatingFollowIds, setUpdatingFollowIds] = useState<
     Record<string, boolean>
   >({});
+  const [followerDeltas, setFollowerDeltas] = useState<Record<string, number>>(
+    {},
+  );
   /** APOLLO REQUESTS **/
   const [subscribe] = useMutation(SUBSCRIBE);
   const [unsubscribe] = useMutation(UNSUBSCRIBE);
@@ -65,8 +67,7 @@ const CommunityCurators = ({ travelers, loading, error, onRefetch }: CommunityCu
     if (updatingFollowIds[curatorId]) return;
 
     try {
-      const accessToken = getJwtToken();
-      if (!user?._id || !accessToken) {
+      if (!user?._id || !getJwtToken()) {
         await sweetMixinErrorAlert(Message.NOT_AUTHENTICATED);
         await router.push({
           pathname: "/account/login",
@@ -81,15 +82,7 @@ const CommunityCurators = ({ travelers, loading, error, onRefetch }: CommunityCu
         [curatorId]: nextFollowingStatus,
       }));
       setUpdatingFollowIds((current) => ({ ...current, [curatorId]: true }));
-      const mutationOptions = {
-        variables: { input: curatorId },
-        context: {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "apollo-require-preflight": "true",
-          },
-        },
-      };
+      const mutationOptions = { variables: { input: curatorId } };
 
       if (isFollowing) {
         await unsubscribe(mutationOptions);
@@ -97,14 +90,11 @@ const CommunityCurators = ({ travelers, loading, error, onRefetch }: CommunityCu
         await subscribe(mutationOptions);
       }
 
-      await onRefetch().catch((refetchError) => {
-        console.log("ERROR, refetch explorers:", refetchError);
-      });
-      setFollowOverrides((current) => {
-        const updated = { ...current };
-        delete updated[curatorId];
-        return updated;
-      });
+      // Update the card in place instead of refetching the whole section
+      setFollowerDeltas((current) => ({
+        ...current,
+        [curatorId]: (current[curatorId] ?? 0) + (nextFollowingStatus ? 1 : -1),
+      }));
       await sweetTopSmallSuccessAlert(
         nextFollowingStatus ? "Following" : "Unfollowed",
         800,
@@ -140,7 +130,7 @@ const CommunityCurators = ({ travelers, loading, error, onRefetch }: CommunityCu
         </div>
 
         <div className="curators-grid">
-		  {loading ? <p className="curators-empty-state">Loading top travelers…</p> : null}
+		  {loading && !curators.length ? <p className="curators-empty-state">Loading top travelers…</p> : null}
 		  {!loading && error ? <p className="curators-empty-state">Top travelers are unavailable right now.</p> : null}
           {curators.map((curator: Member, index: number) => {
             const backendFollowing = Boolean(
@@ -154,7 +144,12 @@ const CommunityCurators = ({ travelers, loading, error, onRefetch }: CommunityCu
               DEFAULT_USER_AVATAR,
             );
             const isSelf = curator._id === user?._id;
-            const stats = buildStats(curator);
+            const stats = buildStats({
+              ...curator,
+              memberFollowers:
+                (curator.memberFollowers ?? 0) +
+                (followerDeltas[curator._id] ?? 0),
+            });
 
             return (
               <article key={curator._id} className="curator-card">

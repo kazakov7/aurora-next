@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Star, ArrowRight } from "lucide-react";
 import LikeButton from "../common/LikeButton";
+import { useI18n } from "../../i18n";
 
 interface WishlistPlaceCardProps {
   images: string[];
@@ -34,6 +35,7 @@ const WishlistPlaceCard = ({
   onLikeToggle,
   onClick,
 }: WishlistPlaceCardProps) => {
+  const { t } = useI18n();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
 
@@ -150,7 +152,7 @@ const WishlistPlaceCard = ({
                 setCurrentIndex(index);
               }}
               className={`dot ${currentIndex === index ? "active" : ""}`}
-              aria-label={`Go to image ${index + 1}`}
+              aria-label={t("profile.wishlistCard.goToImage", { index: index + 1 })}
             />
           ))}
         </div>
@@ -184,7 +186,7 @@ const WishlistPlaceCard = ({
             <span className="unit">{priceUnit}</span>
           </p>
           <button className="book-btn group-btn">
-            reserve
+            {t("profile.wishlistCard.reserve")}
             <ArrowRight className="arrow-icon" />
           </button>
         </motion.div>

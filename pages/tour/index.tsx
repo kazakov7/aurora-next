@@ -15,6 +15,7 @@ import { GET_TOURS } from '../../apollo/user/query';
 import { LIKE_TARGET_TOUR } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
 import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
+import { useI18n } from '../../libs/i18n';
 
 const defaultInput: ToursInquiry = {
 	page: 1,
@@ -25,6 +26,7 @@ const defaultInput: ToursInquiry = {
 };
 
 const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
+	const { t, tError } = useI18n();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 
@@ -42,7 +44,7 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 	const [tours, setTours] = useState<Tour[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [currentPage, setCurrentPage] = useState<number>(1);
-	const [selectedSort, setSelectedSort] = useState<string>('Recommended');
+	const [selectedSort, setSelectedSort] = useState<string>('RECOMMENDED');
 
 	/** APOLLO REQUESTS **/
 	const [likeTargetTour] = useMutation(LIKE_TARGET_TOUR);
@@ -74,18 +76,18 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 
 				// Sync sort dropdown state
 				if (parsed.sort === 'tourPrice') {
-					if (parsed.direction === Direction.ASC) setSelectedSort('Price: Low to High');
-					else setSelectedSort('Price: High to Low');
+					if (parsed.direction === Direction.ASC) setSelectedSort('PRICE_ASC');
+					else setSelectedSort('PRICE_DESC');
 				} else if (parsed.sort === 'tourStartDate') {
-					setSelectedSort('Departure Date');
+					setSelectedSort('DEPARTURE_ASC');
 				} else if (parsed.sort === 'tourLikes') {
-					setSelectedSort('Most Popular');
+					setSelectedSort('POPULAR');
 				} else if (parsed.sort === 'tourRating') {
-					setSelectedSort('Top Rated');
+					setSelectedSort('RATING_DESC');
 				} else if (parsed.sort === 'createdAt') {
-					setSelectedSort('Newest');
+					setSelectedSort('NEWEST');
 				} else {
-					setSelectedSort('Recommended');
+					setSelectedSort('RECOMMENDED');
 				}
 
 				refetchTours({ input: parsed });
@@ -113,14 +115,14 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 	const likeTourHandler = async (e: React.MouseEvent, tourId: string) => {
 		e.stopPropagation();
 		try {
-			if (!user?._id) throw new Error(Message.NOT_AUTHENTICATED);
+			if (!user?._id) throw new Error(t(Message.NOT_AUTHENTICATED));
 			await likeTargetTour({
 				variables: { tourId },
 			});
 			await refetchTours({ input: searchFilter });
 		} catch (err: any) {
 			console.log('ERROR, likeTourHandler:', err.message);
-			sweetMixinErrorAlert(err.message);
+			sweetMixinErrorAlert(tError(err));
 		}
 	};
 
@@ -132,31 +134,31 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 		let sortDirection = Direction.DESC;
 
 		switch (val) {
-			case 'Price: Low to High':
+			case 'PRICE_ASC':
 				sortField = 'tourPrice';
 				sortDirection = Direction.ASC;
 				break;
-			case 'Price: High to Low':
+			case 'PRICE_DESC':
 				sortField = 'tourPrice';
 				sortDirection = Direction.DESC;
 				break;
-			case 'Departure Date':
+			case 'DEPARTURE_ASC':
 				sortField = 'tourStartDate';
 				sortDirection = Direction.ASC;
 				break;
-			case 'Most Popular':
+			case 'POPULAR':
 				sortField = 'tourLikes';
 				sortDirection = Direction.DESC;
 				break;
-			case 'Top Rated':
+			case 'RATING_DESC':
 				sortField = 'tourRating';
 				sortDirection = Direction.DESC;
 				break;
-			case 'Newest':
+			case 'NEWEST':
 				sortField = 'createdAt';
 				sortDirection = Direction.DESC;
 				break;
-			case 'Recommended':
+			case 'RECOMMENDED':
 			default:
 				sortField = 'tourViews';
 				sortDirection = Direction.DESC;
@@ -187,8 +189,8 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 	return (
 		<div className="tour-page-wrapper">
 			<Head>
-				<title>AURA | Curated Tours &amp; Expeditions</title>
-				<meta name="title" content="AURA Tours & Expeditions" />
+				<title>{t('tours.list.metaTitle')}</title>
+				<meta name="title" content={t('tours.list.metaName')} />
 			</Head>
 
 			{/* Hero Section */}
@@ -210,26 +212,26 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 						<div className="listing-header-box">
 							<div className="header-top-row">
 								<div className="heading-with-counter">
-									<h2 className="listing-heading">Explore Tours</h2>
-									<span className="journeys-badge">{total} journeys available</span>
+									<h2 className="listing-heading">{t('tours.list.exploreTours')}</h2>
+									<span className="journeys-badge">{t('tours.list.journeysAvailable', { total })}</span>
 								</div>
 
 								{/* Sort Dropdown */}
 								<div className="sort-group">
-									<span className="sort-title">Sort by</span>
+									<span className="sort-title">{t('tours.list.sortBy')}</span>
 									<div className="sort-dropdown-box">
 										<select
 											value={selectedSort}
 											onChange={sortChangeHandler}
 											className="sort-dropdown"
 										>
-											<option value="Recommended">Recommended</option>
-											<option value="Price: Low to High">Price: Low to High</option>
-											<option value="Price: High to Low">Price: High to Low</option>
-											<option value="Departure Date">Departure Date</option>
-											<option value="Most Popular">Most Popular</option>
-											<option value="Top Rated">Top Rated</option>
-											<option value="Newest">Newest</option>
+											<option value="RECOMMENDED">{t('tours.list.recommended')}</option>
+											<option value="PRICE_ASC">{t('tours.list.priceLowToHigh')}</option>
+											<option value="PRICE_DESC">{t('tours.list.priceHighToLow')}</option>
+											<option value="DEPARTURE_ASC">{t('tours.list.departureDate')}</option>
+											<option value="POPULAR">{t('tours.list.mostPopular')}</option>
+											<option value="RATING_DESC">{t('common.topRated')}</option>
+											<option value="NEWEST">{t('common.newest')}</option>
 										</select>
 										<span className="material-symbols-outlined dropdown-icon">expand_more</span>
 									</div>
@@ -242,8 +244,8 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 						{tours.length === 0 && !loading ? (
 							<div className="no-data-box">
 								<span className="material-symbols-outlined no-data-icon">travel_explore</span>
-								<h3>No Journeys Found</h3>
-								<p>Try adjusting your search filters or destination criteria.</p>
+								<h3>{t('tours.list.noJourneysFound')}</h3>
+								<p>{t('tours.list.adjustFilters')}</p>
 							</div>
 						) : (
 							<div className="tours-grid">
@@ -268,6 +270,11 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 											onChange={handlePaginationChange}
 											shape="circular"
 											color="primary"
+											getItemAriaLabel={(type, page, selected) =>
+												type === 'page'
+													? t(selected ? 'common.pagination.currentPage' : 'common.pagination.goToPage', { page })
+													: t(`common.pagination.${type}`)
+											}
 										/>
 									</Stack>
 								)}
@@ -275,7 +282,7 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 								{tours.length !== 0 && (
 									<Stack className="total-result" sx={{ mt: 2 }}>
 										<Typography variant="body2" color="text.secondary">
-											Total {total} journey{total > 1 ? 's' : ''} available
+											{t('tours.list.totalAvailable', { count: total })}
 										</Typography>
 									</Stack>
 								)}

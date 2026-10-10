@@ -13,14 +13,9 @@ interface LiveDispatchesProps {
 
 const destinationCardSizes = ['small', 'medium', 'featured', 'medium', 'small'];
 
-const formatViewCount = (views: number) => {
-	if (views < 1000) return views.toLocaleString();
-	return `${(views / 1000).toFixed(views % 1000 === 0 ? 0 : 1)}k`;
-};
-
 const LiveDispatches = ({ destinations, loading, error }: LiveDispatchesProps) => {
 	const router = useRouter();
-	const { t } = useI18n();
+	const { t, formatNumber } = useI18n();
 
 	/** HANDLERS **/
 	const navigateToDestination = (destinationId: string) => {
@@ -59,7 +54,7 @@ const LiveDispatches = ({ destinations, loading, error }: LiveDispatchesProps) =
 									{cardSize === 'featured' ? <span className="top-pick-label">{t('home.dispatches.topPick')}</span> : null}
 									<h3>{destination.destinationName}</h3>
 									<p>
-										{destination.destinationCountry} · {t('home.dispatches.views', { count: formatViewCount(destination.destinationViews) })}
+										{destination.destinationCountry} · {t('home.dispatches.views', { count: destination.destinationViews ?? 0, formatted: formatNumber(destination.destinationViews ?? 0, { notation: 'compact', maximumFractionDigits: 1 }) })}
 									</p>
 								</div>
 							</button>

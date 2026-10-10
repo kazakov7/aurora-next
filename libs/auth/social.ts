@@ -1,3 +1,4 @@
+import { translateActive } from '../i18n';
 const KAKAO_STATE_KEY = 'aurora.kakao.oauth.state';
 const KAKAO_REFERRER_KEY = 'aurora.kakao.oauth.referrer';
 const TELEGRAM_OAUTH_KEY = 'aurora.telegram.oauth';
@@ -25,6 +26,7 @@ declare global {
 					shape?: 'rectangular' | 'pill' | 'circle' | 'square';
 					logo_alignment?: 'left' | 'center';
 					width?: number;
+					locale?: string;
 				}) => void;
 				};
 			};
@@ -96,6 +98,7 @@ const loadGoogleIdentityScript = (): Promise<void> => {
 export const renderGoogleSignInButton = async (
 	container: HTMLElement,
 	onCredential: (credential: string) => void,
+	locale?: string,
 ): Promise<void> => {
 	const clientId = getRequiredPublicEnv('NEXT_PUBLIC_GOOGLE_WEB_CLIENT_ID');
 	await loadGoogleIdentityScript();
@@ -118,13 +121,14 @@ export const renderGoogleSignInButton = async (
 		shape: 'rectangular',
 		logo_alignment: 'left',
 		width: 400,
+		...(locale ? { locale } : {}),
 	});
 };
 
 export const getGoogleAuthErrorMessage = (error: unknown, action: 'sign-in' | 'sign-up'): string => {
 	const code = error instanceof Error ? error.message : '';
-	if (code === 'SOCIAL_AUTH_NOT_CONFIGURED') return 'Google sign-in is not configured.';
-	return `Google ${action} could not be completed. Please try again.`;
+	if (code === 'SOCIAL_AUTH_NOT_CONFIGURED') return translateActive('auth.social.googleNotConfigured');
+	return translateActive(action === 'sign-up' ? 'auth.social.googleSignUpFailed' : 'auth.social.googleSignInFailed');
 };
 
 const createOAuthState = (): string => {
@@ -242,6 +246,6 @@ export const consumeTelegramAuthorizationState = (state: unknown): TelegramAutho
 
 export const getTelegramAuthErrorMessage = (error: unknown): string => {
 	const code = error instanceof Error ? error.message : '';
-	if (code === 'SOCIAL_AUTH_NOT_CONFIGURED') return 'Telegram sign-in is not configured.';
-	return 'Telegram sign-in could not be started. Please try again.';
+	if (code === 'SOCIAL_AUTH_NOT_CONFIGURED') return translateActive('auth.social.telegramNotConfigured');
+	return translateActive('auth.social.telegramStartFailed');
 };

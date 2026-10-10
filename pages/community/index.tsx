@@ -28,6 +28,7 @@ import { userVar } from "../../apollo/store";
 import {
   sweetMixinErrorAlert,
 } from "../../libs/sweetAlert";
+import { useI18n } from "../../libs/i18n";
 
 const categoryParamMap: Record<string, BoardArticleCategory | undefined> = {
   all: undefined,
@@ -53,6 +54,7 @@ const defaultInput: BoardArticlesInquiry = {
 };
 
 const CommunityPage: NextPage = () => {
+  const { t, tError, tx } = useI18n();
   const router = useRouter();
   const user = useReactiveVar(userVar);
 
@@ -125,9 +127,9 @@ const CommunityPage: NextPage = () => {
       const hosts: HostItem[] = Object.values(memberCounts).map(
         ({ member, count }) => ({
           id: member._id,
-          name: member.memberFullName || member.memberNick || "Unnamed host",
+          name: member.memberFullName || member.memberNick || t("community.list.unnamedHost"),
           avatar: member.memberImage,
-          subtitle: `${count} published propert${count === 1 ? "y" : "ies"}`,
+          subtitle: t("community.list.publishedProperties", { count }),
         }),
       );
       setRealOwners(hosts);
@@ -154,9 +156,9 @@ const CommunityPage: NextPage = () => {
         ({ member, count }) => ({
           id: member._id,
           name:
-            member.memberFullName || member.memberNick || "Unnamed organizer",
+            member.memberFullName || member.memberNick || t("community.list.unnamedOrganizer"),
           icon: "sailing",
-          subtitle: `${count} published tour${count === 1 ? "" : "s"}`,
+          subtitle: t("community.list.publishedTours", { count }),
         }),
       );
       setRealAgencies(agencies);
@@ -284,7 +286,7 @@ const CommunityPage: NextPage = () => {
   /** LIKE INTERACTION WITH BACKEND GRAPHQL MUTATION **/
   const handleLikeArticle = async (articleId: string) => {
     if (!user?._id) {
-      sweetMixinErrorAlert("Please log in first to like articles!");
+      sweetMixinErrorAlert(t("community.list.loginToLike"));
       router.push({
         pathname: "/account/login",
         query: { referrer: router.asPath },
@@ -312,7 +314,7 @@ const CommunityPage: NextPage = () => {
     } catch (err: any) {
       setLikedMap((prev) => ({ ...prev, [articleId]: wasLiked }));
       setLikeCountMap((prev) => ({ ...prev, [articleId]: currentCount }));
-      sweetMixinErrorAlert(err.message || "Error occurred while liking");
+      sweetMixinErrorAlert(tError(err, "community.likeFailed"));
     }
   };
 
@@ -321,10 +323,10 @@ const CommunityPage: NextPage = () => {
   return (
     <div className="community-page-wrapper">
       <Head>
-        <title>AURA — Travelers Community & Global Dispatches</title>
+        <title>{t("community.list.metaTitle")}</title>
         <meta
           name="description"
-          content="Stories, itineraries, and insider dispatches from verified explorers and world-class hosts across six continents."
+          content={t("community.header.intro")}
         />
       </Head>
 
@@ -350,7 +352,7 @@ const CommunityPage: NextPage = () => {
               {loading && articles.length === 0 ? (
                 <div className="community-loading-box">
                   <div className="loading-spinner" />
-                  <p>Retrieving dispatches from worldwide explorers...</p>
+                  <p>{t("community.list.loading")}</p>
                 </div>
               ) : error ? (
                 <div className="community-empty-state">
@@ -359,7 +361,7 @@ const CommunityPage: NextPage = () => {
                       error
                     </span>
                   </div>
-                  <h3 className="empty-title">Unable to load dispatches</h3>
+                  <h3 className="empty-title">{t("community.list.unableToLoadDispatches")}</h3>
                   <p className="empty-desc">{error.message}</p>
                 </div>
               ) : articles.length > 0 ? (
@@ -383,11 +385,9 @@ const CommunityPage: NextPage = () => {
                       auto_stories
                     </span>
                   </div>
-                  <h3 className="empty-title">No Dispatches Found</h3>
+                  <h3 className="empty-title">{t("community.list.noDispatchesFound")}</h3>
                   <p className="empty-desc">
-                    There are currently no community dispatches published in
-                    this category. Be the first explorer to chronicle your
-                    journey!
+                    {t("community.list.emptyText")}
                   </p>
                   <button
                     type="button"
@@ -395,7 +395,7 @@ const CommunityPage: NextPage = () => {
                     onClick={() => setIsWriteModalOpen(true)}
                   >
                     <span className="material-symbols-outlined">edit_note</span>
-                    <span>Write First Story</span>
+                    <span>{t("community.list.writeFirstStory")}</span>
                   </button>
                 </div>
               )}
@@ -404,12 +404,14 @@ const CommunityPage: NextPage = () => {
               {total > 0 && (
                 <div className="community-pagination-bar">
                   <div className="pagination-info">
-                    Showing{" "}
-                    <span className="bold">
-                      {Math.min((currentPage - 1) * 6 + 1, total)}-
-                      {Math.min(currentPage * 6, total)}
-                    </span>{" "}
-                    of <span className="bold">{total}</span> stories
+                    {tx("community.list.showingRange", {
+                      range: (
+                        <span className="bold">
+                          {Math.min((currentPage - 1) * 6 + 1, total)}-{Math.min(currentPage * 6, total)}
+                        </span>
+                      ),
+                      total: <span className="bold">{total}</span>,
+                    })}
                   </div>
 
                   <div className="pagination-buttons">
@@ -422,7 +424,7 @@ const CommunityPage: NextPage = () => {
                       <span className="material-symbols-outlined">
                         chevron_left
                       </span>
-                      <span>Previous</span>
+                      <span>{t("community.list.previous")}</span>
                     </button>
 
                     <div className="page-numbers">
@@ -449,7 +451,7 @@ const CommunityPage: NextPage = () => {
                       disabled={currentPage >= totalPages}
                       onClick={() => handlePageChange(currentPage + 1)}
                     >
-                      <span>Next</span>
+                      <span>{t("community.list.next")}</span>
                       <span className="material-symbols-outlined">
                         chevron_right
                       </span>

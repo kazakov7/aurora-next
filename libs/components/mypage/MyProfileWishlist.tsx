@@ -19,8 +19,10 @@ import { Property } from "../../types/property/property";
 import { Tour } from "../../types/tour/tour";
 
 import WishlistPlaceCard from "./WishlistPlaceCard";
+import { useI18n } from "../../i18n";
 
 const MyProfileWishlist: React.FC = () => {
+  const { t, tError, formatDate } = useI18n();
   const router = useRouter();
   const user = useReactiveVar(userVar);
   const [activeTab, setActiveTab] = useState<"ALL" | "HOTELS" | "TOURS">("ALL");
@@ -115,7 +117,7 @@ const MyProfileWishlist: React.FC = () => {
         await refetchProps();
       }
     } catch (err: any) {
-      sweetMixinErrorAlert(err.message || "Action failed.");
+      sweetMixinErrorAlert(tError(err, "common.actionFailed"));
     }
   };
 
@@ -124,8 +126,8 @@ const MyProfileWishlist: React.FC = () => {
       {/* Top Control Bar */}
       <div className="section-top-bar">
         <div className="title-group">
-          <h2>My Wishlist</h2>
-          <span className="counter-pill">{totalItems} saved places</span>
+          <h2>{t("profile.wishlist.myWishlist")}</h2>
+          <span className="counter-pill">{t("profile.wishlist.savedPlaces", { totalItems })}</span>
         </div>
         <div className="bar-actions">
           <div
@@ -137,7 +139,7 @@ const MyProfileWishlist: React.FC = () => {
               className={`cat-pill-btn ${activeTab === "ALL" ? "active" : ""}`}
               onClick={() => handleTabChange("ALL")}
             >
-              All ({propTotal + tourTotal})
+              {t("profile.wishlist.tabAll", { propTotal: propTotal + tourTotal })}
             </button>
             <button
               type="button"
@@ -146,7 +148,7 @@ const MyProfileWishlist: React.FC = () => {
               }`}
               onClick={() => handleTabChange("HOTELS")}
             >
-              Hotels ({propTotal})
+              {t("profile.wishlist.tabHotels", { propTotal })}
             </button>
             <button
               type="button"
@@ -155,7 +157,7 @@ const MyProfileWishlist: React.FC = () => {
               }`}
               onClick={() => handleTabChange("TOURS")}
             >
-              Tours ({tourTotal})
+              {t("profile.wishlist.tabTours", { tourTotal })}
             </button>
           </div>
         </div>
@@ -165,11 +167,11 @@ const MyProfileWishlist: React.FC = () => {
       {(propertiesLoading || toursLoading) && !propData && !tourData ? (
         <div className="profile-empty-state">
           <div className="loading-spinner" />
-          <p>Loading your wishlist...</p>
+          <p>{t("profile.wishlist.loading")}</p>
         </div>
       ) : propertiesError || toursError ? (
         <div className="profile-empty-state">
-          <h3>Wishlist is unavailable</h3>
+          <h3>{t("profile.wishlist.unavailable")}</h3>
           <p>{propertiesError?.message || toursError?.message}</p>
         </div>
       ) : displayList.length > 0 ? (
@@ -180,10 +182,10 @@ const MyProfileWishlist: React.FC = () => {
             const location = isTour
               ? item.tourDestinationCity ||
                 item.tourDepartureCity ||
-                "Location not provided"
+                t("common.locationNotProvided")
               : item.propertyAddress ||
                 item.propertyCity ||
-                "Location not provided";
+                t("common.locationNotProvided");
             const price = isTour ? item.tourPrice : item.pricePerNight;
             const currency = isTour ? item.tourCurrency : item.currency;
             const images = isTour ? item.tourImages : item.propertyImages;
@@ -195,11 +197,7 @@ const MyProfileWishlist: React.FC = () => {
               ? item.tourRating ?? 0
               : item.propertyRating ?? 0;
             const dateRange = isTour
-              ? `${new Date(
-                  item.tourStartDate,
-                ).toLocaleDateString()} – ${new Date(
-                  item.tourEndDate,
-                ).toLocaleDateString()}`
+              ? `${formatDate(item.tourStartDate)} – ${formatDate(item.tourEndDate)}`
               : item.propertyType;
 
             return (
@@ -213,11 +211,11 @@ const MyProfileWishlist: React.FC = () => {
                 hostType={location}
                 description={
                   (isTour ? item.tourDesc : item.propertyDesc) ||
-                  "No description provided."
+                  t("profile.wishlist.noDescriptionProvided")
                 }
                 pricePerNight={price || 0}
                 currency={currency || "USD"}
-                priceUnit={isTour ? "/ person" : "/ night"}
+                priceUnit={isTour ? t("profile.wishlist.perPerson") : t("common.perNight")}
                 isLiked={true}
                 onLikeToggle={(e) => handleRemoveFavorite(e, item)}
                 onClick={() =>
@@ -236,10 +234,9 @@ const MyProfileWishlist: React.FC = () => {
           <div className="empty-icon">
             <span className="material-symbols-outlined">bookmark_border</span>
           </div>
-          <h3>Your wishlist is empty</h3>
+          <h3>{t("profile.wishlist.emptyTitle")}</h3>
           <p>
-            Explore sanctuaries, architectural hotels, and private tours across
-            the world to save them here.
+            {t("profile.wishlist.emptyText")}
           </p>
         </div>
       )}

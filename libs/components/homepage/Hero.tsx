@@ -28,7 +28,7 @@ const STAY_TYPES: PropertyType[] = [
 
 const Hero = ({ destinations }: HeroProps) => {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, tEnum } = useI18n();
   const [type, setType] = useState("");
   const [location, setLocation] = useState("");
   const [guests, setGuests] = useState(2);
@@ -167,7 +167,7 @@ const Hero = ({ destinations }: HeroProps) => {
               <div className="hero-img-box">
                 <img
                   src="/img/banner/hero_traveler.jpg"
-                  alt={t("common.traveler")}
+                  alt={t("home.hero.imageAlt")}
                   className="hero-img"
                 />
 
@@ -197,7 +197,7 @@ const Hero = ({ destinations }: HeroProps) => {
                   <div className="item-text">
                     <span className="label">{t("home.hero.stayType")}</span>
                     <span className="value">
-                      {type || t("home.hero.allStays")}
+                      {type ? tEnum("propertyType", type) : t("home.hero.allStays")}
                     </span>
                   </div>
                 </button>
@@ -215,18 +215,18 @@ const Hero = ({ destinations }: HeroProps) => {
                     >
                       {t("home.hero.allStays")}
                     </button>
-                    {STAY_TYPES.map((t) => (
+                    {STAY_TYPES.map((stayType) => (
                       <button
                         type="button"
                         role="option"
-                        aria-selected={type === t}
+                        aria-selected={type === stayType}
                         onClick={() => {
-                          setType(t);
+                          setType(stayType);
                           setOpenType(false);
                         }}
-                        key={t}
+                        key={stayType}
                       >
-                        <span>{t}</span>
+                        <span>{tEnum("propertyType", stayType)}</span>
                       </button>
                     ))}
                   </div>

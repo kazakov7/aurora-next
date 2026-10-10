@@ -8,6 +8,7 @@ import { userVar } from '../../../apollo/store';
 import { getImageUrl, DEFAULT_USER_AVATAR } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 import FollowButton from '../common/FollowButton';
+import { useI18n } from '../../i18n';
 
 export interface HostItem {
 	id: string;
@@ -37,6 +38,7 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
 	isLoading = false,
 	hasError = false,
 }) => {
+	const { t, tError } = useI18n();
 	const router = useRouter();
 	const currentUser = useReactiveVar(userVar);
 
@@ -71,7 +73,7 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
 		e.stopPropagation();
 
 		if (!currentUser?._id) {
-			sweetMixinErrorAlert('Please log in first to follow members.');
+			sweetMixinErrorAlert(t('community.sidebar.loginToFollow'));
 			router.push({
 				pathname: '/account/login',
 				query: { referrer: router.asPath },
@@ -80,7 +82,7 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
 		}
 
 		if (currentUser._id === targetId) {
-			sweetMixinErrorAlert('You cannot follow yourself.');
+			sweetMixinErrorAlert(t('common.cannotFollowYourself'));
 			return;
 		}
 
@@ -105,7 +107,7 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
 		} catch (err: any) {
 			// Revert on error
 			setFollowOverrides((prev) => ({ ...prev, [targetId]: isCurrentlyFollowing }));
-			sweetMixinErrorAlert(err?.message || 'Action failed.');
+			sweetMixinErrorAlert(tError(err, 'common.actionFailed'));
 		} finally {
 			setUpdatingMap((prev) => ({ ...prev, [targetId]: false }));
 		}
@@ -122,12 +124,12 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
 					<div className="header-left">
 						<span className="material-symbols-outlined header-icon">apartment</span>
 						<div>
-							<h3 className="section-title">Hotel hosts</h3>
-							<p className="section-subtitle">Hosts with currently published properties</p>
+							<h3 className="section-title">{t('community.sidebar.hotelHosts')}</h3>
+							<p className="section-subtitle">{t('community.sidebar.hostsSubtitle')}</p>
 						</div>
 					</div>
 					<Link href="/property" className="view-all-link">
-						Explore
+						{t('community.sidebar.explore')}
 					</Link>
 				</div>
 
@@ -172,10 +174,10 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
 				) : (
 					<p className="section-subtitle">
 						{isLoading
-							? 'Loading hosts...'
+							? t('community.sidebar.loadingHosts')
 							: hasError
-							? 'Hosts could not be loaded.'
-							: 'No hotel hosts are available yet.'}
+							? t('community.sidebar.hostsError')
+							: t('community.sidebar.hostsEmpty')}
 					</p>
 				)}
 			</div>
@@ -186,12 +188,12 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
 					<div className="header-left">
 						<span className="material-symbols-outlined header-icon">explore</span>
 						<div>
-							<h3 className="section-title">Tour organizers</h3>
-							<p className="section-subtitle">Organizers with currently published tours</p>
+							<h3 className="section-title">{t('community.sidebar.tourOrganizers')}</h3>
+							<p className="section-subtitle">{t('community.sidebar.organizersSubtitle')}</p>
 						</div>
 					</div>
 					<Link href="/tour" className="view-all-link">
-						Explore
+						{t('community.sidebar.explore')}
 					</Link>
 				</div>
 
@@ -241,10 +243,10 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
 				) : (
 					<p className="section-subtitle">
 						{isLoading
-							? 'Loading organizers...'
+							? t('community.sidebar.loadingOrganizers')
 							: hasError
-							? 'Organizers could not be loaded.'
-							: 'No tour organizers are available yet.'}
+							? t('community.sidebar.organizersError')
+							: t('community.sidebar.organizersEmpty')}
 					</p>
 				)}
 			</div>

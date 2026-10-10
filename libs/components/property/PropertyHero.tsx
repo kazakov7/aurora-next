@@ -1,10 +1,12 @@
 import React from "react";
+import { useI18n } from "../../i18n";
 
 const PropertyHero = () => {
+  const { t } = useI18n();
   return (
     <section className="property-hero-section">
       <img
-        alt="Aura Luxury Sanctuary Resort at dusk"
+        alt={t("hotels.hero.imageAlt")}
         className="hero-image"
         src="/img/banner/hero-hotels.jpg"
       />
@@ -12,12 +14,11 @@ const PropertyHero = () => {
       <div className="hero-content">
         <div className="hero-badge">
           <span className="badge-dot"></span>
-          <span className="badge-text">CURATED SANCTUARIES &amp; RESORTS</span>
+          <span className="badge-text">{t("hotels.hero.curatedSanctuariesResorts")}</span>
         </div>
-        <h1 className="hero-title">Find Your Perfect Stay</h1>
+        <h1 className="hero-title">{t("hotels.hero.findYourPerfectStay")}</h1>
         <p className="hero-subtitle">
-          Exceptional places for every journey. From cliffside Mediterranean
-          villas to secluded alpine chalets, engineered for pure stillness.
+          {t("hotels.hero.description")}
         </p>
       </div>
     </section>

@@ -11,6 +11,7 @@ import {
   sweetMixinErrorAlert,
   sweetTopSmallSuccessAlert,
 } from "../../../sweetAlert";
+import { useI18n } from "../../../i18n";
 
 interface CommunityDetailCommentsProps {
   articleId: string;
@@ -26,28 +27,11 @@ interface CommentsQueryData {
 
 const defaultAvatar = DEFAULT_USER_AVATAR;
 
-const formatTimeAgo = (dateStr?: Date | string): string => {
-  if (!dateStr) return "";
-  try {
-    const diffMs = Date.now() - new Date(dateStr).getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    if (diffHours < 1) return "Just now";
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays < 7) return `${diffDays} days ago`;
-    const diffWeeks = Math.floor(diffDays / 7);
-    if (diffWeeks < 4)
-      return `${diffWeeks} week${diffWeeks > 1 ? "s" : ""} ago`;
-    return `${Math.floor(diffDays / 30)} mo ago`;
-  } catch {
-    return "";
-  }
-};
-
 const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
   articleId,
   onCommentsCountChange,
 }) => {
+  const { t, tError, formatRelativeTime } = useI18n();
   const user = useReactiveVar(userVar);
   const [commentText, setCommentText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -97,12 +81,12 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
 
   const handlePostComment = async () => {
     if (!user?._id) {
-      sweetMixinErrorAlert(Messages.error2);
+      sweetMixinErrorAlert(t(Messages.error2));
       return;
     }
 
     if (!commentText.trim()) {
-      sweetMixinErrorAlert(Messages.error4 || "Please enter a comment");
+      sweetMixinErrorAlert(t(Messages.error4) || t("community.detailComments.pleaseEnterAComment"));
       return;
     }
 
@@ -133,7 +117,7 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
       });
       syncCommentsState(refreshed.data);
     } catch (err: any) {
-      sweetMixinErrorAlert(err.message || Messages.error1);
+      sweetMixinErrorAlert(tError(err, Messages.error1));
     } finally {
       setSubmitting(false);
     }
@@ -142,13 +126,13 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
   return (
     <section
       id="comments-section"
-      aria-label="Reader Comments"
+      aria-label={t("community.detailComments.readerComments")}
       className="community-detail-comments-section"
     >
       {/* Comments Header Bar */}
       <div className="comments-header-bar">
         <div className="title-and-badge">
-          <h2 className="section-title">Comments</h2>
+          <h2 className="section-title">{t("common.comments")}</h2>
           <span className="count-pill">{totalComments}</span>
         </div>
 
@@ -162,8 +146,8 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
             }}
             className="sort-dropdown"
           >
-            <option value="newest">Sort: Newest</option>
-            <option value="oldest">Sort: Oldest</option>
+            <option value="newest">{t("community.detailComments.sortNewest")}</option>
+            <option value="oldest">{t("community.detailComments.sortOldest")}</option>
           </select>
         </div>
       </div>
@@ -172,7 +156,7 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
       {loading && commentsList.length === 0 ? (
         <div className="comments-loading">
           <div className="loading-spinner" />
-          <p>Loading comments...</p>
+          <p>{t("community.detailComments.loadingComments")}</p>
         </div>
       ) : commentsList.length > 0 ? (
         <div className="comments-items-list">
@@ -180,7 +164,7 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
             const authorName =
               c.memberData?.memberFullName ||
               c.memberData?.memberNick ||
-              "Member";
+              t("common.member");
             const authorHandle = c.memberData?.memberNick
               ? `@${c.memberData.memberNick.toLowerCase()}`
               : "";
@@ -202,8 +186,8 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
                         <span className="name">{authorName}</span>
                         {authorHandle && <span className="handle">{authorHandle}</span>}
                       </div>
-                      {formatTimeAgo(c.createdAt) && (
-                        <span className="time-ago">{formatTimeAgo(c.createdAt)}</span>
+                      {formatRelativeTime(c.createdAt) && (
+                        <span className="time-ago">{formatRelativeTime(c.createdAt)}</span>
                       )}
                     </div>
                   </div>
@@ -218,7 +202,7 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
       ) : (
         <div className="comments-empty-box">
           <span className="material-symbols-outlined icon">forum</span>
-          <p>No comments yet. Be the first to share your perspectives!</p>
+          <p>{t("community.detailComments.empty")}</p>
         </div>
       )}
 
@@ -226,9 +210,7 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
       {totalComments > 5 && (
         <div className="comments-pagination-bar">
           <span className="pagination-info">
-            Showing {(currentPage - 1) * 5 + 1}–
-            {Math.min(currentPage * 5, totalComments)} of {totalComments}{" "}
-            comments
+            {t("community.detailComments.showingRange", { currentPage: (currentPage - 1) * 5 + 1, math: Math.min(currentPage * 5, totalComments), totalComments })}
           </span>
 
           <div className="pagination-pills">
@@ -237,7 +219,7 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
               className="nav-arrow-btn"
               disabled={currentPage <= 1}
               onClick={() => setCurrentPage(currentPage - 1)}
-              aria-label="Previous page"
+              aria-label={t("common.previousPage")}
             >
               <span className="material-symbols-outlined">chevron_left</span>
             </button>
@@ -261,7 +243,7 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
               className="nav-arrow-btn"
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage(currentPage + 1)}
-              aria-label="Next page"
+              aria-label={t("common.nextPage")}
             >
               <span className="material-symbols-outlined">chevron_right</span>
             </button>
@@ -275,9 +257,9 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
           <img
             className="current-user-avatar"
             src={getImageUrl(user?.memberImage, defaultAvatar)}
-            alt="User profile"
+            alt={t("community.detailComments.userProfile")}
           />
-          <h3 className="form-title">Join the Conversation</h3>
+          <h3 className="form-title">{t("community.detailComments.joinTheConversation")}</h3>
         </div>
 
         <div className="textarea-wrapper">
@@ -285,7 +267,7 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
             className="comment-textarea"
             rows={4}
             maxLength={500}
-            placeholder="Share your thoughts, experience, or a question about this article..."
+            placeholder={t("community.detailComments.placeholder")}
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
           />
@@ -297,7 +279,7 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
               commentText.length >= 480 ? "warning" : ""
             }`}
           >
-            {commentText.length} / 500 characters
+            {t("community.detailComments.characterCount", { count: commentText.length })}
           </span>
 
           <button
@@ -306,7 +288,7 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
             disabled={submitting || !commentText.trim()}
             onClick={handlePostComment}
           >
-            {submitting ? "Posting..." : "Post Comment"}
+            {submitting ? t("common.posting") : t("common.postComment")}
           </button>
         </div>
       </div>

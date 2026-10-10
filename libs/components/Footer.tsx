@@ -16,17 +16,19 @@ const Footer = () => {
               <AuroraLogo3D align="left" />
             </section>
             {/* </div> */}
-            <p className="brand-desc">
-              {t("footer.description")}
-            </p>
+            <p className="brand-desc">{t("footer.description")}</p>
             <div className="locale-selectors">
               <span className="material-symbols-outlined">public</span>
-              <label className="sr-only" htmlFor="footer-language-selector">{t("language.select")}</label>
+              <label className="sr-only" htmlFor="footer-language-selector">
+                {t("language.select")}
+              </label>
               <select
                 id="footer-language-selector"
                 className="locale-btn"
                 value={locale}
-                onChange={(event) => void changeLocale(event.target.value as AppLocale)}
+                onChange={(event) =>
+                  void changeLocale(event.target.value as AppLocale)
+                }
                 aria-label={t("language.select")}
               >
                 <option value="en">{t("language.english")}</option>
@@ -61,9 +63,6 @@ const Footer = () => {
             <h4>{t("footer.company")}</h4>
             <ul>
               <li>
-                <Link href="/about">{t("footer.about")}</Link>
-              </li>
-              <li>
                 <Link href="/cs">{t("footer.contact")}</Link>
               </li>
               <li>
@@ -93,13 +92,25 @@ const Footer = () => {
         <div className="footer-bottom-bar">
           <p>{t("footer.rights", { year: new Date().getFullYear() })}</p>
           <div className="social-links">
-            <a aria-label="Instagram Link" href="#" className="social-btn">
+            <a
+              aria-label={t("footer.instagramLink")}
+              href="#"
+              className="social-btn"
+            >
               <span className="material-symbols-outlined">photo_camera</span>
             </a>
-            <a aria-label="Social Updates Link" href="#" className="social-btn">
+            <a
+              aria-label={t("footer.socialUpdatesLink")}
+              href="#"
+              className="social-btn"
+            >
               <span className="material-symbols-outlined">tag</span>
             </a>
-            <a aria-label="Video Channel Link" href="#" className="social-btn">
+            <a
+              aria-label={t("footer.videoChannelLink")}
+              href="#"
+              className="social-btn"
+            >
               <span className="material-symbols-outlined">smart_display</span>
             </a>
           </div>

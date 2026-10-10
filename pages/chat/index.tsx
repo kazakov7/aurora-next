@@ -6,15 +6,17 @@ import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import ChatMessenger from '../../libs/components/chat/ChatMessenger';
 import { getJwtToken } from '../../libs/auth';
 import { sweetLoginRequiredAlert } from '../../libs/sweetAlert';
+import { useI18n } from '../../libs/i18n';
 
 const ChatPage: NextPage = () => {
+	const { t } = useI18n();
 	const router = useRouter();
 
 	/** LIFECYCLES **/
 	useEffect(() => {
 		if (!router.isReady || getJwtToken()) return;
 		void (async () => {
-			await sweetLoginRequiredAlert('Please log in first to access messages.');
+			await sweetLoginRequiredAlert(t('chat.page.loginRequired'));
 			await router.push({ pathname: '/account/login', query: { referrer: router.asPath } });
 		})();
 	}, [router.isReady]);
@@ -22,10 +24,10 @@ const ChatPage: NextPage = () => {
 	return (
 		<>
 			<Head>
-				<title>Messages — AURORA Travel Marketplace</title>
+				<title>{t('chat.page.metaTitle')}</title>
 				<meta
 					name="description"
-					content="Real-time community and direct messages for authenticated AURORA members."
+					content={t('chat.page.metaDescription')}
 				/>
 			</Head>
 

@@ -8,8 +8,10 @@ import { Following } from '../../types/follow/follow';
 import { DEFAULT_USER_AVATAR, getImageUrl } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 import FollowButton from '../common/FollowButton';
+import { useI18n } from '../../i18n';
 
 const MyProfileFollowing: React.FC = () => {
+	const { t, tError } = useI18n();
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 	const [searchTerm, setSearchTerm] = useState<string>('');
@@ -42,7 +44,7 @@ const MyProfileFollowing: React.FC = () => {
 	/** HANDLERS **/
 	const handleToggleFollow = async (targetId: string, targetNick: string, currentlyFollowing: boolean) => {
 		if (!user?._id) {
-			sweetMixinErrorAlert('Please log in first.');
+			sweetMixinErrorAlert(t('common.pleaseLogInFirst'));
 			return;
 		}
 
@@ -58,7 +60,7 @@ const MyProfileFollowing: React.FC = () => {
 		} catch (err: any) {
 			// Rollback state on error
 			setFollowStatusMap((prev) => ({ ...prev, [targetId]: currentlyFollowing }));
-			sweetMixinErrorAlert(err.message || 'Operation failed.');
+			sweetMixinErrorAlert(tError(err, 'profile.operationFailed'));
 		}
 	};
 
@@ -89,15 +91,15 @@ const MyProfileFollowing: React.FC = () => {
 			{/* Top Control Bar */}
 			<div className="section-top-bar">
 				<div className="title-group">
-					<h2>Following</h2>
-					<span className="counter-pill">{total} following</span>
+					<h2>{t('common.followButton.following')}</h2>
+					<span className="counter-pill">{t('profile.following.count', { total })}</span>
 				</div>
 				<div className="bar-actions">
 					<div className="search-box">
 						<span className="material-symbols-outlined">search</span>
 						<input
 							type="text"
-							placeholder="Search following..."
+							placeholder={t('profile.following.searchFollowing')}
 							value={searchTerm}
 							onChange={(e) => setSearchTerm(e.target.value)}
 						/>
@@ -107,8 +109,8 @@ const MyProfileFollowing: React.FC = () => {
 							value={sortOrder}
 							onChange={(e) => setSortOrder(e.target.value as 'recent' | 'name')}
 						>
-							<option value="recent">Recently Followed</option>
-							<option value="name">Name A–Z</option>
+							<option value="recent">{t('profile.recentlyFollowed')}</option>
+							<option value="name">{t('profile.nameAZ')}</option>
 						</select>
 						<span className="material-symbols-outlined">expand_more</span>
 					</div>
@@ -117,17 +119,17 @@ const MyProfileFollowing: React.FC = () => {
 
 			{/* Wide List Panel */}
 			{loading && !data ? (
-				<div className="profile-empty-state"><div className="loading-spinner" /><p>Loading followed accounts...</p></div>
+				<div className="profile-empty-state"><div className="loading-spinner" /><p>{t('profile.following.loading')}</p></div>
 			) : error ? (
-				<div className="profile-empty-state"><h3>Following list is unavailable</h3><p>{error.message}</p></div>
+				<div className="profile-empty-state"><h3>{t('profile.following.unavailable')}</h3><p>{error.message}</p></div>
 			) : processedList.length > 0 ? (
 				<div className="list-panel-container">
 					{processedList.map((item: Following) => {
 						const target = item?.followingData;
 						const targetId = target?._id || item.followingId;
-						const targetNick = target?.memberFullName || target?.memberNick || 'AURA member';
+						const targetNick = target?.memberFullName || target?.memberNick || t('profile.auroraMember');
 						const handle = `@${(target?.memberNick || 'member').toLowerCase().replace(/\s+/g, '')}`;
-						const targetLocation = target?.memberAddress || target?.memberType || 'Location not provided';
+						const targetLocation = target?.memberAddress || target?.memberType || t('common.locationNotProvided');
 						const targetImg = getImageUrl(target?.memberImage, DEFAULT_USER_AVATAR);
 
 						// Determine following status: local override or default true (since they are in following list)
@@ -156,7 +158,7 @@ const MyProfileFollowing: React.FC = () => {
 									<button
 										type="button"
 										className="more-options-btn"
-										aria-label="Account options"
+										aria-label={t('profile.following.accountOptions')}
 										onClick={() => router.push(`/member?memberId=${targetId}`)}
 									>
 										<span className="material-symbols-outlined">more_horiz</span>
@@ -171,11 +173,11 @@ const MyProfileFollowing: React.FC = () => {
 					<div className="empty-icon">
 						<span className="material-symbols-outlined">person_search</span>
 					</div>
-					<h3>{searchTerm ? 'No matching accounts found' : 'Not following anyone yet'}</h3>
+					<h3>{searchTerm ? t('profile.following.noMatchTitle') : t('profile.following.emptyTitle')}</h3>
 					<p>
 						{searchTerm
-							? `No following accounts match "${searchTerm}".`
-							: 'Explore luxury sanctuaries, tour partners, and editors across the world to follow.'}
+							? t('profile.following.noMatchText', { searchTerm })
+							: t('profile.following.emptyText')}
 					</p>
 				</div>
 			)}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { sweetTopSmallSuccessAlert } from '../../../sweetAlert';
 import LikeButton from '../../common/LikeButton';
+import { useI18n } from '../../../i18n';
 
 interface CommunityDetailEngagementBarProps {
 	isLiked: boolean;
@@ -17,13 +18,14 @@ const CommunityDetailEngagementBar: React.FC<CommunityDetailEngagementBarProps> 
 	onLike,
 	onScrollToComments,
 }) => {
+	const { t } = useI18n();
 	const handleCopyLink = async () => {
 		if (typeof window !== 'undefined') {
 			try {
 				await navigator.clipboard.writeText(window.location.href);
-				sweetTopSmallSuccessAlert('Link copied to clipboard!');
+				sweetTopSmallSuccessAlert(t('common.linkCopied'));
 			} catch {
-				sweetTopSmallSuccessAlert('Link copied!');
+				sweetTopSmallSuccessAlert(t('common.linkCopied'));
 			}
 		}
 	};
@@ -60,7 +62,7 @@ const CommunityDetailEngagementBar: React.FC<CommunityDetailEngagementBarProps> 
 					onClick={onScrollToComments}
 				>
 					<span className="material-symbols-outlined comment-icon">chat_bubble</span>
-					<span className="label-count">{commentsCount} Comments</span>
+					<span className="label-count">{t('community.detailEngagementBar.comments', { commentsCount })}</span>
 				</button>
 
 			</div>
@@ -72,12 +74,12 @@ const CommunityDetailEngagementBar: React.FC<CommunityDetailEngagementBarProps> 
 					onClick={handleCopyLink}
 				>
 					<span className="material-symbols-outlined icon">content_copy</span>
-					<span>Copy Link</span>
+					<span>{t('community.detailEngagementBar.copyLink')}</span>
 				</button>
 
 				<button
 					type="button"
-					aria-label="Share"
+					aria-label={t('common.share')}
 					className="share-btn"
 					onClick={handleShare}
 				>

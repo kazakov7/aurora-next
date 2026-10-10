@@ -7,8 +7,9 @@ import { ApolloError, useMutation } from '@apollo/client';
 import { TELEGRAM_AUTH } from '../../../apollo/user/mutation';
 import { setJwtToken, updateUserInfo } from '../../../libs/auth';
 import { consumeTelegramAuthorizationState, getTelegramRedirectUri } from '../../../libs/auth/social';
+import { useI18n } from '../../../libs/i18n';
 
-/** Backend Messages that are safe and useful to show as-is **/
+/** Backend Messages that are safe and useful to show; they are matched here and translated through serverErrors.* **/
 const TELEGRAM_USER_MESSAGES = [
 	'Telegram authentication is not configured!',
 	'Telegram authorization code, redirect URI, or PKCE verifier is invalid or expired.',
@@ -16,15 +17,15 @@ const TELEGRAM_USER_MESSAGES = [
 	'Telegram authentication failed. Please try again.',
 ];
 
-const getCallbackErrorMessage = (error: unknown): string => {
+const getCallbackServerMessage = (error: unknown): string => {
 	const message = error instanceof ApolloError ? error.graphQLErrors?.[0]?.message : '';
-	if (message && TELEGRAM_USER_MESSAGES.includes(message)) return message;
-	return 'Telegram sign-in could not be completed. Please return and try again.';
+	return message && TELEGRAM_USER_MESSAGES.includes(message) ? message : '';
 };
 
 const TelegramCallbackPage: NextPage = () => {
+	const { t, tError } = useI18n();
 	const router = useRouter();
-	const [message, setMessage] = useState('Completing Telegram sign-in…');
+	const [message, setMessage] = useState(t('auth.telegram.completing'));
 	const [failed, setFailed] = useState(false);
 	const processedRef = useRef(false);
 	const [telegramAuth] = useMutation(TELEGRAM_AUTH);
@@ -45,11 +46,11 @@ const TelegramCallbackPage: NextPage = () => {
 		};
 
 		if (providerError || !code) {
-			fail(providerError === 'access_denied' ? 'Telegram sign-in was cancelled.' : 'Telegram sign-in could not be completed.');
+			fail(providerError === 'access_denied' ? t('auth.telegram.cancelled') : t('auth.telegram.failed'));
 			return;
 		}
 		if (!pending) {
-			fail('This Telegram sign-in request is invalid or has expired. Please start again.');
+			fail(t('auth.telegram.invalidRequest'));
 			return;
 		}
 
@@ -66,7 +67,7 @@ const TelegramCallbackPage: NextPage = () => {
 				updateUserInfo(member.accessToken);
 				await router.replace(pending.redirectTarget);
 			} catch (error) {
-				fail(getCallbackErrorMessage(error));
+				fail(tError(getCallbackServerMessage(error), 'auth.telegram.failedRetry'));
 			}
 		})();
 	}, [router, router.isReady, telegramAuth]);
@@ -74,13 +75,13 @@ const TelegramCallbackPage: NextPage = () => {
 	return (
 		<>
 			<Head>
-				<title>Telegram sign-in — AURORA</title>
+				<title>{t('auth.telegram.metaTitle')}</title>
 			</Head>
 			<main className="auth-callback-status" aria-live="polite">
 				<p>{message}</p>
 				{failed && (
 					<Link href="/account/login" className="auth-callback-back">
-						Back to sign in
+						{t('auth.telegram.backToSignIn')}
 					</Link>
 				)}
 			</main>

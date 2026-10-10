@@ -11,10 +11,10 @@ interface ExperiencesProps {
 }
 
 const formatUsd = (price: number | undefined, fallback: string) =>
-  typeof price === "number" ? `$${price.toLocaleString()}` : fallback;
+  typeof price === "number" ? `$${price.toLocaleString("en-US")}` : fallback;
 
 const Experiences = ({ tours, loading, error }: ExperiencesProps) => {
-  const { t } = useI18n();
+  const { t, tEnum } = useI18n();
   return (
     <section className="experiences-section">
       <div className="section-container">
@@ -99,7 +99,7 @@ const Experiences = ({ tours, loading, error }: ExperiencesProps) => {
                         {formatUsd(tour.tourPrice, t("home.experiences.priceOnRequest"))}
                       </span>
                     </div>
-                    <span className="feature-badge">{tour.tourStatus}</span>
+                    <span className="feature-badge">{tEnum("tourStatus", tour.tourStatus)}</span>
                   </div>
                 </div>
               </Link>

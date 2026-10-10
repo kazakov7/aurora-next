@@ -5,6 +5,7 @@ import { BoardArticle } from '../../types/board-article/board-article';
 import { getImageUrl, DEFAULT_USER_AVATAR } from '../../config';
 import { sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import LikeButton from '../common/LikeButton';
+import { useI18n } from '../../i18n';
 
 interface CommunityCardProps {
 	article: BoardArticle;
@@ -13,27 +14,14 @@ interface CommunityCardProps {
 	likeCount: number;
 }
 
-const categoryDisplayMap: Record<string, string> = {
-	TOUR: 'Itinerary / Expedition',
-	HOTEL: 'Hotel Review',
-	DESTINATION: 'Photography & Sights',
-	GUIDE: 'Expedition Log',
-	NEWS: 'Local Insight',
+const categoryLabelKeys: Record<string, string> = {
+	TOUR: 'community.card.category.TOUR',
+	HOTEL: 'community.card.category.HOTEL',
+	DESTINATION: 'community.card.category.DESTINATION',
+	GUIDE: 'community.card.category.GUIDE',
+	NEWS: 'community.card.category.NEWS',
 };
 
-const formatTimeAgo = (dateStr?: Date | string): string => {
-	if (!dateStr) return '';
-	try {
-		return new Date(dateStr).toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric',
-			timeZone: 'UTC',
-		});
-	} catch {
-		return '';
-	}
-};
 
 const CommunityCard: React.FC<CommunityCardProps> = ({
 	article,
@@ -41,11 +29,12 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 	isLiked,
 	likeCount,
 }) => {
+	const { t, formatDate } = useI18n();
 	const router = useRouter();
 	const authorName =
 		article.memberData?.memberFullName ||
 		article.memberData?.memberNick ||
-		'Member';
+		t('common.member');
 
 	const authorAvatar = getImageUrl(
 		article.memberData?.memberImage,
@@ -55,7 +44,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 	const featuredImage = article.articleImage ? getImageUrl(article.articleImage) : undefined;
 
 	const categoryBadge =
-		categoryDisplayMap[article.articleCategory] || article.articleCategory || 'Uncategorized';
+		(categoryLabelKeys[article.articleCategory] && t(categoryLabelKeys[article.articleCategory])) || article.articleCategory || t('common.uncategorized');
 	const articleExcerpt = article.articleContent?.replace(/<[^>]+>/g, '').trim() || '';
 
 	// Reading time calculation
@@ -70,9 +59,9 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 				await navigator.clipboard.writeText(
 						`${window.location.origin}/community/detail?id=${article._id}`
 				);
-				sweetTopSmallSuccessAlert('Story link copied to clipboard!');
+				sweetTopSmallSuccessAlert(t('community.card.linkCopied'));
 			} catch {
-				sweetTopSmallSuccessAlert('Link copied!');
+				sweetTopSmallSuccessAlert(t('common.linkCopied'));
 			}
 		}
 	};
@@ -109,7 +98,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 					<div className="author-details">
 						<div className="name-and-badge"><span className="author-name">{authorName}</span></div>
 						<div className="meta-subline">
-							{formatTimeAgo(article.createdAt) && <span>{formatTimeAgo(article.createdAt)}</span>}
+							{formatDate(article.createdAt, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) && <span>{formatDate(article.createdAt, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</span>}
 						</div>
 					</div>
 				</div>
@@ -119,7 +108,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 			<div className="card-body-section">
 				<div className="tags-row">
 					<span className="category-tag-pill">{categoryBadge}</span>
-					<span className="read-time">{readTimeMinutes} min read</span>
+					<span className="read-time">{t('community.card.minRead', { readTimeMinutes })}</span>
 				</div>
 
 				<Link href={`/community/detail?id=${article._id}`} className="title-link">
@@ -175,7 +164,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 					<button
 						type="button"
 						className="share-action-btn"
-						title="Share story"
+						title={t('community.card.shareStory')}
 						onClick={handleShare}
 					>
 						<span className="material-symbols-outlined icon">share</span>
@@ -183,7 +172,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 				</div>
 
 				<Link href={`/community/detail?id=${article._id}`} className="read-dispatch-link">
-					<span>Read Full Dispatch</span>
+					<span>{t('community.card.readFullDispatch')}</span>
 					<span className="material-symbols-outlined icon">arrow_forward</span>
 				</Link>
 			</div>

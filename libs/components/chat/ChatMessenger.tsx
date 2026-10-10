@@ -13,6 +13,7 @@ import ChatSidebar from './ChatSidebar';
 import ChatThread from './ChatThread';
 import ChatDossier from './ChatDossier';
 import { ChatConversation, ChatMessage } from './chat.types';
+import { useI18n } from '../../i18n';
 
 const CHAT_PAGE_SIZE = 50;
 const CHAT_LIST_INPUT = { page: 1, limit: 100, sort: 'lastMessageAt', direction: 'DESC', search: {} };
@@ -24,6 +25,7 @@ const upsertMessage = (items: ChatMessage[], message: ChatMessage): ChatMessage[
 };
 
 const ChatMessenger: React.FC = () => {
+	const { t, tError } = useI18n();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const apolloClient = useApolloClient();
@@ -116,7 +118,7 @@ const ChatMessenger: React.FC = () => {
 				setDirectChatError('');
 				const result = await getOrCreateDirectChat({ variables: { memberTwoId: memberId } });
 				const chatId = result.data?.getOrCreateDirectChat?._id;
-				if (!chatId) throw new Error('Unable to open this conversation.');
+				if (!chatId) throw new Error(t('chat.messenger.openFailed'));
 				const refreshedChats = await refetchChats();
 				setConversations(refreshedChats.data?.getMyChats?.list || []);
 				setTransientConversation(result.data?.getOrCreateDirectChat as ChatConversation);
@@ -124,7 +126,7 @@ const ChatMessenger: React.FC = () => {
 				void router.replace({ pathname: '/chat', query: { chatId } }, undefined, { shallow: true });
 			} catch (error) {
 				openedMemberIdRef.current = '';
-				setDirectChatError(error instanceof Error ? error.message : 'Unable to open this conversation.');
+				setDirectChatError(tError(error, 'chat.messenger.openFailed'));
 			}
 		})();
 	}, [getOrCreateDirectChat, refetchChats, router, router.query.memberId, router.query.recipientId, user._id]);
@@ -147,7 +149,7 @@ const ChatMessenger: React.FC = () => {
 			if (payload?.message && AUTH_TOKEN_ERRORS.includes(payload.message)) {
 				socket.disconnect();
 				clearAuthSession();
-				void sweetErrorAlert(Message.SESSION_EXPIRED);
+				void sweetErrorAlert(t(Message.SESSION_EXPIRED));
 			}
 		});
 		socket.on('message:new', (message: ChatMessage) => {
@@ -220,7 +222,7 @@ const ChatMessenger: React.FC = () => {
 		try {
 			setDeleteError('');
 			const result = await deleteMyChat({ variables: { chatId: chatPendingDeletion._id } });
-			if (!result.data?.deleteMyChat) throw new Error('Unable to delete this conversation.');
+			if (!result.data?.deleteMyChat) throw new Error(t('chat.messenger.deleteFailed'));
 
 			removeConversationFromCache(chatPendingDeletion._id);
 			const remaining = conversationsRef.current.filter((chat) => chat._id !== chatPendingDeletion._id);
@@ -237,7 +239,7 @@ const ChatMessenger: React.FC = () => {
 			setChatPendingDeletion(null);
 			await refetchChats();
 		} catch (error) {
-			setDeleteError(error instanceof Error ? error.message : 'Unable to delete this conversation.');
+			setDeleteError(tError(error, 'chat.messenger.deleteFailed'));
 		}
 	};
 
@@ -265,11 +267,11 @@ const ChatMessenger: React.FC = () => {
 			setMessages((previous) => [...payload.list, ...previous]);
 			setNextCursor(payload.nextCursor || undefined);
 		} catch {
-			setHistoryError('Unable to load older messages. Please try again.');
+			setHistoryError(t('chat.messenger.historyFailed'));
 		}
 	};
 
-	if (!user._id) return <div className="chat-empty-state"><p>Please sign in to access messages.</p></div>;
+	if (!user._id) return <div className="chat-empty-state"><p>{t('chat.messenger.signInRequired')}</p></div>;
 
 	const activeConversation = conversations.find((chat) => chat._id === activeChatId)
 		|| (transientConversation?._id === activeChatId ? transientConversation : undefined);
@@ -280,7 +282,7 @@ const ChatMessenger: React.FC = () => {
 				<ChatThread conversation={activeConversation} messages={messages} currentMemberId={user._id} loading={messagesLoading} error={directChatError || historyError || messagesError?.message} hasOlderMessages={Boolean(nextCursor)} socketStatus={socketStatus} onLoadOlder={handleLoadOlder} onSendMessage={handleSendMessage} />
 				<ChatDossier conversation={activeConversation} currentMemberId={user._id} />
 			</div>
-			{chatPendingDeletion ? <div className="chat-delete-modal-backdrop" role="presentation"><div className="chat-delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-chat-title"><h2 id="delete-chat-title">Delete chat?</h2><p>This removes this conversation and its previous messages from your chat list only. The other participant keeps their history.</p>{deleteError ? <p className="chat-delete-error">{deleteError}</p> : null}<div className="chat-delete-actions"><button type="button" onClick={() => setChatPendingDeletion(null)} disabled={deletingChat}>Cancel</button><button type="button" className="confirm-delete-chat" onClick={() => void handleDeleteChat()} disabled={deletingChat}>{deletingChat ? 'Deleting…' : 'Delete Chat'}</button></div></div></div> : null}
+			{chatPendingDeletion ? <div className="chat-delete-modal-backdrop" role="presentation"><div className="chat-delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-chat-title"><h2 id="delete-chat-title">{t('chat.messenger.deleteTitle')}</h2><p>{t('chat.messenger.deleteText')}</p>{deleteError ? <p className="chat-delete-error">{deleteError}</p> : null}<div className="chat-delete-actions"><button type="button" onClick={() => setChatPendingDeletion(null)} disabled={deletingChat}>{t('common.cancel')}</button><button type="button" className="confirm-delete-chat" onClick={() => void handleDeleteChat()} disabled={deletingChat}>{deletingChat ? t('chat.messenger.deleting') : t('chat.deleteChat')}</button></div></div></div> : null}
 		</div>
 	);
 };

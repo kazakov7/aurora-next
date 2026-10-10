@@ -8,8 +8,10 @@ import {
   sweetTopSmallSuccessAlert,
 } from "../../sweetAlert";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
+import { useI18n } from "../../i18n";
 
 const MyProfileSettings: React.FC = () => {
+  const { t, tError } = useI18n();
   const user = useReactiveVar(userVar);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -74,11 +76,11 @@ const MyProfileSettings: React.FC = () => {
         if (responseImage) {
             setImage(responseImage);
         } else {
-            throw new Error(json.errors?.[0]?.message || 'Upload failed');
+            throw new Error(json.errors?.[0]?.message || t("common.uploadFailed"));
         }
     } catch (err: any) {
         console.log('Error, handleImageUpload:', err);
-        sweetMixinErrorAlert(err.message || 'Image upload failed');
+        sweetMixinErrorAlert(tError(err, "common.imageUploadFailed"));
     } finally {
         setUploadingImage(false);
         if (fileInputRef.current) {
@@ -110,10 +112,10 @@ const MyProfileSettings: React.FC = () => {
           updateUserInfo(accessToken);
         }
         userVar({ ...userVar(), ...result.data.updateMember });
-        sweetTopSmallSuccessAlert("Profile updated successfully!", 1000);
+        sweetTopSmallSuccessAlert(t("profile.settings.updated"), 1000);
       }
     } catch (err: any) {
-      sweetMixinErrorAlert(err.message || "Update failed.");
+      sweetMixinErrorAlert(tError(err, "profile.settings.updateFailed"));
     }
   };
 
@@ -121,8 +123,8 @@ const MyProfileSettings: React.FC = () => {
     <div>
       <div className="section-top-bar">
         <div className="title-group">
-          <h2>Account Settings</h2>
-          <span className="counter-pill">Profile & Preferences</span>
+          <h2>{t("profile.settings.accountSettings")}</h2>
+          <span className="counter-pill">{t("profile.settings.profilePreferences")}</span>
         </div>
       </div>
 
@@ -143,11 +145,11 @@ const MyProfileSettings: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '10px' }}>
              <img 
                 src={getImageUrl(image, DEFAULT_USER_AVATAR)} 
-                alt="Avatar" 
+                alt={t("profile.settings.avatar")} 
                 style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '1px solid #dce2f7' }}
              />
              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <label style={{ fontSize: "12px", fontWeight: 600, color: "#141b2b" }}>Profile Picture</label>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "#141b2b" }}>{t("profile.settings.profilePicture")}</label>
                 <div style={{ display: 'flex', gap: '12px' }}>
                     <button 
                         type="button" 
@@ -159,7 +161,7 @@ const MyProfileSettings: React.FC = () => {
                             display: 'flex', alignItems: 'center', justifyContent: 'center'
                         }}
                     >
-                        {uploadingImage ? 'Uploading...' : 'Change Image'}
+                        {uploadingImage ? t("profile.settings.uploading") : t("profile.settings.changeImage")}
                     </button>
                     {image && (
                         <button 
@@ -171,7 +173,7 @@ const MyProfileSettings: React.FC = () => {
                                 display: 'flex', alignItems: 'center', justifyContent: 'center'
                             }}
                         >
-                            Remove
+                            {t("profile.settings.remove")}
                         </button>
                     )}
                 </div>
@@ -195,7 +197,7 @@ const MyProfileSettings: React.FC = () => {
                 marginBottom: "6px",
               }}
             >
-              Explorer Nickname
+              {t("profile.settings.nickname")}
             </label>
             <input
               type="text"
@@ -226,7 +228,7 @@ const MyProfileSettings: React.FC = () => {
                 marginBottom: "6px",
               }}
             >
-              Phone Number
+              {t("profile.settings.phoneNumber")}
             </label>
             <input
               type="tel"
@@ -257,13 +259,13 @@ const MyProfileSettings: React.FC = () => {
                 marginBottom: "6px",
               }}
             >
-              Base Location / Residence
+              {t("profile.settings.location")}
             </label>
             <input
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="e.g. Valais, Switzerland"
+              placeholder={t("profile.settings.locationPlaceholder")}
               style={{
                 width: "100%",
                 height: "44px",
@@ -288,13 +290,13 @@ const MyProfileSettings: React.FC = () => {
                 marginBottom: "6px",
               }}
             >
-              Explorer Bio & Editorial Focus
+              {t("profile.settings.bio")}
             </label>
             <textarea
               rows={3}
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
-              placeholder="Tell the community about your travel pursuits..."
+              placeholder={t("profile.settings.bioPlaceholder")}
               style={{
                 width: "100%",
                 padding: "12px 14px",
@@ -324,7 +326,7 @@ const MyProfileSettings: React.FC = () => {
                 cursor: "pointer",
               }}
             >
-              {loading ? "Saving..." : "Save Profile Changes"}
+              {loading ? t("profile.settings.saving") : t("profile.settings.saveProfileChanges")}
             </button>
           </div>
         </form>

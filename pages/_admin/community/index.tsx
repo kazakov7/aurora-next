@@ -22,8 +22,10 @@ import {
   sweetMixinErrorAlert,
   sweetConfirmAlert,
 } from "../../../libs/sweetAlert";
+import { useI18n } from "../../../libs/i18n";
 
 const AdminCommunityPage: NextPage = () => {
+  const { t, tEnum, tError, formatDate } = useI18n();
   const [articles, setArticles] = useState<BoardArticle[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [selectedArticle, setSelectedArticle] = useState<BoardArticle | null>(
@@ -119,43 +121,43 @@ const AdminCommunityPage: NextPage = () => {
         await updateBoardArticleByAdmin({
           variables: { input: updateInput },
         });
-        sweetTopSmallSuccessAlert("Article status updated!", 800);
+        sweetTopSmallSuccessAlert(t("admin.community.articleStatusUpdated"), 800);
       }
       closeDrawer();
       refetch();
     } catch (err: any) {
-      sweetMixinErrorAlert(err.message);
+      sweetMixinErrorAlert(tError(err));
     }
   };
 
   const handleDelete = async (id: string) => {
     if (
-      await sweetConfirmAlert("Are you sure you want to delete this article?")
+      await sweetConfirmAlert(t("admin.community.deleteConfirm"))
     ) {
       try {
         await removeBoardArticleByAdmin({ variables: { articleId: id } });
-        sweetTopSmallSuccessAlert("Article deleted!", 800);
+        sweetTopSmallSuccessAlert(t("admin.community.articleDeleted"), 800);
         refetch();
       } catch (err: any) {
-        sweetMixinErrorAlert(err.message);
+        sweetMixinErrorAlert(tError(err));
       }
     }
   };
 
   const exportCSV = () => {
     if (!articles || articles.length === 0) {
-      sweetMixinErrorAlert("No data to export");
+      sweetMixinErrorAlert(t("common.noDataToExport"));
       return;
     }
     const headers = [
       "ID",
-      "Title",
-      "Category",
-      "Status",
-      "Likes",
-      "Views",
-      "Comments",
-      "Created Date",
+      t("admin.title"),
+      t("common.category"),
+      t("common.status"),
+      t("admin.community.likes"),
+      t("common.views"),
+      t("common.comments"),
+      t("common.createdDate"),
     ];
     const rows = articles.map((a) => [
       a._id,
@@ -165,7 +167,7 @@ const AdminCommunityPage: NextPage = () => {
       a.articleLikes,
       a.articleViews,
       a.articleComments,
-      new Date(a.createdAt).toLocaleDateString(),
+      formatDate(a.createdAt),
     ]);
 
     const csvContent =
@@ -189,16 +191,16 @@ const AdminCommunityPage: NextPage = () => {
     <div className="admin-overview dashboard-container">
       <div className="overview-header">
         <div className="header-text">
-          <h1>Community Management</h1>
-          <p>Monitor and moderate community discussions, guides, and news.</p>
+          <h1>{t("admin.community.communityManagement")}</h1>
+          <p>{t("admin.community.intro")}</p>
         </div>
       </div>
 
       <section className="admin-table-section">
         <div className="table-header">
           <div className="header-left">
-            <h2>Directory</h2>
-            <span className="table-badge">{total} Articles</span>
+            <h2>{t("common.directory")}</h2>
+            <span className="table-badge">{t("admin.community.articles", { total })}</span>
           </div>
           <div className="header-right">
             <div className="filter-select-group">
@@ -206,22 +208,22 @@ const AdminCommunityPage: NextPage = () => {
                 className="filter-select"
                 onChange={(e) => handleCategoryChange(e.target.value)}
               >
-                <option value="all">All Categories</option>
+                <option value="all">{t("common.allCategories")}</option>
                 <option value={BoardArticleCategory.DESTINATION}>
-                  Destination
+                  {t("common.destination")}
                 </option>
-                <option value={BoardArticleCategory.HOTEL}>Hotel</option>
-                <option value={BoardArticleCategory.TOUR}>Tour</option>
-                <option value={BoardArticleCategory.GUIDE}>Guide</option>
-                <option value={BoardArticleCategory.NEWS}>News</option>
+                <option value={BoardArticleCategory.HOTEL}>{t("common.hotel")}</option>
+                <option value={BoardArticleCategory.TOUR}>{t("common.tour")}</option>
+                <option value={BoardArticleCategory.GUIDE}>{t("admin.community.guide")}</option>
+                <option value={BoardArticleCategory.NEWS}>{t("admin.community.news")}</option>
               </select>
               <select
                 className="filter-select"
                 onChange={(e) => handleStatusChange(e.target.value)}
               >
-                <option value="all">All Statuses</option>
-                <option value={BoardArticleStatus.PUBLISHED}>Published</option>
-                <option value={BoardArticleStatus.DELETED}>Deleted</option>
+                <option value="all">{t("common.allStatuses")}</option>
+                <option value={BoardArticleStatus.PUBLISHED}>{t("admin.community.published")}</option>
+                <option value={BoardArticleStatus.DELETED}>{t("admin.deleted")}</option>
               </select>
               <button
                 className="reset-filter-btn"
@@ -231,7 +233,7 @@ const AdminCommunityPage: NextPage = () => {
                 <span className="material-symbols-outlined">
                   filter_alt_off
                 </span>
-                Reset
+                {t("common.reset")}
               </button>
             </div>
           </div>
@@ -241,12 +243,12 @@ const AdminCommunityPage: NextPage = () => {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Thread Title</th>
-                <th>Category</th>
-                <th>Metrics</th>
-                <th>Status</th>
-                <th>Created Date</th>
-                <th style={{ width: 120, textAlign: "right" }}>Actions</th>
+                <th>{t("admin.community.threadTitle")}</th>
+                <th>{t("common.category")}</th>
+                <th>{t("common.metrics")}</th>
+                <th>{t("common.status")}</th>
+                <th>{t("common.createdDate")}</th>
+                <th style={{ width: 120, textAlign: "right" }}>{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -256,7 +258,7 @@ const AdminCommunityPage: NextPage = () => {
                     colSpan={6}
                     style={{ textAlign: "center", padding: "40px" }}
                   >
-                    Loading...
+                    {t("common.loading")}
                   </td>
                 </tr>
               ) : articles.length === 0 ? (
@@ -265,7 +267,7 @@ const AdminCommunityPage: NextPage = () => {
                     colSpan={6}
                     style={{ textAlign: "center", padding: "40px" }}
                   >
-                    No articles found.
+                    {t("admin.community.noArticlesFound")}
                   </td>
                 </tr>
               ) : (
@@ -283,13 +285,13 @@ const AdminCommunityPage: NextPage = () => {
                           {article.articleTitle}
                         </span>
                         <span style={{ fontSize: 13, color: "#707881" }}>
-                          By {article.memberId || "Unknown"}
+                          {t("admin.community.byAuthor", { author: article.memberId || t("common.unknown") })}
                         </span>
                       </div>
                     </td>
                     <td>
                       <span className="badge-pill indigo">
-                        {article.articleCategory}
+                        {tEnum("articleCategory", article.articleCategory)}
                       </span>
                     </td>
                     <td>
@@ -357,12 +359,12 @@ const AdminCommunityPage: NextPage = () => {
                         }`}
                       >
                         <span className="dot"></span>
-                        {article.articleStatus}
+                        {tEnum("articleStatus", article.articleStatus)}
                       </span>
                     </td>
                     <td>
                       <span style={{ fontSize: 13, color: "#707881" }}>
-                        {new Date(article.createdAt).toLocaleDateString()}
+                        {formatDate(article.createdAt)}
                       </span>
                     </td>
                     <td style={{ textAlign: "right" }}>
@@ -416,7 +418,7 @@ const AdminCommunityPage: NextPage = () => {
 
         <div className="table-footer">
           <span>
-            Showing {startItem}–{endItem} of {total} records
+            {t("admin.showingRecords", { startItem, endItem, total })}
           </span>
           <div className="pagination">
             <button
@@ -464,7 +466,7 @@ const AdminCommunityPage: NextPage = () => {
             <div className="drawer-header">
               <div className="header-title">
                 <span className="material-symbols-outlined">edit_document</span>
-                <span>Moderate Article</span>
+                <span>{t("admin.community.moderateArticle")}</span>
               </div>
               <button className="close-btn" type="button" onClick={closeDrawer}>
                 <span className="material-symbols-outlined">close</span>
@@ -473,7 +475,7 @@ const AdminCommunityPage: NextPage = () => {
 
             <div className="drawer-body">
               <div className="admin-form-group">
-                <label>Thread Title</label>
+                <label>{t("admin.community.threadTitle")}</label>
                 <div
                   className="admin-form-control"
                   style={{ background: "#f1f3ff", border: "none" }}
@@ -483,7 +485,7 @@ const AdminCommunityPage: NextPage = () => {
               </div>
 
               <div className="admin-form-group">
-                <label>Content</label>
+                <label>{t("common.content")}</label>
                 <div
                   className="admin-form-control"
                   style={{
@@ -500,7 +502,7 @@ const AdminCommunityPage: NextPage = () => {
 
               <div className="admin-form-group">
                 <label>
-                  Status <span className="required">*</span>
+                  {t("common.status")} <span className="required">*</span>
                 </label>
                 <select
                   className="admin-form-control select"
@@ -510,9 +512,9 @@ const AdminCommunityPage: NextPage = () => {
                   }
                 >
                   <option value={BoardArticleStatus.PUBLISHED}>
-                    Published
+                    {t("admin.community.published")}
                   </option>
-                  <option value={BoardArticleStatus.DELETED}>Deleted</option>
+                  <option value={BoardArticleStatus.DELETED}>{t("admin.deleted")}</option>
                 </select>
               </div>
             </div>
@@ -523,14 +525,14 @@ const AdminCommunityPage: NextPage = () => {
                 type="button"
                 onClick={closeDrawer}
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               <button
                 className="btn primary"
                 type="button"
                 onClick={handleSave}
               >
-                Save Changes
+                {t("common.saveChanges")}
               </button>
             </div>
           </aside>

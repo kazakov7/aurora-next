@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Tour } from '../../../types/tour/tour';
 import { DEFAULT_TOUR_IMAGE, getImageUrl } from '../../../config';
 import { ApolloError } from '@apollo/client';
+import { useI18n } from '../../../i18n';
 
 interface DestinationPopularToursProps {
 	destinationName: string;
@@ -20,6 +21,7 @@ const DestinationPopularTours = ({
 	loading,
 	error,
 }: DestinationPopularToursProps) => {
+	const { t } = useI18n();
 	if (!loading && !error && (!tours || tours.length === 0)) return null;
 
 	const displayTours = tours.slice(0, 4);
@@ -29,19 +31,19 @@ const DestinationPopularTours = ({
 			{/* Section Header */}
 			<div className="section-header-row">
 				<div>
-					<h2 className="section-main-title">Popular Tours &amp; Experiences</h2>
-					<p className="section-sub-title">Unforgettable adventures across {destinationName}.</p>
+					<h2 className="section-main-title">{t('destinations.popularTours.title')}</h2>
+					<p className="section-sub-title">{t('destinations.popularTours.subtitle', { destinationName })}</p>
 				</div>
 				<Link href="/tour" className="view-all-header-link">
-					<span>Explore All Tours</span>
+					<span>{t('destinations.popularTours.exploreAllTours')}</span>
 					<span className="material-symbols-outlined">arrow_forward</span>
 				</Link>
 			</div>
 
 			{/* Exactly 4 Tour Package Cards in 1 Row on Desktop */}
 			<div className="tours-cards-grid">
-				{loading ? <p>Loading top tours…</p> : null}
-				{!loading && error ? <p>Top tours are unavailable right now.</p> : null}
+				{loading ? <p>{t('destinations.popularTours.loading')}</p> : null}
+				{!loading && error ? <p>{t('destinations.popularTours.unavailable')}</p> : null}
 				{displayTours.map((tour, idx) => {
 					const imgUrl = getImageUrl(tour.tourImages?.[0], DEFAULT_TOUR_IMAGE);
 					const inclusions = tour.tourAdditionalInfo?.split(',').map((value) => value.trim()).filter(Boolean).slice(0, 3) || [];
@@ -71,7 +73,7 @@ const DestinationPopularTours = ({
 											e.preventDefault();
 											onLikeTour(tour._id);
 										}}
-										aria-label="Wishlist Tour"
+										aria-label={t('destinations.popularTours.wishlistTour')}
 									>
 										<span
 											className="material-symbols-outlined"
@@ -84,7 +86,7 @@ const DestinationPopularTours = ({
 
 								<div className="schedule-badge-pill">
 									<span className="material-symbols-outlined icon-clock">schedule</span>
-									<span>{tour.tourStartDate && tour.tourEndDate ? 'Scheduled tour' : 'Dates to be announced'}</span>
+									<span>{tour.tourStartDate && tour.tourEndDate ? t('destinations.popularTours.scheduledTour') : t('destinations.popularTours.datesToBeAnnounced')}</span>
 								</div>
 							</div>
 
@@ -117,11 +119,11 @@ const DestinationPopularTours = ({
 
 								<div className="card-price-package-row">
 									<div className="price-box">
-										<span className="price-amount">{typeof priceUSD === 'number' ? `$${priceUSD.toLocaleString()}` : 'Price on request'}</span>
-										<span className="price-subtext">per person</span>
+										<span className="price-amount">{typeof priceUSD === 'number' ? `$${priceUSD.toLocaleString('en-US')}` : t('destinations.popularTours.priceOnRequest')}</span>
+										<span className="price-subtext">{t('destinations.popularTours.perPerson')}</span>
 									</div>
 									<Link href={`/tour/detail?id=${tour._id}`} className="view-package-btn">
-										View Package
+										{t('destinations.popularTours.viewPackage')}
 									</Link>
 								</div>
 							</div>

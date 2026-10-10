@@ -1,11 +1,12 @@
 import Swal from 'sweetalert2';
 import 'animate.css';
 import { Messages } from './config';
+import { translateActive, translateActiveError } from './i18n';
 
 export const sweetErrorHandling = async (err: any) => {
 	await Swal.fire({
 		icon: 'error',
-		text: err?.message || Messages.error1,
+		text: translateActiveError(err, Messages.error1),
 		showConfirmButton: false,
 	});
 };
@@ -52,6 +53,8 @@ export const sweetConfirmAlert = (msg: string) => {
 			showConfirmButton: true,
 			confirmButtonColor: '#e92C28',
 			cancelButtonColor: '#bdbdbd',
+			confirmButtonText: translateActive('common.ok'),
+			cancelButtonText: translateActive('common.cancel'),
 		}).then((response) => {
 			if (response?.isConfirmed) resolve(true);
 			else resolve(false);
@@ -68,7 +71,8 @@ export const sweetLoginConfirmAlert = (msg: string) => {
 			color: '#212121',
 			confirmButtonColor: '#006194',
 			cancelButtonColor: '#bdbdbd',
-			confirmButtonText: 'Login',
+			confirmButtonText: translateActive('auth.login'),
+			cancelButtonText: translateActive('common.cancel'),
 		}).then((response) => {
 			if (response?.isConfirmed) resolve(true);
 			else resolve(false);
@@ -113,7 +117,7 @@ export const sweetLoginRequiredAlert = async (msg: string) => {
 		text: msg,
 		color: '#212121',
 		confirmButtonColor: '#006194',
-		confirmButtonText: 'OK',
+		confirmButtonText: translateActive('common.ok'),
 		allowOutsideClick: false,
 		allowEscapeKey: false,
 	});

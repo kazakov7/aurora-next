@@ -37,12 +37,13 @@ export const DEFAULT_TOUR_IMAGE = '/img/banner/hero-tour.jpg';
 export const DEFAULT_DESTINATION_IMAGE = '/img/banner/hero_traveler.jpg';
 export const DEFAULT_ARTICLE_IMAGE = '/img/banner/hero_traveler.jpg';
 
+/** Values are dictionary keys (libs/i18n/messages); render them with `t(Messages.errorN)` **/
 export const Messages = {
-	error1: 'Something went wrong!',
-	error2: 'Please login first!',
-	error3: 'Please fulfill all inputs!',
-	error4: 'Message is empty!',
-	error5: 'Only images with jpeg, jpg, png format allowed!',
+	error1: 'errors.somethingWentWrong',
+	error2: 'errors.notAuthenticated',
+	error3: 'errors.insertAllInputs',
+	error4: 'errors.emptyMessage',
+	error5: 'errors.imageFormat',
 };
 
 export const getImageUrl = (imagePath?: string, fallback: string = ''): string => {

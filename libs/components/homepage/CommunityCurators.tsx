@@ -40,7 +40,7 @@ interface CommunityCuratorsProps {
 }
 
 const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps) => {
-	const { t } = useI18n();
+	const { t, tEnum, tError } = useI18n();
   const router = useRouter();
   const user = useReactiveVar(userVar);
   const [followOverrides, setFollowOverrides] = useState<
@@ -69,7 +69,7 @@ const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps
 
     try {
       if (!user?._id || !getJwtToken()) {
-        await sweetMixinErrorAlert(Message.NOT_AUTHENTICATED);
+        await sweetMixinErrorAlert(t(Message.NOT_AUTHENTICATED));
         await router.push({
           pathname: "/account/login",
           query: { referrer: router.asPath },
@@ -102,7 +102,7 @@ const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps
         [curatorId]: isFollowing,
       }));
       const errorMessage =
-        err instanceof Error ? err.message : "Unable to update follow status.";
+        tError(err, "common.followUpdateFailed");
       console.log("ERROR, followHandler:", errorMessage);
       sweetMixinErrorAlert(errorMessage);
     } finally {
@@ -168,7 +168,7 @@ const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps
                 <div className="curator-body">
                   {curator.memberType ? (
                     <span className="curator-overline">
-                      {curator.memberType}
+                      {tEnum("memberType", curator.memberType)}
                     </span>
                   ) : null}
 

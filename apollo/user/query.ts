@@ -1,5 +1,14 @@
 import { gql } from '@apollo/client';
 
+export const GET_PROPERTY_AVAILABILITY = gql`
+	query GetPropertyAvailability($input: PropertyAvailabilityInquiry!) {
+		getPropertyAvailability(input: $input) {
+			checkIn
+			checkOut
+		}
+	}
+`;
+
 /**************************
  *         MEMBER         *
  *************************/

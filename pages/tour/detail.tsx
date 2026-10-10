@@ -16,8 +16,10 @@ import { LIKE_TARGET_TOUR } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
 import { sweetErrorAlert } from '../../libs/sweetAlert';
 import { Message } from '../../libs/enums/common.enum';
+import { useI18n } from '../../libs/i18n';
 
 const TourDetail: NextPage = () => {
+	const { t, tError } = useI18n();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const tourId = router.isReady && typeof router.query.id === 'string' ? router.query.id : '';
@@ -41,14 +43,14 @@ const TourDetail: NextPage = () => {
 	/** HANDLERS **/
 	const likeHandler = async () => {
 		if (!user?._id) {
-			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
+			await sweetErrorAlert(t(Message.NOT_AUTHENTICATED));
 			return;
 		}
 		try {
 			await likeTargetTour({ variables: { tourId: tour._id } });
 			await refetchTour();
 		} catch (err: any) {
-			await sweetErrorAlert(err.message || 'Error occurred');
+			await sweetErrorAlert(tError(err, 'common.errorOccurred'));
 		}
 	};
 
@@ -77,7 +79,7 @@ const TourDetail: NextPage = () => {
 						>
 							sync
 						</span>
-						<span>Loading expedition details...</span>
+						<span>{t('tours.detail.loading')}</span>
 					</div>
 				</div>
 			</div>
@@ -87,7 +89,7 @@ const TourDetail: NextPage = () => {
 	if (!tour) {
 		return (
 			<div className="tour-detail-page">
-				<div className="detail-container"><div className="detail-empty-state"><h1>Tour unavailable</h1><p>This tour could not be found or is no longer available.</p></div></div>
+				<div className="detail-container"><div className="detail-empty-state"><h1>{t('tours.detail.tourUnavailable')}</h1><p>{t('tours.detail.notFound')}</p></div></div>
 			</div>
 		);
 	}
@@ -95,10 +97,10 @@ const TourDetail: NextPage = () => {
 	return (
 		<>
 			<Head>
-				<title>{tour.tourName} | AURA Curated Expedition</title>
+				<title>{t('tours.detail.metaTitle', { tourName: tour.tourName })}</title>
 				<meta
 					name="description"
-					content={tour.tourDesc || 'Curated high-alpine expedition by AURA.'}
+					content={tour.tourDesc || t('tours.detail.metaDescription')}
 				/>
 			</Head>
 

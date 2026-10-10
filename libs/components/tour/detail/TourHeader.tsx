@@ -2,7 +2,8 @@ import React from 'react';
 import Link from 'next/link';
 import { Tour } from '../../../types/tour/tour';
 import { sweetTopSmallSuccessAlert } from '../../../sweetAlert';
-import { getDateDuration } from '../../../utils';
+import { getDurationDays } from '../../../utils';
+import { useI18n } from '../../../i18n';
 
 interface TourHeaderProps {
 	tour: Tour;
@@ -11,16 +12,18 @@ interface TourHeaderProps {
 }
 
 const TourHeader = ({ tour, isLiked, likeHandler }: TourHeaderProps) => {
+	const { t, tEnum } = useI18n();
 	const ratingVal = typeof tour.tourRating === 'number' ? tour.tourRating.toFixed(2) : '—';
 	const reviewsCount = tour.tourReviews ?? 0;
 
-	const duration = getDateDuration(tour.tourStartDate, tour.tourEndDate);
+	const durationDays = getDurationDays(tour.tourStartDate, tour.tourEndDate);
+	const duration = durationDays ? t('common.days', { count: durationDays }) : t('common.durationUnavailable');
 
 	const shareHandler = async () => {
 		try {
 			if (typeof window !== 'undefined' && navigator.clipboard) {
 				await navigator.clipboard.writeText(window.location.href);
-				await sweetTopSmallSuccessAlert('Link copied to clipboard!');
+				await sweetTopSmallSuccessAlert(t('common.linkCopied'));
 			}
 		} catch (err) {
 			console.error(err);
@@ -30,13 +33,13 @@ const TourHeader = ({ tour, isLiked, likeHandler }: TourHeaderProps) => {
 	return (
 		<div className="tour-header-section">
 			{/* 1. Breadcrumbs */}
-			<nav aria-label="Breadcrumb" className="breadcrumbs-nav">
+			<nav aria-label={t('common.breadcrumb')} className="breadcrumbs-nav">
 				<Link href="/" className="crumb-link">
-					Home
+					{t('navigation.home')}
 				</Link>
 				<span className="material-symbols-outlined crumb-sep">chevron_right</span>
 				<Link href="/tour" className="crumb-link">
-					Tours
+					{t('navigation.tours')}
 				</Link>
 				<span className="material-symbols-outlined crumb-sep">chevron_right</span>
 				{tour.tourDestinationCity ? <span className="crumb-text">{tour.tourDestinationCity}</span> : null}
@@ -48,7 +51,7 @@ const TourHeader = ({ tour, isLiked, likeHandler }: TourHeaderProps) => {
 			<div className="title-actions-bar">
 				<div className="title-info-group">
 					<div className="badges-row">
-						<span className="badge-tag primary-badge">{tour.tourStatus}</span>
+						<span className="badge-tag primary-badge">{tEnum('tourStatus', tour.tourStatus)}</span>
 					</div>
 					<h1 className="tour-main-title">{tour.tourName}</h1>
 					<div className="meta-info-row">
@@ -60,12 +63,12 @@ const TourHeader = ({ tour, isLiked, likeHandler }: TourHeaderProps) => {
 								star
 							</span>
 							<span className="score">{ratingVal}</span>
-							<span className="reviews-link">({reviewsCount} reviews)</span>
+							<span className="reviews-link">{t('tours.header.reviews', { reviewsCount })}</span>
 						</div>
 						<span className="dot-divider">•</span>
 						<div className="meta-item">
 							<span className="material-symbols-outlined">location_on</span>
-							<span>{tour.tourDestinationCity || 'Destination unavailable'}</span>
+							<span>{tour.tourDestinationCity || t('tours.header.destinationUnavailable')}</span>
 						</div>
 						<span className="dot-divider">•</span>
 						<div className="meta-item">
@@ -76,7 +79,7 @@ const TourHeader = ({ tour, isLiked, likeHandler }: TourHeaderProps) => {
 						<div className="meta-item">
 							<span className="material-symbols-outlined">flight_takeoff</span>
 							<span>
-								Departs: {[tour.tourDepartureCity, tour.tourDepartureCountry].filter(Boolean).join(', ') || 'Location unavailable'}
+								{t('tours.header.departs', { place: [tour.tourDepartureCity, tour.tourDepartureCountry].filter(Boolean).join(', ') || t('tours.header.locationUnavailable') })}
 							</span>
 						</div>
 					</div>
@@ -86,7 +89,7 @@ const TourHeader = ({ tour, isLiked, likeHandler }: TourHeaderProps) => {
 				<div className="actions-group">
 					<button className="action-pill-btn" type="button" onClick={shareHandler}>
 						<span className="material-symbols-outlined">share</span>
-						<span>Share</span>
+						<span>{t('common.share')}</span>
 					</button>
 					<button
 						className={`action-pill-btn like-btn ${isLiked ? 'liked' : ''}`}
@@ -99,7 +102,7 @@ const TourHeader = ({ tour, isLiked, likeHandler }: TourHeaderProps) => {
 						>
 							favorite
 						</span>
-						<span>{isLiked ? 'Liked' : 'Like'}</span>
+						<span>{isLiked ? t('tours.header.liked') : t('common.like')}</span>
 					</button>
 				</div>
 			</div>

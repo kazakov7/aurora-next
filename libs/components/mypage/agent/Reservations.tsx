@@ -7,8 +7,10 @@ import { Direction } from "../../../enums/common.enum";
 import { useRouter } from "next/router";
 import moment from "moment";
 import { userVar } from "../../../../apollo/store";
+import { useI18n } from "../../../i18n";
 
 const Reservations = () => {
+  const { tEnum, t, formatDate, tx } = useI18n();
   const router = useRouter();
   const user = useReactiveVar(userVar);
   
@@ -80,9 +82,9 @@ const Reservations = () => {
         <div className="header-top">
           <div className="title-box">
             <div className="title-row">
-              <h2>Reservations</h2>
+              <h2>{t("agent.reservations.reservations")}</h2>
             </div>
-            <p>Manage incoming guest reservations and stay dates across your {isHotel ? "properties" : "tours"}.</p>
+            <p>{t(isHotel ? "agent.reservations.introProperties" : "agent.reservations.introTours")}</p>
           </div>
         </div>
 
@@ -92,7 +94,7 @@ const Reservations = () => {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search booking ID..."
+              placeholder={t("agent.reservations.searchBookingId")}
               type="text"
             />
           </div>
@@ -101,9 +103,9 @@ const Reservations = () => {
               value={bookingStatus}
               onChange={(e) => setBookingStatus(e.target.value as BookingStatus)}
             >
-              <option value="">All Statuses</option>
+              <option value="">{t("common.allStatuses")}</option>
               {Object.values(BookingStatus).map(bs => (
-                <option key={bs} value={bs}>{bs}</option>
+                <option key={bs} value={bs}>{tEnum("bookingStatus", bs)}</option>
               ))}
             </select>
             <span className="material-symbols-outlined">expand_more</span>
@@ -116,23 +118,23 @@ const Reservations = () => {
           <table>
             <thead>
               <tr>
-                <th>Booking ID</th>
-                <th>Customer</th>
-                <th>Listing & Stay</th>
-                <th>Guests</th>
-                <th>Total Amount</th>
-                <th>Status</th>
-                <th style={{ textAlign: 'right' }}>Action</th>
+                <th>{t("common.bookingId")}</th>
+                <th>{t("common.customer")}</th>
+                <th>{t("agent.reservations.listingStay")}</th>
+                <th>{t("agent.reservations.guests")}</th>
+                <th>{t("agent.reservations.totalAmount")}</th>
+                <th>{t("common.status")}</th>
+                <th style={{ textAlign: 'right' }}>{t("agent.reservations.action")}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '30px', color: '#707881' }}>Loading reservations...</td>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '30px', color: '#707881' }}>{t("agent.reservations.loadingReservations")}</td>
                 </tr>
               ) : bookings.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '30px', color: '#707881' }}>No reservations found.</td>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '30px', color: '#707881' }}>{t("agent.reservations.noReservationsFound")}</td>
                 </tr>
               ) : (
                 bookings.map((booking: any) => (
@@ -143,7 +145,7 @@ const Reservations = () => {
                     <td>
                       <div className="customer-cell">
                         {booking.memberData?.memberImage ? (
-                          <img src={`${process.env.REACT_APP_API_URL}/${booking.memberData.memberImage}`} className="avatar" alt="customer" />
+                          <img src={`${process.env.REACT_APP_API_URL}/${booking.memberData.memberImage}`} className="avatar" alt={t("agent.reservations.customerAlt")} />
                         ) : (
                           <div className="initials">{booking.memberData?.memberNick?.substring(0,2).toUpperCase() || 'US'}</div>
                         )}
@@ -159,32 +161,32 @@ const Reservations = () => {
                           {isHotel ? booking.propertyData?.propertyName : booking.tourData?.tourName}
                         </span>
                         <span className="unit">
-                          {moment(booking.checkIn).format('MMM DD, YYYY')}
-                          {isHotel && booking.checkOut && ` – ${moment(booking.checkOut).format('MMM DD, YYYY')}`}
+                          {formatDate(booking.checkIn, "medium")}
+                          {isHotel && booking.checkOut && ` – ${formatDate(booking.checkOut, "medium")}`}
                         </span>
                       </div>
                     </td>
                     <td>
                       <span className="type-badge" style={{ background: 'transparent', padding: 0 }}>
-                        {booking.bookingGuests} {isHotel ? "Guests" : "Seats"}
+                        {booking.bookingGuests} {isHotel ? t("agent.reservations.guests") : t("agent.reservations.seats")}
                       </span>
                     </td>
                     <td>
                       <div className="price-cell">
-                        <span className="price">{booking.bookingCurrency === 'USD' ? '$' : '$'}{Number(booking.bookingTotalPrice || 0).toLocaleString()}</span>
+                        <span className="price">{booking.bookingCurrency === 'USD' ? '$' : '$'}{Number(booking.bookingTotalPrice || 0).toLocaleString("en-US")}</span>
                         <span className="unit">{booking.bookingCurrency}</span>
                       </div>
                     </td>
                     <td>
                       <span className={`status-badge ${getStatusBadgeClass(booking.bookingStatus)}`}>
                         <span className="dot"></span>
-                        {booking.bookingStatus}
+                        {tEnum("bookingStatus", booking.bookingStatus)}
                       </span>
                     </td>
                     <td>
                       <div className="actions-cell">
                         <button onClick={() => router.push(`/_admin/bookings?id=${booking._id}`)}>
-                          View
+                          {t("common.view")}
                         </button>
                       </div>
                     </td>
@@ -198,7 +200,7 @@ const Reservations = () => {
         {totalPages > 0 && (
           <div className="pagination-footer">
             <span className="page-info">
-              Showing <strong>{(page - 1) * 10 + 1}–{Math.min(page * 10, total)}</strong> of <strong>{total}</strong> reservations
+              {tx("agent.reservations.showingRange", { range: <strong>{(page - 1) * 10 + 1}–{Math.min(page * 10, total)}</strong>, total: <strong>{total}</strong> })}
             </span>
             <div className="page-controls">
               <button disabled={page === 1} onClick={() => setPage(page - 1)}>

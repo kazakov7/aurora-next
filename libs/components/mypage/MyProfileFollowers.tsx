@@ -10,8 +10,10 @@ import {
   sweetMixinErrorAlert,
 } from "../../sweetAlert";
 import FollowButton from "../common/FollowButton";
+import { useI18n } from "../../i18n";
 
 const MyProfileFollowers: React.FC = () => {
+  const { t, tError } = useI18n();
   const user = useReactiveVar(userVar);
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -51,7 +53,7 @@ const MyProfileFollowers: React.FC = () => {
     isCurrentlyFollowing: boolean,
   ) => {
     if (!user?._id) {
-      sweetMixinErrorAlert("Please log in first.");
+      sweetMixinErrorAlert(t("common.pleaseLogInFirst"));
       return;
     }
 
@@ -70,7 +72,7 @@ const MyProfileFollowers: React.FC = () => {
         ...prev,
         [targetId]: isCurrentlyFollowing,
       }));
-      sweetMixinErrorAlert(err.message || "Operation failed.");
+      sweetMixinErrorAlert(tError(err, "profile.operationFailed"));
     }
   };
 
@@ -101,15 +103,15 @@ const MyProfileFollowers: React.FC = () => {
       {/* Top Control Bar */}
       <div className="section-top-bar">
         <div className="title-group">
-          <h2>Followers</h2>
-          <span className="counter-pill">{total} followers</span>
+          <h2>{t("common.followers")}</h2>
+          <span className="counter-pill">{t("profile.followers.count", { total })}</span>
         </div>
         <div className="bar-actions">
           <div className="search-box">
             <span className="material-symbols-outlined">search</span>
             <input
               type="text"
-              placeholder="Search followers..."
+              placeholder={t("profile.followers.searchFollowers")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -121,8 +123,8 @@ const MyProfileFollowers: React.FC = () => {
                 setSortOrder(e.target.value as "recent" | "name")
               }
             >
-              <option value="recent">Recently Followed</option>
-              <option value="name">Name A–Z</option>
+              <option value="recent">{t("profile.recentlyFollowed")}</option>
+              <option value="name">{t("profile.nameAZ")}</option>
             </select>
             <span className="material-symbols-outlined">expand_more</span>
           </div>
@@ -131,21 +133,21 @@ const MyProfileFollowers: React.FC = () => {
 
       {/* Wide Follower List Panel */}
       {loading && !data ? (
-        <div className="profile-empty-state"><div className="loading-spinner" /><p>Loading followers...</p></div>
+        <div className="profile-empty-state"><div className="loading-spinner" /><p>{t("profile.followers.loadingFollowers")}</p></div>
       ) : error ? (
-        <div className="profile-empty-state"><h3>Followers are unavailable</h3><p>{error.message}</p></div>
+        <div className="profile-empty-state"><h3>{t("profile.followers.unavailable")}</h3><p>{error.message}</p></div>
       ) : processedList.length > 0 ? (
         <div className="list-panel-container">
           {processedList.map((item: Follower) => {
             const follower = item?.followerData;
             const followerId = follower?._id || item.followerId;
             const followerNick =
-              follower?.memberFullName || follower?.memberNick || "AURA member";
+              follower?.memberFullName || follower?.memberNick || t("profile.auroraMember");
             const handle = `@${(follower?.memberNick || "member")
               .toLowerCase()
               .replace(/\s+/g, "")}`;
             const followerLocation =
-              follower?.memberAddress || follower?.memberType || "Location not provided";
+              follower?.memberAddress || follower?.memberType || t("common.locationNotProvided");
             const followerImg = getImageUrl(
               follower?.memberImage,
               DEFAULT_USER_AVATAR,
@@ -187,7 +189,7 @@ const MyProfileFollowers: React.FC = () => {
                   <button
                     type="button"
                     className="more-options-btn"
-                    aria-label="More options"
+                    aria-label={t("profile.followers.moreOptions")}
                     onClick={() => router.push(`/member?memberId=${followerId}`)}
                   >
                     <span className="material-symbols-outlined">more_vert</span>
@@ -203,12 +205,12 @@ const MyProfileFollowers: React.FC = () => {
             <span className="material-symbols-outlined">group</span>
           </div>
           <h3>
-            {searchTerm ? "No matching followers found" : "No followers yet"}
+            {searchTerm ? t("profile.followers.noMatchTitle") : t("profile.followers.noFollowersYet")}
           </h3>
           <p>
             {searchTerm
-              ? `No followers match "${searchTerm}".`
-              : "Share inspiring travel stories and photographs to build your explorer community."}
+              ? t("profile.followers.noMatchText", { searchTerm })
+              : t("profile.followers.emptyText")}
           </p>
         </div>
       )}

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useI18n } from '../../i18n';
 
 interface CommunityHeaderProps {
 	currentSort: string;
@@ -11,13 +12,15 @@ const CommunityHeader: React.FC<CommunityHeaderProps> = ({
 	onSortChange,
 	onOpenWriteModal,
 }) => {
+	const { t } = useI18n();
 	const [isOpen, setIsOpen] = useState(false);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 
+	/** `value` is the stable id kept in state and in the `sort` query parameter; only `label` is translated **/
 	const sortOptions = [
-		{ label: 'Trending', value: 'Trending' },
-		{ label: 'Latest', value: 'Latest' },
-		{ label: 'Top Rated', value: 'Top Rated' },
+		{ label: t('community.header.trending'), value: 'Trending' },
+		{ label: t('community.header.latest'), value: 'Latest' },
+		{ label: t('common.topRated'), value: 'Top Rated' },
 	];
 
 	useEffect(() => {
@@ -43,11 +46,11 @@ const CommunityHeader: React.FC<CommunityHeaderProps> = ({
 				<div className="header-title-box">
 					<div className="dispatch-badge">
 						<span className="material-symbols-outlined icon">public</span>
-						<span>Global Dispatch</span>
+						<span>{t('community.header.globalDispatch')}</span>
 					</div>
-					<h1 className="main-title">Travelers Community</h1>
+					<h1 className="main-title">{t('community.header.travelersCommunity')}</h1>
 					<p className="subtitle">
-						Stories, itineraries, and insider dispatches from verified explorers and world-class hosts across six continents.
+						{t('community.header.intro')}
 					</p>
 				</div>
 
@@ -60,7 +63,7 @@ const CommunityHeader: React.FC<CommunityHeaderProps> = ({
 							onClick={() => setIsOpen(!isOpen)}
 						>
 							<span className="material-symbols-outlined sort-icon">swap_vert</span>
-							<span className="sort-label">{currentSort}</span>
+							<span className="sort-label">{sortOptions.find((opt) => opt.value === currentSort)?.label ?? currentSort}</span>
 							<span className="material-symbols-outlined chevron-icon">expand_more</span>
 						</button>
 
@@ -90,7 +93,7 @@ const CommunityHeader: React.FC<CommunityHeaderProps> = ({
 						onClick={onOpenWriteModal}
 					>
 						<span className="material-symbols-outlined edit-icon">edit_note</span>
-						<span>Write Story</span>
+						<span>{t('community.header.writeStory')}</span>
 					</button>
 				</div>
 			</div>

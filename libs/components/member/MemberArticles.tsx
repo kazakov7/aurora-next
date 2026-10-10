@@ -9,6 +9,7 @@ import { Member } from '../../types/member/member';
 import { BoardArticle } from '../../types/board-article/board-article';
 import { DEFAULT_ARTICLE_IMAGE, getImageUrl } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
+import { useI18n } from '../../i18n';
 
 interface MemberArticlesProps {
 	member: Member;
@@ -16,6 +17,7 @@ interface MemberArticlesProps {
 }
 
 const MemberArticles: React.FC<MemberArticlesProps> = ({ member, onArticlesCountChange }) => {
+	const { t, tError, formatDate, tEnum } = useI18n();
 	const router = useRouter();
 	const currentUser = useReactiveVar(userVar);
 
@@ -61,7 +63,7 @@ const MemberArticles: React.FC<MemberArticlesProps> = ({ member, onArticlesCount
 	const handleLikeToggle = async (e: React.MouseEvent, articleId: string) => {
 		e.stopPropagation();
 		if (!currentUser?._id) {
-			sweetMixinErrorAlert('Please log in to bookmark articles.');
+			sweetMixinErrorAlert(t('member.articles.loginToBookmark'));
 			router.push('/account/login');
 			return;
 		}
@@ -70,11 +72,11 @@ const MemberArticles: React.FC<MemberArticlesProps> = ({ member, onArticlesCount
 			await likeArticleMutation({ variables: { input: articleId } });
 			await refetch();
 		} catch (err: any) {
-			sweetMixinErrorAlert(err?.message || 'Action failed.');
+			sweetMixinErrorAlert(tError(err, 'common.actionFailed'));
 		}
 	};
 
-	const memberName = member?.memberFullName || member?.memberNick || 'Member';
+	const memberName = member?.memberFullName || member?.memberNick || t('common.member');
 
 	return (
 		<div className="member-content-area">
@@ -82,11 +84,11 @@ const MemberArticles: React.FC<MemberArticlesProps> = ({ member, onArticlesCount
 			<div className="content-header-row">
 				<div className="header-title-box">
 					<div className="title-badge-wrap">
-						<h2>Articles</h2>
-						<span className="count-pill">{total} published</span>
+						<h2>{t('common.articles')}</h2>
+						<span className="count-pill">{t('member.articles.published', { total })}</span>
 					</div>
 					<p className="header-subtitle">
-						Travel journals, photo-essays, and architectural chronicles by {memberName}.
+						{t('member.articles.intro', { memberName })}
 					</p>
 				</div>
 
@@ -97,34 +99,34 @@ const MemberArticles: React.FC<MemberArticlesProps> = ({ member, onArticlesCount
 						className={`sort-btn ${sort === 'createdAt' ? 'active' : ''}`}
 						onClick={() => handleSortChange('createdAt')}
 					>
-						Newest
+						{t('common.newest')}
 					</button>
 					<button
 						type="button"
 						className={`sort-btn ${sort === 'articleLikes' ? 'active' : ''}`}
 						onClick={() => handleSortChange('articleLikes')}
 					>
-						Most Liked
+						{t('member.articles.mostLiked')}
 					</button>
 					<button
 						type="button"
 						className={`sort-btn ${sort === 'articleViews' ? 'active' : ''}`}
 						onClick={() => handleSortChange('articleViews')}
 					>
-						Most Viewed
+						{t('member.articles.mostViewed')}
 					</button>
 				</div>
 			</div>
 
 			{/* Articles Grid or Loading or Empty State */}
 			{loading && articles.length === 0 ? (
-				<p className="member-profile-state">Loading articles...</p>
+				<p className="member-profile-state">{t('member.articles.loadingArticles')}</p>
 			) : articles.length > 0 ? (
 				<div className="member-articles-grid" id="articles-grid">
 					{articles.map((article) => {
 						const isLiked = article?.meLiked?.[0]?.myFavorite || false;
-						const readTime = `${Math.max(1, Math.ceil((article.articleContent?.length || 200) / 400))} min read`;
-						const formattedDate = moment(isNaN(Number(article.createdAt)) ? article.createdAt : Number(article.createdAt)).format('MMM DD, YYYY');
+						const readTime = t('member.articles.minRead', { math: Math.max(1, Math.ceil((article.articleContent?.length || 200) / 400)) });
+						const formattedDate = formatDate(article.createdAt, 'medium');
 
 						return (
 							<article
@@ -142,13 +144,13 @@ const MemberArticles: React.FC<MemberArticlesProps> = ({ member, onArticlesCount
 									<div className="gradient-overlay"></div>
 
 									{/* Category Pill Tag */}
-									<span className="category-badge">{article.articleCategory || 'Uncategorized'}</span>
+									<span className="category-badge">{article.articleCategory ? tEnum('articleCategory', article.articleCategory) : t('common.uncategorized')}</span>
 
 									{/* Bookmark Button */}
 									<button
 										type="button"
 										className="bookmark-btn"
-										aria-label="Bookmark"
+										aria-label={t('member.articles.bookmark')}
 										onClick={(e) => handleLikeToggle(e, article._id)}
 									>
 										<span
@@ -196,9 +198,9 @@ const MemberArticles: React.FC<MemberArticlesProps> = ({ member, onArticlesCount
 					<div className="empty-icon-box">
 						<span className="material-symbols-outlined">menu_book</span>
 					</div>
-					<h3>No articles published yet</h3>
+					<h3>{t('member.articles.noArticlesPublishedYet')}</h3>
 					<p>
-						{memberName} has not released any public dispatches or photo monographs yet. Check back soon for new expeditions.
+						{t('member.articles.emptyText', { memberName })}
 					</p>
 				</div>
 			)}
@@ -207,13 +209,13 @@ const MemberArticles: React.FC<MemberArticlesProps> = ({ member, onArticlesCount
 			{totalPages > 1 && (
 				<div className="pagination-wrapper">
 					<span className="pagination-info">
-						Showing {(page - 1) * 9 + 1}–{Math.min(page * 9, total)} of {total} articles
+						{t('member.articles.showingRange', { page: (page - 1) * 9 + 1, math: Math.min(page * 9, total), total })}
 					</span>
 					<div className="pagination-pills">
 						<button
 							type="button"
 							className="nav-arrow-btn"
-							aria-label="Previous page"
+							aria-label={t('common.previousPage')}
 							disabled={page === 1}
 							onClick={() => setPage((p) => Math.max(1, p - 1))}
 						>
@@ -237,7 +239,7 @@ const MemberArticles: React.FC<MemberArticlesProps> = ({ member, onArticlesCount
 						<button
 							type="button"
 							className="nav-arrow-btn"
-							aria-label="Next page"
+							aria-label={t('common.nextPage')}
 							disabled={page === totalPages}
 							onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
 						>

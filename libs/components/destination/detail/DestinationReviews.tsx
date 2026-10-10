@@ -5,7 +5,7 @@ import { CREATE_DESTINATION_REVIEW } from '../../../../apollo/user/mutation';
 import { sweetErrorAlert } from '../../../sweetAlert';
 import { Message } from '../../../enums/common.enum';
 import { DEFAULT_USER_AVATAR, getImageUrl } from '../../../config';
-import moment from 'moment';
+import { useI18n } from '../../../i18n';
 
 interface DestinationReviewItem {
 	_id: string;
@@ -32,12 +32,12 @@ interface DestinationReviewsProps {
 
 const defaultUserAvatar = DEFAULT_USER_AVATAR;
 
-const ratingLabelsMap: Record<number, string> = {
-	1: '1.0 / 5.0 (Poor)',
-	2: '2.0 / 5.0 (Fair)',
-	3: '3.0 / 5.0 (Good)',
-	4: '4.0 / 5.0 (Very Good)',
-	5: '5.0 / 5.0 (Exceptional)',
+const ratingLabelKeys: Record<number, string> = {
+	1: 'destinations.reviews.rating.1',
+	2: 'destinations.reviews.rating.2',
+	3: 'destinations.reviews.rating.3',
+	4: 'destinations.reviews.rating.4',
+	5: 'destinations.reviews.rating.5',
 };
 
 const DestinationReviews = ({
@@ -48,6 +48,7 @@ const DestinationReviews = ({
 	averageRating,
 	onReviewAdded,
 }: DestinationReviewsProps) => {
+	const { t, tError, formatRelativeTime } = useI18n();
 	const user = useReactiveVar(userVar);
 	const [selectedRating, setSelectedRating] = useState<number>(5);
 	const [reviewText, setReviewText] = useState<string>('');
@@ -65,7 +66,7 @@ const DestinationReviews = ({
 		if (!reviewText.trim()) return;
 
 		try {
-			if (!user?._id) throw new Error(Message.NOT_AUTHENTICATED);
+			if (!user?._id) throw new Error(t(Message.NOT_AUTHENTICATED));
 
 			setSubmitting(true);
 			await createDestinationReview({
@@ -82,7 +83,7 @@ const DestinationReviews = ({
 			onReviewAdded();
 		} catch (err: any) {
 			console.log('ERROR, createDestinationReview:', err.message);
-			sweetErrorAlert(err.message);
+			sweetErrorAlert(tError(err));
 		} finally {
 			setSubmitting(false);
 		}
@@ -104,11 +105,11 @@ const DestinationReviews = ({
 			<div className="reviews-header-bar">
 				<div>
 					<div className="title-with-pill">
-						<h2 className="reviews-main-title">Traveler Reviews &amp; Notes</h2>
-						<span className="community-badge-pill">Community</span>
+						<h2 className="reviews-main-title">{t('destinations.reviews.title')}</h2>
+						<span className="community-badge-pill">{t('navigation.community')}</span>
 					</div>
 					<p className="reviews-sub-title">
-						Authentic insights, local tips, and notes from verified travelers.
+						{t('destinations.reviews.subtitle')}
 					</p>
 				</div>
 
@@ -128,7 +129,7 @@ const DestinationReviews = ({
 							))}
 						</div>
 						<span className="reviews-tally-label">
-							{totalReviews > 0 ? `${totalReviews} verified traveler ratings` : 'Curated ratings'}
+							{totalReviews > 0 ? t('destinations.reviews.verifiedRatings', { totalReviews }) : t('destinations.reviews.curatedRatings')}
 						</span>
 					</div>
 				</div>
@@ -139,7 +140,7 @@ const DestinationReviews = ({
 				<form onSubmit={handleSubmitReview} className="composer-form">
 					<div className="composer-top-row">
 						<div className="rating-select-area">
-							<span className="rate-prompt-text">Rate this destination:</span>
+							<span className="rate-prompt-text">{t('destinations.reviews.rateThisDestination')}</span>
 							<div className="interactive-stars-row">
 								{[1, 2, 3, 4, 5].map((star) => (
 									<button
@@ -147,7 +148,7 @@ const DestinationReviews = ({
 										type="button"
 										className="star-click-btn"
 										onClick={() => handleStarClick(star)}
-										aria-label={`${star} star`}
+										aria-label={t('destinations.reviews.star', { star })}
 									>
 										<span
 											className="material-symbols-outlined star-icon"
@@ -162,22 +163,22 @@ const DestinationReviews = ({
 								))}
 							</div>
 							<span className="selected-rating-text">
-								{ratingLabelsMap[selectedRating] || `${selectedRating}.0 / 5.0`}
+								{ratingLabelKeys[selectedRating] ? t(ratingLabelKeys[selectedRating]) : `${selectedRating}.0 / 5.0`}
 							</span>
 						</div>
 
 						<span className="user-login-indicator">
-							{user?.memberNick ? `Logged in as ${user.memberNick}` : 'Sign in to post note'}
+							{user?.memberNick ? t('destinations.reviews.loggedInAs', { memberNick: user.memberNick }) : t('destinations.reviews.signInToPostNote')}
 						</span>
 					</div>
 
 					<div className="composer-input-row">
-						<img src={userAvatar} alt="User" className="composer-user-avatar" />
+						<img src={userAvatar} alt={t('destinations.reviews.user')} className="composer-user-avatar" />
 						<div className="input-field-wrapper">
 							<input
 								type="text"
 								className="composer-text-input"
-								placeholder={`Share a travel tip, local secret, or note about ${destinationName}...`}
+								placeholder={t('destinations.reviews.placeholder', { destinationName })}
 								value={reviewText}
 								onChange={(e) => setReviewText(e.target.value)}
 								disabled={submitting}
@@ -187,7 +188,7 @@ const DestinationReviews = ({
 								type="submit"
 								className="composer-submit-icon-btn"
 								disabled={submitting}
-								aria-label="Submit note"
+								aria-label={t('destinations.reviews.submitNote')}
 							>
 								<span className="material-symbols-outlined">arrow_upward</span>
 							</button>
@@ -198,7 +199,7 @@ const DestinationReviews = ({
 							className="composer-post-btn"
 							disabled={submitting}
 						>
-							{submitting ? 'Posting...' : 'Post Note'}
+							{submitting ? t('common.posting') : t('destinations.reviews.postNote')}
 						</button>
 					</div>
 				</form>
@@ -209,14 +210,14 @@ const DestinationReviews = ({
 				{reviews.length === 0 ? (
 					<div className="empty-reviews-box">
 						<span className="material-symbols-outlined icon-empty">chat</span>
-						<h3 className="empty-title">No traveler notes yet</h3>
+						<h3 className="empty-title">{t('destinations.reviews.noTravelerNotesYet')}</h3>
 						<p className="empty-desc">
-							Be the first traveler to post a note or tip for {destinationName}.
+							{t('destinations.reviews.beTheFirst', { destinationName })}
 						</p>
 					</div>
 				) : (
 					reviews.map((rev) => {
-						const authorName = rev.memberData?.memberFullName || rev.memberData?.memberNick || 'Traveler';
+						const authorName = rev.memberData?.memberFullName || rev.memberData?.memberNick || t('common.travelerLabel');
 						const authorNick = rev.memberData?.memberNick ? `@${rev.memberData.memberNick}` : '@verified';
 						const authorImg = getImageUrl(rev.memberData?.memberImage, defaultUserAvatar);
 						const isLiked = !!likedThumbs[rev._id];
@@ -232,7 +233,7 @@ const DestinationReviews = ({
 												<span className="author-handle">{authorNick}</span>
 												<span className="meta-dot"></span>
 												<span className="review-date">
-													{moment(isNaN(Number(rev.createdAt)) ? rev.createdAt : Number(rev.createdAt)).fromNow()}
+													{formatRelativeTime(rev.createdAt)}
 												</span>
 											</div>
 											<div className="stars-row">
@@ -256,7 +257,7 @@ const DestinationReviews = ({
 										type="button"
 										className={`thumb-like-btn ${isLiked ? 'liked' : ''}`}
 										onClick={() => toggleThumb(rev._id)}
-										aria-label="Helpful review"
+										aria-label={t('destinations.reviews.helpfulReview')}
 									>
 										<span
 											className="material-symbols-outlined icon-thumb"

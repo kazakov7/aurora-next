@@ -4,6 +4,7 @@ import { Property } from '../../../types/property/property';
 import { getImageUrl } from '../../../config';
 import { DEFAULT_PROPERTY_IMAGE } from '../../../config';
 import { ApolloError } from '@apollo/client';
+import { useI18n } from '../../../i18n';
 
 interface DestinationTopStaysProps {
 	destinationName: string;
@@ -20,6 +21,7 @@ const DestinationTopStays = ({
 	loading,
 	error,
 }: DestinationTopStaysProps) => {
+	const { t, tEnum } = useI18n();
 	if (!loading && !error && (!properties || properties.length === 0)) return null;
 
 	// Display exactly up to 4 items in 1 row on Desktop
@@ -30,19 +32,19 @@ const DestinationTopStays = ({
 			{/* Section Header */}
 			<div className="section-header-row">
 				<div>
-					<h2 className="section-main-title">Top Stays in {destinationName}</h2>
-					<p className="section-sub-title">Discover exceptional places to stay.</p>
+					<h2 className="section-main-title">{t('destinations.topStays.title', { destinationName })}</h2>
+					<p className="section-sub-title">{t('destinations.topStays.subtitle')}</p>
 				</div>
 				<Link href="/property" className="view-all-header-link">
-					<span>View All Hotels</span>
+					<span>{t('destinations.topStays.viewAllHotels')}</span>
 					<span className="material-symbols-outlined">arrow_forward</span>
 				</Link>
 			</div>
 
 			{/* Exactly 4 Hotel Cards in 1 Row on Desktop */}
 			<div className="stays-cards-grid">
-				{loading ? <p>Loading top stays…</p> : null}
-				{!loading && error ? <p>Top stays are unavailable right now.</p> : null}
+				{loading ? <p>{t('destinations.topStays.loading')}</p> : null}
+				{!loading && error ? <p>{t('destinations.topStays.unavailable')}</p> : null}
 				{displayProperties.map((property, idx) => {
 					const imgUrl = getImageUrl(property.propertyImages?.[0], DEFAULT_PROPERTY_IMAGE);
 					const pillLabel = property.propertyType;
@@ -72,7 +74,7 @@ const DestinationTopStays = ({
 											e.preventDefault();
 											onLikeProperty(property._id);
 										}}
-										aria-label="Save to Wishlist"
+										aria-label={t('destinations.topStays.saveToWishlist')}
 									>
 										<span
 											className="material-symbols-outlined"
@@ -104,17 +106,17 @@ const DestinationTopStays = ({
 
 									<h3 className="stay-name-title">{property.propertyName}</h3>
 									<p className="stay-specs-desc">
-										{property.propertyDesc || property.propertyType}
+										{property.propertyDesc || tEnum('propertyType', property.propertyType)}
 									</p>
 								</div>
 
 								<div className="card-price-reserve-row">
 									<div className="price-box">
-										<span className="price-amount">{typeof priceUSD === 'number' ? `$${priceUSD.toLocaleString()}` : 'Price on request'}</span>
-										<span className="price-unit"> / night</span>
+										<span className="price-amount">{typeof priceUSD === 'number' ? `$${priceUSD.toLocaleString('en-US')}` : t('destinations.topStays.priceOnRequest')}</span>
+										<span className="price-unit"> {t('common.perNight')}</span>
 									</div>
 									<Link href={`/property/detail?id=${property._id}`} className="reserve-btn-link">
-										Reserve
+										{t('booking.reserve')}
 									</Link>
 								</div>
 							</div>

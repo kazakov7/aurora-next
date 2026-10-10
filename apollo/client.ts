@@ -7,6 +7,7 @@ import { getMainDefinition } from '@apollo/client/utilities';
 import { onError } from '@apollo/client/link/error';
 import { AUTH_TOKEN_ERRORS, clearAuthSession, getJwtToken } from '../libs/auth';
 import { sweetErrorAlert } from '../libs/sweetAlert';
+import { getActiveLocale, translateActive, translateServerMessage } from '../libs/i18n';
 import { Message } from '../libs/enums/common.enum';
 import { socketVar } from './store';
 
@@ -115,11 +116,11 @@ function createIsomorphicLink() {
 						sessionExpired = true;
 						return;
 					}
-					if (!isSilent && !message.includes('input')) sweetErrorAlert(message);
+					if (!isSilent && !message.includes('input')) sweetErrorAlert(translateServerMessage(getActiveLocale(), message));
 				});
 				if (sessionExpired) {
 					clearAuthSession();
-					sweetErrorAlert(Message.SESSION_EXPIRED);
+					sweetErrorAlert(translateActive(Message.SESSION_EXPIRED));
 				}
 			}
 			if (networkError) console.log(`[Network error]: ${networkError}`);

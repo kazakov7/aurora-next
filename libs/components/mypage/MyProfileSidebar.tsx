@@ -14,6 +14,7 @@ import {
 import { AgentType, AgentVerificationStatus } from "../../enums/agent.enum";
 import { Direction } from "../../enums/common.enum";
 import { BookingStatus } from "../../enums/booking.enum";
+import { useI18n } from "../../i18n";
 
 interface MyProfileSidebarProps {
   activeCategory?: string;
@@ -24,6 +25,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
   activeCategory,
   onCategoryChange,
 }) => {
+  const { t } = useI18n();
   const router = useRouter();
   const user = useReactiveVar(userVar);
   const currentCat =
@@ -79,9 +81,9 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
   const isApprovedAgent = user?.memberType === "AGENT" && myAgentType;
 
   // Partner tab label
-  let partnerTabLabel = "Become a Partner";
+  let partnerTabLabel = t("profile.becomeAPartner");
   if (hasPending || hasRejected) {
-    partnerTabLabel = "Agent Application";
+    partnerTabLabel = t("profile.sidebar.agentApplication");
   }
 
   const wishlistCount =
@@ -109,7 +111,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
 
   const handleLogout = async () => {
     const confirmed = await sweetConfirmAlert(
-      "Do you want to log out from AURA?",
+      t("profile.sidebar.logoutConfirm"),
     );
     if (confirmed) {
       logOut();
@@ -119,56 +121,56 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
   const navItems = [
     {
       id: "articles",
-      label: "Articles",
+      label: t("common.articles"),
       icon: "menu_book",
       badge: String(user?.memberArticles ?? 0),
     },
     {
       id: "followers",
-      label: "Followers",
+      label: t("common.followers"),
       icon: "group",
       badge: String(user?.memberFollowers ?? 0),
     },
     {
       id: "following",
-      label: "Following",
+      label: t("common.followButton.following"),
       icon: "person_check",
       badge: String(user?.memberFollowings ?? 0),
     },
     {
       id: "wishlist",
-      label: "Wishlist",
+      label: t("profile.sidebar.wishlist"),
       icon: "bookmark",
       badge: String(wishlistCount),
     },
     {
       id: "bookings",
-      label: "Bookings",
+      label: t("common.bookings"),
       icon: "confirmation_number",
-      badge: `${activeBookingsCount} active`,
+      badge: t("profile.sidebar.activeCount", { count: activeBookingsCount }),
       badgeClass: "badge-active-amber",
     },
     {
       id: "history",
-      label: "Visited hotels",
+      label: t("profile.sidebar.visitedHotels"),
       icon: "explore",
       trailingIcon: "chevron_right",
     },
     {
       id: "visitedTours",
-      label: "Visited tours",
+      label: t("profile.sidebar.visitedTours"),
       icon: "map",
       trailingIcon: "chevron_right",
     },
     {
       id: "notifications",
-      label: "Notifications",
+      label: t("navigation.notifications"),
       icon: "notifications",
-      badge: `${unreadCount} unread`,
+      badge: t("profile.sidebar.unreadCount", { count: unreadCount }),
     },
     {
       id: "settings",
-      label: "Settings",
+      label: t("profile.sidebar.settings"),
       icon: "tune",
     },
   ];
@@ -226,7 +228,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
                 fontWeight: 600,
               }}
             >
-              Partner Operations
+              {t("profile.sidebar.partnerOperations")}
             </div>
             {myAgentType === AgentType.HOTEL && (
               <button
@@ -238,7 +240,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
               >
                 <div className="item-left">
                   <span className="material-symbols-outlined">domain</span>
-                  <span>My Hotels</span>
+                  <span>{t("profile.sidebar.myHotels")}</span>
                 </div>
               </button>
             )}
@@ -252,7 +254,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
               >
                 <div className="item-left">
                   <span className="material-symbols-outlined">explore</span>
-                  <span>My Tours</span>
+                  <span>{t("profile.sidebar.myTours")}</span>
                 </div>
               </button>
             )}
@@ -267,7 +269,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
                 <span className="material-symbols-outlined">
                   calendar_month
                 </span>
-                <span>Reservations</span>
+                <span>{t("profile.sidebar.reservations")}</span>
               </div>
             </button>
           </>
@@ -293,7 +295,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
               >
                 dashboard
               </span>
-              <span>Admin Dashboard</span>
+              <span>{t("profile.sidebar.adminDashboard")}</span>
             </div>
             <span
               className="material-symbols-outlined"
@@ -311,7 +313,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
         >
           <div className="item-left">
             <span className="material-symbols-outlined">logout</span>
-            <span>Log Out</span>
+            <span>{t("auth.logout")}</span>
           </div>
         </button>
       </nav>
@@ -320,18 +322,17 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
       <div className="atelier-concierge-card">
         <div className="atelier-header">
           <span className="material-symbols-outlined">support_agent</span>
-          <span>AURA Direct Atelier</span>
+          <span>{t("profile.sidebar.auroraDirectAtelier")}</span>
         </div>
         <p>
-          Need adjustments, private helicopter transfers, or custom dietary
-          arrangements?
+          {t("profile.sidebar.conciergeText")}
         </p>
         <button
           type="button"
           className="chat-curator-btn"
           onClick={() => router.push("/chat")}
         >
-          Chat with Curator
+          {t("profile.sidebar.chatWithCurator")}
         </button>
       </div>
     </aside>

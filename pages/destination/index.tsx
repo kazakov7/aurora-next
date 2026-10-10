@@ -14,6 +14,7 @@ import { GET_DESTINATIONS } from '../../apollo/user/query';
 import { LIKE_TARGET_DESTINATION } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
 import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
+import { useI18n } from '../../libs/i18n';
 
 const continentCountryMap: Record<string, string> = {
 	all: '',
@@ -34,6 +35,7 @@ const defaultInput: DestinationsInquiry = {
 };
 
 const DestinationList: NextPage = () => {
+	const { t, tError } = useI18n();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 
@@ -154,14 +156,14 @@ const DestinationList: NextPage = () => {
 	const likeDestinationHandler = async (e: React.MouseEvent, destinationId: string) => {
 		e.stopPropagation();
 		try {
-			if (!user?._id) throw new Error(Message.NOT_AUTHENTICATED);
+			if (!user?._id) throw new Error(t(Message.NOT_AUTHENTICATED));
 			await likeTargetDestination({
 				variables: { destinationId },
 			});
 			await refetchDestinations({ input: searchFilter });
 		} catch (err: any) {
 			console.log('ERROR, likeDestinationHandler:', err.message);
-			sweetMixinErrorAlert(err.message);
+			sweetMixinErrorAlert(tError(err));
 		}
 	};
 
@@ -173,10 +175,10 @@ const DestinationList: NextPage = () => {
 	return (
 		<div className="destination-page-wrapper">
 			<Head>
-				<title>AURA | Explore the World - Curated Destinations</title>
+				<title>{t('destinations.list.metaTitle')}</title>
 				<meta
 					name="title"
-					content="Explore the World — Global Sanctuaries &amp; Territories | AURA Travel"
+					content={t('destinations.list.metaName')}
 				/>
 			</Head>
 
@@ -199,15 +201,15 @@ const DestinationList: NextPage = () => {
 					<div className="destinations-grid-layout" style={{ opacity: 0.6 }}>
 						<div className="empty-destinations-state" style={{ gridColumn: '1 / -1' }}>
 							<span className="material-symbols-outlined empty-icon">sync</span>
-							<h3 className="empty-title">Loading destinations...</h3>
+							<h3 className="empty-title">{t('destinations.list.loadingDestinations')}</h3>
 						</div>
 					</div>
 				) : destinations.length === 0 ? (
 					<div className="empty-destinations-state">
 						<span className="material-symbols-outlined empty-icon">travel_explore</span>
-						<h3 className="empty-title">No destinations found</h3>
+						<h3 className="empty-title">{t('destinations.list.noDestinationsFound')}</h3>
 						<p className="empty-desc">
-							No curated sanctuaries or territories found in this selection yet.
+							{t('destinations.list.emptyText')}
 						</p>
 					</div>
 				) : (
@@ -233,7 +235,7 @@ const DestinationList: NextPage = () => {
 									className="page-arrow-btn"
 									disabled={currentPage <= 1}
 									onClick={() => handlePaginationChange(currentPage - 1)}
-									aria-label="Previous page"
+									aria-label={t('common.previousPage')}
 								>
 									<span className="material-symbols-outlined">chevron_left</span>
 								</button>
@@ -257,7 +259,7 @@ const DestinationList: NextPage = () => {
 									className="page-arrow-btn"
 									disabled={currentPage >= totalPages}
 									onClick={() => handlePaginationChange(currentPage + 1)}
-									aria-label="Next page"
+									aria-label={t('common.nextPage')}
 								>
 									<span className="material-symbols-outlined">chevron_right</span>
 								</button>
@@ -265,7 +267,7 @@ const DestinationList: NextPage = () => {
 						)}
 
 						<p className="pagination-tally-text">
-							Showing {startItem}–{endItem} of {total} curated destinations worldwide
+							{t('destinations.list.showingRange', { startItem, endItem, total })}
 						</p>
 					</section>
 				)}

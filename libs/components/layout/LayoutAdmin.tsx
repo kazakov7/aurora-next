@@ -9,9 +9,11 @@ import { GET_UNREAD_NOTIFICATION_COUNT } from "../../../apollo/user/query";
 import Link from "next/link";
 import { DEFAULT_USER_AVATAR, REACT_APP_API_URL } from "../../config";
 import AuroraLogo3D from "../AuroraLogo3D";
+import { useI18n } from "../../i18n";
 
 const withAdminLayout = (Component: any) => {
   return (props: any) => {
+    const { t, tEnum } = useI18n();
     const router = useRouter();
     const user = useReactiveVar(userVar);
     const activePath = router.pathname.replace("/_admin/", "");
@@ -49,7 +51,7 @@ const withAdminLayout = (Component: any) => {
     return (
       <>
         <Head>
-          <title>AURA Administration</title>
+          <title>{t("admin.layout.metaTitle")}</title>
         </Head>
         <div id="admin-wrap">
           {/* Fixed Sidebar */}
@@ -65,7 +67,7 @@ const withAdminLayout = (Component: any) => {
 
               <nav className="sidebar-nav">
                 <div className="nav-group">
-                  <span className="group-label">General</span>
+                  <span className="group-label">{t("admin.layout.general")}</span>
                   <Link
                     href="/_admin"
                     className={`nav-item ${
@@ -73,7 +75,7 @@ const withAdminLayout = (Component: any) => {
                     }`}
                   >
                     <span className="material-symbols-outlined">grid_view</span>
-                    <span>Overview</span>
+                    <span>{t("admin.layout.overview")}</span>
                   </Link>
                   <Link
                     href="/_admin/notifications"
@@ -84,12 +86,12 @@ const withAdminLayout = (Component: any) => {
                     <span className="material-symbols-outlined">
                       notifications
                     </span>
-                    <span>Notifications</span>
+                    <span>{t("navigation.notifications")}</span>
                   </Link>
                 </div>
 
                 <div className="nav-group">
-                  <span className="group-label">Management</span>
+                  <span className="group-label">{t("admin.layout.management")}</span>
                   <Link
                     href="/_admin/users"
                     className={`nav-item ${
@@ -97,7 +99,7 @@ const withAdminLayout = (Component: any) => {
                     }`}
                   >
                     <span className="material-symbols-outlined">group</span>
-                    <span>Members</span>
+                    <span>{t("admin.layout.members")}</span>
                   </Link>
                   <Link
                     href="/_admin/agent-verification"
@@ -108,7 +110,7 @@ const withAdminLayout = (Component: any) => {
                     <span className="material-symbols-outlined">
                       verified_user
                     </span>
-                    <span>Agent Verification</span>
+                    <span>{t("admin.layout.agentVerification")}</span>
                   </Link>
                   <Link
                     href="/_admin/properties"
@@ -117,7 +119,7 @@ const withAdminLayout = (Component: any) => {
                     }`}
                   >
                     <span className="material-symbols-outlined">hotel</span>
-                    <span>Hotels</span>
+                    <span>{t("navigation.hotels")}</span>
                   </Link>
                   <Link
                     href="/_admin/tours"
@@ -126,7 +128,7 @@ const withAdminLayout = (Component: any) => {
                     }`}
                   >
                     <span className="material-symbols-outlined">explore</span>
-                    <span>Tours</span>
+                    <span>{t("navigation.tours")}</span>
                   </Link>
                   <Link
                     href="/_admin/destinations"
@@ -135,7 +137,7 @@ const withAdminLayout = (Component: any) => {
                     }`}
                   >
                     <span className="material-symbols-outlined">map</span>
-                    <span>Destinations</span>
+                    <span>{t("navigation.destinations")}</span>
                   </Link>
                   <Link
                     href="/_admin/bookings"
@@ -146,12 +148,12 @@ const withAdminLayout = (Component: any) => {
                     <span className="material-symbols-outlined">
                       calendar_month
                     </span>
-                    <span>Bookings</span>
+                    <span>{t("common.bookings")}</span>
                   </Link>
                 </div>
 
                 <div className="nav-group">
-                  <span className="group-label">Content</span>
+                  <span className="group-label">{t("common.content")}</span>
                   <Link
                     href="/_admin/community"
                     className={`nav-item ${
@@ -159,7 +161,7 @@ const withAdminLayout = (Component: any) => {
                     }`}
                   >
                     <span className="material-symbols-outlined">forum</span>
-                    <span>Community</span>
+                    <span>{t("navigation.community")}</span>
                   </Link>
                   <Link
                     href="/_admin/cs"
@@ -168,7 +170,7 @@ const withAdminLayout = (Component: any) => {
                     }`}
                   >
                     <span className="material-symbols-outlined">campaign</span>
-                    <span>Notices</span>
+                    <span>{t("admin.layout.notices")}</span>
                   </Link>
                 </div>
               </nav>
@@ -182,7 +184,7 @@ const withAdminLayout = (Component: any) => {
                 <div className="breadcrumb">
                   <span className="material-symbols-outlined">home</span>
                   <span>/</span>
-                  <span className="current-page">Administration Portal</span>
+                  <span className="current-page">{t("admin.layout.administrationPortal")}</span>
                 </div>
               </div>
 
@@ -191,7 +193,7 @@ const withAdminLayout = (Component: any) => {
                   <button
                     className="notif-btn"
                     type="button"
-                    aria-label="Notifications"
+                    aria-label={t("navigation.notifications")}
                   >
                     <span className="material-symbols-outlined">
                       notifications
@@ -203,7 +205,7 @@ const withAdminLayout = (Component: any) => {
                 <div className="user-profile">
                   <div className="user-info">
                     <span className="user-name">{user.memberNick}</span>
-                    <span className="user-role">{user.memberType}</span>
+                    <span className="user-role">{tEnum("memberType", user.memberType)}</span>
                   </div>
                   <img
                     className="user-avatar"
@@ -212,7 +214,7 @@ const withAdminLayout = (Component: any) => {
                         ? `${REACT_APP_API_URL}/${user.memberImage}`
                         : DEFAULT_USER_AVATAR
                     }
-                    alt="Profile"
+                    alt={t("navigation.profile")}
                   />
                 </div>
               </div>

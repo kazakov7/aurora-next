@@ -10,6 +10,7 @@ import { Notification, Notifications } from '../../../libs/types/notification/no
 import { NotificationStatus, NotificationType } from '../../../libs/enums/notification.enum';
 import { sweetErrorHandling } from '../../../libs/sweetAlert';
 import { useNotificationRealtime } from '../../../libs/hooks/useNotificationRealtime';
+import { useI18n } from '../../../libs/i18n';
 
 interface GetMyNotificationsData {
 	getMyNotifications: Notifications;
@@ -23,12 +24,6 @@ interface NotificationsInquiry {
 
 const PAGE_LIMIT = 10;
 
-const formatDate = (value?: Date | string): string => {
-	if (!value) return '—';
-	const date = new Date(isNaN(Number(value)) ? value : Number(value));
-	return Number.isNaN(date.getTime()) ? '—' : date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-};
-
 /** Admins receive SYSTEM notifications only for agent applications (see notifyActiveAdmins callers) **/
 const getAdminLink = (notification: Notification): string | null => {
 	if (notification.notificationType === NotificationType.BOOKING) return '/_admin/bookings';
@@ -37,6 +32,7 @@ const getAdminLink = (notification: Notification): string | null => {
 };
 
 const AdminNotificationsPage: NextPage = () => {
+	const { t, tEnum, formatDate } = useI18n();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 
@@ -121,55 +117,55 @@ const AdminNotificationsPage: NextPage = () => {
 		<div className="admin-overview dashboard-container">
 			<div className="overview-header">
 				<div className="header-text">
-					<h1>Notifications</h1>
-					<p>Agent applications, booking updates and other platform events addressed to administrators.</p>
+					<h1>{t('navigation.notifications')}</h1>
+					<p>{t('admin.notifications.intro')}</p>
 				</div>
 			</div>
 
 			<section className="admin-table-section">
 				<div className="table-header">
-					<div className="header-left"><h2>Inbox</h2><span className="table-badge">{unreadCount} Unread</span></div>
+					<div className="header-left"><h2>{t('admin.notifications.inbox')}</h2><span className="table-badge">{t('admin.notifications.unread', { unreadCount })}</span></div>
 					<div className="header-right">
 						<div className="filter-select-group">
 							<select className="filter-select" value={status} onChange={(event) => updateQuery({ status: event.target.value as NotificationStatus | 'ALL', page: 1 })}>
-								<option value="ALL">All notifications</option>
-								<option value={NotificationStatus.WAIT}>Unread only</option>
+								<option value="ALL">{t('admin.notifications.allNotifications')}</option>
+								<option value={NotificationStatus.WAIT}>{t('admin.notifications.unreadOnly')}</option>
 							</select>
 						</div>
 						<button className="export-btn" type="button" disabled={unreadCount === 0} onClick={() => void handleMarkAllAsRead()}>
 							<span className="material-symbols-outlined">done_all</span>
-							Mark all as read
+							{t('admin.notifications.markAllAsRead')}
 						</button>
 					</div>
 				</div>
 
 				<div className="table-container">
 					<table className="admin-table">
-						<thead><tr><th>Type</th><th>Notification</th><th>From</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+						<thead><tr><th>{t('common.type')}</th><th>{t('admin.notifications.notification')}</th><th>{t('common.from')}</th><th>{t('common.date')}</th><th>{t('common.status')}</th><th>{t('common.actions')}</th></tr></thead>
 						<tbody>
 							{loading && !data ? (
-								<tr><td colSpan={6} style={{ textAlign: 'center', padding: '48px' }}>Loading notifications...</td></tr>
+								<tr><td colSpan={6} style={{ textAlign: 'center', padding: '48px' }}>{t('admin.notifications.loadingNotifications')}</td></tr>
 							) : error ? (
 								<tr><td colSpan={6} style={{ textAlign: 'center', padding: '48px', color: '#ba1a1a' }}>{error.message}</td></tr>
 							) : notifications.length === 0 ? (
-								<tr><td colSpan={6} style={{ textAlign: 'center', padding: '48px' }}>No notifications found.</td></tr>
+								<tr><td colSpan={6} style={{ textAlign: 'center', padding: '48px' }}>{t('admin.notifications.noNotificationsFound')}</td></tr>
 							) : notifications.map((notification) => {
 								const isUnread = notification.notificationStatus === NotificationStatus.WAIT;
 								const link = getAdminLink(notification);
 								return (
 									<tr key={notification._id}>
-										<td><span className={`badge-pill ${notification.notificationType === NotificationType.BOOKING ? 'sky' : 'indigo'}`}>{notification.notificationType}</span></td>
+										<td><span className={`badge-pill ${notification.notificationType === NotificationType.BOOKING ? 'sky' : 'indigo'}`}>{tEnum('notificationType', notification.notificationType)}</span></td>
 										<td>
 											<strong>{notification.notificationTitle}</strong>
 											{notification.notificationDesc ? <div className="item-text">{notification.notificationDesc}</div> : null}
 										</td>
-										<td>{notification.authorData?.memberNick ?? notification.authorData?.memberFullName ?? 'System'}</td>
-										<td><span className="date-text">{formatDate(notification.createdAt)}</span></td>
-										<td><span className={`status-pill ${isUnread ? 'amber' : 'emerald'}`}><span className="dot" /> {isUnread ? 'UNREAD' : 'READ'}</span></td>
+										<td>{notification.authorData?.memberNick ?? notification.authorData?.memberFullName ?? t('admin.notifications.system')}</td>
+										<td><span className="date-text">{(formatDate(notification.createdAt, 'dateTime') || '—')}</span></td>
+										<td><span className={`status-pill ${isUnread ? 'amber' : 'emerald'}`}><span className="dot" /> {isUnread ? t('admin.notifications.unread2') : t('admin.notifications.read')}</span></td>
 										<td>
 											<div className="actions-group">
-												{link ? <button className="text-btn" type="button" onClick={() => void handleOpen(notification, link)}>Open</button> : null}
-												<button className="icon-btn success" type="button" aria-label="Mark notification as read" disabled={!isUnread} onClick={() => void handleMarkAsRead(notification._id)}>
+												{link ? <button className="text-btn" type="button" onClick={() => void handleOpen(notification, link)}>{t('admin.notifications.open')}</button> : null}
+												<button className="icon-btn success" type="button" aria-label={t('admin.notifications.markNotificationAsRead')} disabled={!isUnread} onClick={() => void handleMarkAsRead(notification._id)}>
 													<span className="material-symbols-outlined">check</span>
 												</button>
 											</div>
@@ -182,7 +178,7 @@ const AdminNotificationsPage: NextPage = () => {
 				</div>
 
 				<div className="table-footer">
-					<span>Showing {startItem}–{endItem} of {total} notifications</span>
+					<span>{t('admin.notifications.showingRange', { startItem, endItem, total })}</span>
 					<div className="pagination">
 						<button className="page-btn square" type="button" disabled={page === 1 || loading} onClick={() => updateQuery({ page: page - 1 })}><span className="material-symbols-outlined">chevron_left</span></button>
 						<span className="page-btn active">{page}</span>

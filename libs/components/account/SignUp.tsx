@@ -17,12 +17,14 @@ import {
   sweetMixinErrorAlert,
   sweetTopSmallSuccessAlert,
 } from "../../sweetAlert";
+import { useI18n } from "../../i18n";
 
 interface SignUpProps {
   onSwitchToSignIn?: () => void;
 }
 
 const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
+  const { t, tx, tError, locale } = useI18n();
   const router = useRouter();
 
   const [nick, setNick] = useState("");
@@ -59,28 +61,28 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
     const cleanFullName = fullName.trim();
 
     if (!cleanNick) {
-      sweetMixinErrorAlert("Please enter a username.");
+      sweetMixinErrorAlert(t("auth.signUp.usernameRequired"));
       return;
     }
 
     if (cleanNick.length < 3) {
-      sweetMixinErrorAlert("Username must be at least 3 characters long.");
+      sweetMixinErrorAlert(t("auth.signUp.usernameTooShort"));
       return;
     }
 
     if (!password || password.length < 5) {
-      sweetMixinErrorAlert("Password must be at least 5 characters long.");
+      sweetMixinErrorAlert(t("auth.signUp.passwordTooShort"));
       return;
     }
 
     if (password !== confirmPassword) {
-      sweetMixinErrorAlert("Passwords do not match.");
+      sweetMixinErrorAlert(t("auth.signUp.passwordsDoNotMatch"));
       return;
     }
 
     if (!agreedTerms) {
       sweetMixinErrorAlert(
-        "Please agree to the Terms of Service and Privacy Policy.",
+        t("auth.signUp.agreementRequired"),
       );
       return;
     }
@@ -101,7 +103,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
         updateUserInfo(data.signup.accessToken);
 
         await sweetTopSmallSuccessAlert(
-          `Welcome to AURA, ${data.signup.memberNick}!`,
+          t("auth.signUp.welcomeToAurora", { memberNick: data.signup.memberNick }),
           1000,
         );
 
@@ -111,7 +113,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
       console.error("Sign up error:", err);
 
       sweetMixinErrorAlert(
-        err?.message || "Registration failed. Please check your information.",
+        tError(err, "auth.signUp.registrationFailed"),
       );
     }
   };
@@ -126,14 +128,14 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
       if (!member?.accessToken) throw new Error("SOCIAL_AUTH_FAILED");
       setJwtToken(member.accessToken);
       updateUserInfo(member.accessToken);
-      await sweetTopSmallSuccessAlert(`Welcome to AURA, ${member.memberNick}!`, 800);
+      await sweetTopSmallSuccessAlert(t("auth.signUp.welcomeToAurora", { memberNick: member.memberNick }), 800);
       await router.push(getSafeAuthRedirect(router.query.referrer));
     } catch (error) {
       sweetMixinErrorAlert(getGoogleAuthErrorMessage(error, "sign-up"));
     } finally {
       setSocialLoading("");
     }
-  }, [googleAuth, router, socialLoading]);
+  }, [googleAuth, router, socialLoading, t]);
 
   useEffect(() => {
     const container = googleButtonRef.current;
@@ -141,14 +143,14 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
     let disposed = false;
     void renderGoogleSignInButton(container, (credential) => {
       if (!disposed) void handleGoogleSignup(credential);
-    }).catch((error) => {
+    }, locale).catch((error) => {
       if (!disposed) sweetMixinErrorAlert(getGoogleAuthErrorMessage(error, "sign-up"));
     });
     return () => {
       disposed = true;
       container.replaceChildren();
     };
-  }, [handleGoogleSignup]);
+  }, [handleGoogleSignup, locale]);
 
   const handleKakaoSignup = () => {
     if (socialLoading) return;
@@ -157,7 +159,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
       startKakaoAuthorization(router.query.referrer);
     } catch {
       setSocialLoading("");
-      sweetMixinErrorAlert("Kakao sign-up is not configured.");
+      sweetMixinErrorAlert(t("auth.social.kakaoSignUpNotConfigured"));
     }
   };
 
@@ -192,19 +194,19 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
           <div className="top-meta-bar">
             <div className="meta-left">
               <span className="pulse-dot"></span>
-              <span className="meta-title">CREATE ACCOUNT</span>
+              <span className="meta-title">{t("auth.signUp.badge")}</span>
             </div>
 
-            <span className="meta-version">JOIN AURA V2.4</span>
+            <span className="meta-version">{t("auth.signUp.joinAuroraV24")}</span>
           </div>
 
           {/* HEADING */}
           <div className="heading-group">
-            <span className="eyebrow">GET STARTED</span>
+            <span className="eyebrow">{t("auth.signUp.getStarted")}</span>
 
-            <h1>Create your AURA account</h1>
+            <h1>{t("auth.signUp.createYourAuroraAccount")}</h1>
 
-            <p>Join a world of extraordinary travel experiences.</p>
+            <p>{t("auth.signUp.subtitle")}</p>
           </div>
 
           {/* FORM */}
@@ -212,7 +214,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
             {/* USERNAME */}
             <div className="field-group">
               <div className="field-header">
-                <label htmlFor="nick-input">Username *</label>
+                <label htmlFor="nick-input">{t("auth.signUp.username")}</label>
               </div>
 
               <div className="input-wrapper">
@@ -227,7 +229,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
                   autoComplete="username"
                   value={nick}
                   onChange={(e) => setNick(e.target.value)}
-                  placeholder="e.g. kevin7"
+                  placeholder={t("auth.signUp.usernamePlaceholder")}
                   className="with-prefix"
                 />
               </div>
@@ -236,7 +238,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
             {/* FULL NAME */}
             <div className="field-group">
               <div className="field-header">
-                <label htmlFor="full-name-input">Full Name</label>
+                <label htmlFor="full-name-input">{t("common.fullName")}</label>
               </div>
 
               <div className="input-wrapper">
@@ -250,7 +252,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
                   autoComplete="name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Kevin Kazakov"
+                  placeholder={t("auth.signUp.fullNamePlaceholder")}
                   className="with-prefix"
                 />
               </div>
@@ -260,7 +262,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
             <div className="two-cols">
               <div className="field-group">
                 <div className="field-header">
-                  <label htmlFor="pass-input">Password *</label>
+                  <label htmlFor="pass-input">{t("auth.signUp.passwordRequiredLabel")}</label>
                 </div>
 
                 <div className="input-wrapper">
@@ -283,7 +285,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
                     type="button"
                     className="toggle-eye-btn"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    aria-label="Toggle password visibility"
+                    aria-label={t("auth.togglePasswordVisibility")}
                   >
                     <span className="material-symbols-outlined">
                       {showPassword ? "visibility_off" : "visibility"}
@@ -294,7 +296,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
 
               <div className="field-group">
                 <div className="field-header">
-                  <label htmlFor="confirm-pass-input">Confirm Password *</label>
+                  <label htmlFor="confirm-pass-input">{t("auth.signUp.confirmPassword")}</label>
                 </div>
 
                 <div className="input-wrapper">
@@ -317,7 +319,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
                     type="button"
                     className="toggle-eye-btn"
                     onClick={() => setShowConfirmPassword((prev) => !prev)}
-                    aria-label="Toggle confirm password visibility"
+                    aria-label={t("auth.signUp.toggleConfirmVisibility")}
                   >
                     <span className="material-symbols-outlined">
                       {showConfirmPassword ? "visibility_off" : "visibility"}
@@ -331,7 +333,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
             <div className="password-hint">
               <span className="material-symbols-outlined">check_circle</span>
 
-              <span>Use at least 5 characters for your password.</span>
+              <span>{t("auth.signUp.passwordHint")}</span>
             </div>
 
             {/* TERMS */}
@@ -344,32 +346,36 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
                 />
 
                 <span>
-                  I agree to the{" "}
-                  <a
+                  {tx("auth.signUp.agreeTerms", {
+                    terms: (
+                      <a
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
 
                       sweetMixinErrorAlert(
-                        "Terms of Service: Standard user agreement applies.",
+                        t("auth.signUp.termsNotice"),
                       );
                     }}
                   >
-                    Terms of Service
-                  </a>{" "}
-                  and{" "}
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-
-                      sweetMixinErrorAlert(
-                        "Privacy Policy: Your personal data is protected.",
-                      );
-                    }}
-                  >
-                    Privacy Policy
+                    {t("auth.signUp.termsOfService")}
                   </a>
+                    ),
+                    privacy: (
+                      <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+
+                      sweetMixinErrorAlert(
+                        t("auth.signUp.privacyNotice"),
+                      );
+                    }}
+                  >
+                    {t("auth.signUp.privacyPolicy")}
+                  </a>
+                    ),
+                  })}
                   .
                 </span>
               </label>
@@ -379,12 +385,12 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
             <button type="submit" className="submit-btn" disabled={loading}>
               {loading ? (
                 <>
-                  <span>Creating Account...</span>
+                  <span>{t("auth.signUp.creatingAccount")}</span>
                   <span className="spinner"></span>
                 </>
               ) : (
                 <>
-                  <span>Create Account</span>
+                  <span>{t("auth.signUp.submit")}</span>
                   <span className="material-symbols-outlined">
                     arrow_forward
                   </span>
@@ -395,7 +401,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
 
           {/* SOCIAL DIVIDER */}
           <div className="social-divider">
-            <span>or continue with</span>
+            <span>{t("auth.orContinueWith")}</span>
           </div>
 
           {/* Google Primary Button */}
@@ -403,7 +409,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
             <div
               ref={googleButtonRef}
               className={`google-auth-button ${loading || googleLoading || socialLoading ? "is-disabled" : ""}`}
-              aria-label="Continue with Google"
+              aria-label={t("auth.continueWithGoogle")}
             />
           </div>
 
@@ -448,7 +454,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
               >
                 smartphone
               </span>
-              <span>Phone</span>
+              <span>{t("auth.signUp.phone")}</span>
             </button>
           </div>
         </div>
@@ -456,7 +462,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
         {/* SIGN IN */}
         <div className="bottom-redirect">
           <p>
-            Already have an account?{" "}
+            {t("auth.signUp.alreadyHaveAnAccount")}{" "}
             <button
               type="button"
               className="signin-link"
@@ -468,7 +474,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
                 }
               }}
             >
-              Sign In
+              {t("auth.signInButton")}
             </button>
           </p>
         </div>
@@ -478,7 +484,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
       {/* Right Column: Immersive Luxury Editorial Feature */}
       <div className="editorial-panel">
         <img
-          alt="Swiss Alps sanctuary luxury retreat"
+          alt={t("auth.panel.imageAlt")}
           className="bg-visual-img"
           src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkvikJZPxn7yNSStoZcrIZiB9AtnKNq6QmfTprY_UCYBPyotZKq5F1P_-rWXJYgWpYKPkDXR5PlGZzy1pp8G8YEWrl-Vl3ZwzQ5LVxuqo_EOmUc-tLbl-2emPIA9q9I4Eeot93ADLf263PGUWrleJirgxadKRfye7QuCgIygtkavdIU4MytCH7a0E7ueii6KfAknxKjPicub1MI4auuIH0QNF_uxkQzwGxUUX30_BmJIvBodlYQfYA"
         />
@@ -489,12 +495,12 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
         <div className="top-badge-row">
           <div className="collection-tag">
             <span className="material-symbols-outlined">verified</span>
-            <span>Swiss Alps · Sanctuary Collection</span>
+            <span>{t("auth.panel.collection")}</span>
           </div>
           <button
             type="button"
             className="info-btn"
-            aria-label="Explore sanctuary"
+            aria-label={t("auth.panel.explore")}
           >
             <span className="material-symbols-outlined">explore</span>
           </button>
@@ -502,11 +508,10 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
 
         {/* Bottom Content Narrative */}
         <div className="bottom-content">
-          <span className="feature-eyebrow">Editorial Feature</span>
-          <h2>Your next journey starts here.</h2>
+          <span className="feature-eyebrow">{t("auth.panel.eyebrow")}</span>
+          <h2>{t("auth.panel.title")}</h2>
           <p>
-            Curated stays, bespoke expeditions, and private alpine retreats
-            across the world.
+            {t("auth.panel.text")}
           </p>
           <div className="indicator-pills">
             <span className="pill active"></span>

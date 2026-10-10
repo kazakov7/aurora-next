@@ -21,8 +21,10 @@ import AgentApplicationPage from '../../libs/components/mypage/AgentApplicationP
 import MyHotels from '../../libs/components/mypage/agent/MyHotels';
 import MyTours from '../../libs/components/mypage/agent/MyTours';
 import Reservations from '../../libs/components/mypage/agent/Reservations';
+import { useI18n } from '../../libs/i18n';
 
 const MyPage: NextPage = () => {
+	const { t } = useI18n();
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 
@@ -59,31 +61,31 @@ const MyPage: NextPage = () => {
 	const getPageTitle = () => {
 		switch (category) {
 			case 'articles':
-				return 'My Articles — AURA Profile';
+				return t('profile.page.titleArticles');
 			case 'followers':
-				return 'Followers — AURA Profile';
+				return t('profile.page.titleFollowers');
 			case 'following':
-				return 'Following — AURA Profile';
+				return t('profile.page.titleFollowing');
 			case 'wishlist':
-				return 'My Wishlist — AURA Profile';
+				return t('profile.page.titleWishlist');
 			case 'bookings':
-				return 'My Bookings — AURA Profile';
+				return t('profile.page.titleBookings');
 			case 'history':
-				return 'Travel History — AURA Profile';
+				return t('profile.page.titleHistory');
 			case 'notifications':
-				return 'Notifications — AURA Profile';
+				return t('profile.page.titleNotifications');
 			case 'settings':
-				return 'Settings — AURA Profile';
+				return t('profile.page.titleSettings');
 			case 'partner':
-				return 'Partner Application — AURA Profile';
+				return t('profile.page.titlePartner');
 			case 'myHotels':
-				return 'My Hotels — AURA Agent';
+				return t('profile.page.titleMyHotels');
 			case 'myTours':
-				return 'My Tours — AURA Agent';
+				return t('profile.page.titleMyTours');
 			case 'reservations':
-				return 'Reservations — AURA Agent';
+				return t('profile.page.titleReservations');
 			default:
-				return 'My Profile — AURA Travel';
+				return t('profile.page.titleDefault');
 		}
 	};
 
@@ -91,7 +93,7 @@ const MyPage: NextPage = () => {
 		<>
 			<Head>
 				<title>{getPageTitle()}</title>
-				<meta name="description" content="Manage your AURA Travel profile, bookings, articles, and wishlist." />
+				<meta name="description" content={t('profile.page.metaDescription')} />
 			</Head>
 
 			<div id="my-profile-page">

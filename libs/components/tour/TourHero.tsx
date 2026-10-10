@@ -1,6 +1,8 @@
 import React from "react";
+import { useI18n } from "../../i18n";
 
 const TourHero = () => {
+  const { t } = useI18n();
   return (
     <section className="tour-hero-section">
       {/* Cinematic Photography Background */}
@@ -21,17 +23,16 @@ const TourHero = () => {
           <div className="hero-badge">
             <span className="badge-dot" />
             <span className="badge-text">
-              CURATED EXPEDITIONS &amp; VOYAGES
+              {t("tours.hero.curatedExpeditionsVoyages")}
             </span>
           </div>
 
           {/* Title */}
-          <h1 className="hero-title">Discover Extraordinary Journeys</h1>
+          <h1 className="hero-title">{t("tours.hero.discoverExtraordinaryJourneys")}</h1>
 
           {/* Subtitle */}
           <p className="hero-subtitle">
-            Unforgettable experiences, thoughtfully curated. Venture into remote
-            landscapes with elite naturalists and private charters.
+            {t("tours.hero.description")}
           </p>
         </div>
       </div>

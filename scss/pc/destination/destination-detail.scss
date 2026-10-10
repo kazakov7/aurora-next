@@ -639,9 +639,50 @@
 		   ========================================================================== */
 		.destination-editorial-gallery {
 			width: 100%;
-			padding: 42px 24px 52px;
+			padding: 22px 24px 48px;
 			background: #f3f5ff;
 			user-select: none;
+
+			.gallery-breadcrumb-wrapper {
+				width: 100%;
+				max-width: $container-width;
+				margin: 0 auto 16px;
+
+				.gallery-breadcrumb-nav {
+					display: flex;
+					align-items: center;
+					gap: 9px;
+					color: $on-surface-variant;
+					font-size: 12px;
+					font-weight: 600;
+					letter-spacing: 0.08em;
+					text-transform: uppercase;
+					white-space: nowrap;
+					overflow: hidden;
+
+					a {
+						color: $primary;
+						text-decoration: none;
+						transition: color 180ms ease;
+
+						&:hover {
+							color: $secondary;
+							text-decoration: underline;
+						}
+					}
+
+					.crumb-sep {
+						color: $outline-variant;
+						font-weight: 400;
+					}
+
+					strong {
+						overflow: hidden;
+						color: $on-surface;
+						text-overflow: ellipsis;
+					}
+				}
+			}
 
 			.gallery-layout {
 				display: grid;
@@ -880,35 +921,6 @@
 				}
 
 				.editorial-col {
-					.about-breadcrumb-nav {
-						display: flex;
-						align-items: center;
-						gap: 9px;
-						margin-bottom: 24px;
-						color: $on-surface-variant;
-						font-size: 12px;
-						font-weight: 600;
-						letter-spacing: 0.08em;
-						text-transform: uppercase;
-						white-space: nowrap;
-						overflow: hidden;
-
-						a {
-							color: $primary;
-							transition: color 180ms ease;
-
-							&:hover {
-								color: $secondary;
-							}
-						}
-
-						strong {
-							overflow: hidden;
-							color: $on-surface;
-							text-overflow: ellipsis;
-						}
-					}
-
 					.editorial-eyebrow {
 						font-size: 12px;
 						letter-spacing: 0.15em;

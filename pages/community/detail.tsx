@@ -16,16 +16,19 @@ import { GET_BOARD_ARTICLE, GET_PROPERTY_HOST } from '../../apollo/user/query';
 import { LIKE_TARGET_ARTICLE, SUBSCRIBE, UNSUBSCRIBE } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
 import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
+import { useI18n } from '../../libs/i18n';
 
-const categoryLabelMap: Record<string, { label: string; key: string }> = {
-	TOUR: { label: 'Itineraries', key: 'itineraries' },
-	HOTEL: { label: 'Hotel Reviews', key: 'hotel-reviews' },
-	DESTINATION: { label: 'Photography', key: 'photography' },
-	GUIDE: { label: 'Travel Tips', key: 'expeditions' },
-	NEWS: { label: 'Local Insights', key: 'insights' },
+/** Article category -> community filter key; labels come from enums.articleCategory.* **/
+const categoryFilterKeys: Record<string, string> = {
+	TOUR: 'itineraries',
+	HOTEL: 'hotel-reviews',
+	DESTINATION: 'photography',
+	GUIDE: 'expeditions',
+	NEWS: 'insights',
 };
 
 const CommunityDetailPage: NextPage = () => {
+	const { t, tError, tEnum } = useI18n();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 
@@ -87,7 +90,7 @@ const CommunityDetailPage: NextPage = () => {
 	/** HANDLERS **/
 	const handleLike = async () => {
 		if (!user?._id) {
-			sweetMixinErrorAlert('Please login first to like this article!');
+			sweetMixinErrorAlert(t('community.detail.loginToLike'));
 			return;
 		}
 		if (!article?._id) return;
@@ -102,19 +105,19 @@ const CommunityDetailPage: NextPage = () => {
 			});
 			await refetch();
 		} catch (err: any) {
-			sweetMixinErrorAlert(err.message || 'Error occurred while liking');
+			sweetMixinErrorAlert(tError(err, 'community.likeFailed'));
 			refetch();
 		}
 	};
 
 	const handleFollow = async () => {
 		if (!user?._id) {
-			sweetMixinErrorAlert('Please login first to follow!');
+			sweetMixinErrorAlert(t('community.detail.loginToFollow'));
 			return;
 		}
 		if (!article?.memberData?._id) return;
 		if (user._id === article.memberData._id) {
-			sweetMixinErrorAlert('You cannot follow yourself.');
+			sweetMixinErrorAlert(t('common.cannotFollowYourself'));
 			return;
 		}
 
@@ -126,7 +129,7 @@ const CommunityDetailPage: NextPage = () => {
 			}
 			await refetchAuthor();
 		} catch (err: any) {
-			sweetMixinErrorAlert(err.message || 'Unable to update follow status.');
+			sweetMixinErrorAlert(tError(err, 'common.followUpdateFailed'));
 		}
 	};
 
@@ -138,23 +141,23 @@ const CommunityDetailPage: NextPage = () => {
 	};
 
 	const catInfo =
-		article?.articleCategory && categoryLabelMap[article.articleCategory]
-			? categoryLabelMap[article.articleCategory]
-			: { label: 'Uncategorized', key: '' };
+		article?.articleCategory && categoryFilterKeys[article.articleCategory]
+			? { label: tEnum('articleCategory', article.articleCategory), key: categoryFilterKeys[article.articleCategory] }
+			: { label: t('common.uncategorized'), key: '' };
 
 	return (
 		<div className="community-detail-page-wrapper">
 			<Head>
 				<title>
 					{article?.articleTitle
-						? `${article.articleTitle} — AURA Travel Community`
-						: 'Community Story — AURA Travel'}
+						? t('community.detail.metaTitle', { articleTitle: article.articleTitle })
+						: t('community.detail.metaTitleFallback')}
 				</title>
 				<meta
 					name="description"
 					content={
 						article?.articleContent?.slice(0, 160) ||
-						'Read full traveler dispatches and expeditions on AURA.'
+						t('community.detail.metaDescription')
 					}
 				/>
 			</Head>
@@ -163,7 +166,7 @@ const CommunityDetailPage: NextPage = () => {
 				{loading && !article ? (
 					<div className="community-detail-loading-box">
 						<div className="loading-spinner" />
-						<p>Loading dispatch...</p>
+						<p>{t('community.detail.loadingDispatch')}</p>
 					</div>
 				) : article ? (
 					<div className="community-detail-content-flow">
@@ -215,18 +218,18 @@ const CommunityDetailPage: NextPage = () => {
 				) : (
 					<div className="community-detail-not-found">
 						<span className="material-symbols-outlined icon">article</span>
-						<h2>{error ? 'Unable to load dispatch' : 'Dispatch Not Found'}</h2>
+						<h2>{error ? t('community.detail.unableToLoadDispatch') : t('community.detail.dispatchNotFound')}</h2>
 						<p>
 							{error
 								? error.message
-								: 'Choose a community dispatch from the community page to read it.'}
+								: t('community.detail.chooseDispatch')}
 						</p>
 						<button
 							type="button"
 							className="back-btn"
 							onClick={() => router.push('/community')}
 						>
-							Back to Community
+							{t('community.detail.backToCommunity')}
 						</button>
 					</div>
 				)}

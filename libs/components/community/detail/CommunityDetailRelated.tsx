@@ -5,20 +5,15 @@ import { GET_BOARD_ARTICLES } from '../../../../apollo/user/query';
 import { BoardArticle } from '../../../types/board-article/board-article';
 import { Direction } from '../../../enums/common.enum';
 import { getImageUrl } from '../../../config';
+import { useI18n } from '../../../i18n';
 
 interface CommunityDetailRelatedProps {
 	currentArticleId: string;
 }
 
-const categoryLabelMap: Record<string, string> = {
-	TOUR: 'Itineraries',
-	HOTEL: 'Hotel Reviews',
-	DESTINATION: 'Photography',
-	GUIDE: 'Expedition Log',
-	NEWS: 'Local Insights',
-};
 
 const CommunityDetailRelated: React.FC<CommunityDetailRelatedProps> = ({ currentArticleId }) => {
+	const { t, tEnum } = useI18n();
 	const { data } = useQuery(GET_BOARD_ARTICLES, {
 		fetchPolicy: 'network-only',
 		variables: {
@@ -46,11 +41,11 @@ const CommunityDetailRelated: React.FC<CommunityDetailRelatedProps> = ({ current
 				{/* Section Header */}
 				<div className="section-header-row">
 					<div>
-						<h2 className="section-title">You Might Also Like</h2>
-						<p className="section-subtitle">More stories to inspire your next adventure.</p>
+						<h2 className="section-title">{t('community.detailRelated.youMightAlsoLike')}</h2>
+						<p className="section-subtitle">{t('community.detailRelated.subtitle')}</p>
 					</div>
 					<Link href="/community" className="explore-community-link">
-						<span>Explore Community</span>
+						<span>{t('community.detailRelated.exploreCommunity')}</span>
 						<span className="material-symbols-outlined icon">arrow_forward</span>
 					</Link>
 				</div>
@@ -59,9 +54,9 @@ const CommunityDetailRelated: React.FC<CommunityDetailRelatedProps> = ({ current
 				<div className="related-cards-grid">
 					{displayList.map((item) => {
 						const authorName =
-							item.memberData?.memberFullName || item.memberData?.memberNick || 'Member';
+							item.memberData?.memberFullName || item.memberData?.memberNick || t('common.member');
 						const catLabel =
-							categoryLabelMap[item.articleCategory] || item.articleCategory || 'Uncategorized';
+							item.articleCategory ? tEnum('articleCategory', item.articleCategory) : t('common.uncategorized');
 						const imgSrc = item.articleImage ? getImageUrl(item.articleImage) : undefined;
 
 						// We need a simple excerpt from HTML content

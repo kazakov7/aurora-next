@@ -14,8 +14,10 @@ import {
   sweetMixinErrorAlert,
   sweetTopSmallSuccessAlert,
 } from "../../sweetAlert";
+import { useI18n } from "../../i18n";
 
 const MyProfileArticles: React.FC = () => {
+  const { tEnum, t, tError, formatDate } = useI18n();
   const router = useRouter();
   const user = useReactiveVar(userVar);
   const [sortOrder, setSortOrder] = useState<string>("createdAt");
@@ -66,22 +68,15 @@ const MyProfileArticles: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [openDropdownId]);
 
-  const formatDate = (dateInput?: Date | string) => {
-    if (!dateInput) return "Recently";
-    const d = new Date(dateInput);
-    return d.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
+  const formatArticleDate = (dateInput?: Date | string) =>
+    formatDate(dateInput) || t("profile.articles.recently");
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     setOpenDropdownId(null);
 
     const isConfirm = await sweetConfirmAlert(
-      "Are you sure you want to delete this article?",
+      t("profile.articles.deleteConfirm"),
     );
     if (isConfirm) {
       try {
@@ -94,10 +89,10 @@ const MyProfileArticles: React.FC = () => {
           },
           refetchQueries: ["GetMember"],
         });
-        sweetTopSmallSuccessAlert("Article deleted successfully");
+        sweetTopSmallSuccessAlert(t("profile.articles.deleted"));
         await refetch();
       } catch (err: any) {
-        sweetMixinErrorAlert(err.message || "Failed to delete article");
+        sweetMixinErrorAlert(tError(err, "profile.articles.deleteFailed"));
       }
     }
   };
@@ -114,8 +109,8 @@ const MyProfileArticles: React.FC = () => {
       {/* Top Control Bar */}
       <div className="section-top-bar">
         <div className="title-group">
-          <h2>My Articles</h2>
-          <span className="counter-pill">{total} published</span>
+          <h2>{t("profile.articles.myArticles")}</h2>
+          <span className="counter-pill">{t("profile.articles.published", { total })}</span>
         </div>
         <div className="bar-actions">
           <div className="custom-select-box">
@@ -123,9 +118,9 @@ const MyProfileArticles: React.FC = () => {
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
             >
-              <option value="createdAt">Newest First</option>
-              <option value="articleViews">Most Read</option>
-              <option value="articleLikes">Most Likes</option>
+              <option value="createdAt">{t("profile.articles.newestFirst")}</option>
+              <option value="articleViews">{t("profile.articles.mostRead")}</option>
+              <option value="articleLikes">{t("profile.articles.mostLikes")}</option>
             </select>
             <span className="material-symbols-outlined">expand_more</span>
           </div>
@@ -138,7 +133,7 @@ const MyProfileArticles: React.FC = () => {
             }}
           >
             <span className="material-symbols-outlined">add</span>
-            <span>Create Article</span>
+            <span>{t("profile.articles.createArticle")}</span>
           </button>
         </div>
       </div>
@@ -147,11 +142,11 @@ const MyProfileArticles: React.FC = () => {
       {loading && !data ? (
         <div className="profile-empty-state">
           <div className="loading-spinner" />
-          <p>Loading your articles...</p>
+          <p>{t("profile.articles.loading")}</p>
         </div>
       ) : error ? (
         <div className="profile-empty-state">
-          <h3>Articles are unavailable</h3>
+          <h3>{t("profile.articles.unavailable")}</h3>
           <p>{error.message}</p>
         </div>
       ) : articles.length > 0 ? (
@@ -183,11 +178,11 @@ const MyProfileArticles: React.FC = () => {
                     style={{ position: "relative" }}
                   >
                     <img src={coverImg} alt={article.articleTitle} />
-                    <span className="cat-tag">{article.articleCategory}</span>
+                    <span className="cat-tag">{tEnum("articleCategory", article.articleCategory)}</span>
                     <button
                       type="button"
                       className="thumb-opts-btn"
-                      aria-label="Options"
+                      aria-label={t("profile.articles.options")}
                       onClick={(e) => {
                         e.stopPropagation();
                         setOpenDropdownId(
@@ -250,7 +245,7 @@ const MyProfileArticles: React.FC = () => {
                           >
                             edit
                           </span>
-                          Edit
+                          {t("common.edit")}
                         </button>
                         <button
                           onClick={(e) => handleDelete(e, article._id)}
@@ -282,20 +277,20 @@ const MyProfileArticles: React.FC = () => {
                           >
                             delete
                           </span>
-                          Delete
+                          {t("profile.articles.delete")}
                         </button>
                       </div>
                     )}
                   </div>
                   <h3 className="article-title">{article.articleTitle}</h3>
                   <p className="article-desc">
-                    {plainContent || "No article summary provided."}
+                    {plainContent || t("profile.articles.noSummary")}
                   </p>
                 </div>
 
                 <div className="card-footer-stats">
                   <span className="meta-read">
-                    {formatDate(article.createdAt)} · {readingMinutes} min read
+                    {t("profile.articles.dateReadTime", { createdAt: formatArticleDate(article.createdAt), readingMinutes })}
                   </span>
                   <div className="stats-group">
                     <span>
@@ -327,10 +322,9 @@ const MyProfileArticles: React.FC = () => {
           <div className="empty-icon">
             <span className="material-symbols-outlined">menu_book</span>
           </div>
-          <h3>No published articles yet</h3>
+          <h3>{t("profile.articles.emptyTitle")}</h3>
           <p>
-            Share your high-altitude routes, architectural discoveries, and
-            photo journals with the AURA community.
+            {t("profile.articles.emptyText")}
           </p>
         </div>
       )}

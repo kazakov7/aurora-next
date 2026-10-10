@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useI18n } from '../../i18n';
 
 interface FollowButtonProps {
 	isFollowing: boolean;
@@ -17,6 +18,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({
 	className = '',
 	style
 }) => {
+	const { t } = useI18n();
 	const [isHovered, setIsHovered] = useState(false);
 
 	const getIcon = () => {
@@ -32,10 +34,10 @@ const FollowButton: React.FC<FollowButtonProps> = ({
 	};
 
 	const getText = () => {
-		if (isLoading) return 'Updating...';
-		if (isFollowing && isHovered) return 'Unfollow';
-		if (isFollowing) return 'Following';
-		return 'Follow';
+		if (isLoading) return t('common.updating');
+		if (isFollowing && isHovered) return t('common.unfollow');
+		if (isFollowing) return t('common.followButton.following');
+		return t('common.follow');
 	};
 
 	return (

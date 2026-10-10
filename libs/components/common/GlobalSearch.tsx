@@ -5,6 +5,7 @@ import { GET_DESTINATIONS, GET_PROPERTIES, GET_TOURS } from '../../../apollo/use
 import { Destination } from '../../types/destination/destination';
 import { Property } from '../../types/property/property';
 import { Tour } from '../../types/tour/tour';
+import { useI18n } from '../../i18n';
 
 type SearchResult = {
 	id: string;
@@ -17,6 +18,7 @@ type SearchResult = {
 const SEARCH_LIMIT = 4;
 
 const GlobalSearch = () => {
+	const { t } = useI18n();
 	const router = useRouter();
 	const rootRef = useRef<HTMLDivElement>(null);
 	const [value, setValue] = useState('');
@@ -45,27 +47,27 @@ const GlobalSearch = () => {
 	const groupedResults = useMemo(() => {
 		const destinationResults: SearchResult[] = (destinations.data?.getDestinations?.list ?? []).map((item: Destination) => ({
 			id: item._id,
-			group: 'Destinations',
+			group: t('navigation.destinations'),
 			title: item.destinationName,
 			subtitle: item.destinationCountry,
 			pathname: '/destination/detail',
 		}));
 		const propertyResults: SearchResult[] = (properties.data?.getProperties?.list ?? []).map((item: Property) => ({
 			id: item._id,
-			group: 'Properties',
+			group: t('common.properties'),
 			title: item.propertyName,
 			subtitle: [item.propertyCity, item.propertyAddress].filter(Boolean).join(', '),
 			pathname: '/property/detail',
 		}));
 		const tourResults: SearchResult[] = (tours.data?.getTours?.list ?? []).map((item: Tour) => ({
 			id: item._id,
-			group: 'Tours',
+			group: t('navigation.tours'),
 			title: item.tourName,
 			subtitle: [item.tourDestinationCity, item.tourDepartureCountry].filter(Boolean).join(', '),
 			pathname: '/tour/detail',
 		}));
 		return [destinationResults, propertyResults, tourResults].filter((group) => group.length > 0);
-	}, [destinations.data, properties.data, tours.data]);
+	}, [destinations.data, properties.data, tours.data, t]);
 	const flatResults = groupedResults.flat();
 	const loading = destinations.loading || properties.loading || tours.loading;
 	const error = destinations.error || properties.error || tours.error;
@@ -127,9 +129,9 @@ const GlobalSearch = () => {
 					}}
 					onFocus={() => setOpen(true)}
 					onKeyDown={handleKeyDown}
-					placeholder="Search…"
+					placeholder={t('common.searchPlaceholder')}
 					className="search-input"
-					aria-label="Search AURORA"
+					aria-label={t('common.searchAurora')}
 					aria-expanded={open && canSearch}
 					aria-controls="global-search-results"
 					autoComplete="off"
@@ -137,9 +139,9 @@ const GlobalSearch = () => {
 			</div>
 			{open && canSearch ? (
 				<div id="global-search-results" className="global-search-results" role="listbox">
-					{loading ? <p className="search-state">Searching…</p> : null}
-					{!loading && error ? <p className="search-state error">Search is unavailable. Please try again.</p> : null}
-					{!loading && !error && !flatResults.length ? <p className="search-state">No matching destinations, stays, or tours.</p> : null}
+					{loading ? <p className="search-state">{t('common.searching')}</p> : null}
+					{!loading && error ? <p className="search-state error">{t('common.searchUnavailable')}</p> : null}
+					{!loading && !error && !flatResults.length ? <p className="search-state">{t('common.searchNoMatches')}</p> : null}
 					{!loading && !error ? groupedResults.map((group) => (
 						<section key={group[0].group} className="search-result-group" aria-label={group[0].group}>
 							<h3>{group[0].group}</h3>

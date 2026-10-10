@@ -8,6 +8,7 @@ import { BoardArticle } from '../../types/board-article/board-article';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import { getJwtToken } from '../../auth';
 import { Messages, getImageUrl } from '../../config';
+import { useI18n } from '../../i18n';
 
 interface WriteStoryModalProps {
 	isOpen: boolean;
@@ -22,6 +23,7 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 	onCreated,
 	editArticle,
 }) => {
+	const { t, tError } = useI18n();
 	const user = useReactiveVar(userVar);
 	const [category, setCategory] = useState<BoardArticleCategory>(BoardArticleCategory.TOUR);
 	const [title, setTitle] = useState('');
@@ -94,11 +96,11 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 			if (responseImage) {
 				setImageUrl(responseImage);
 			} else {
-				throw new Error(json.errors?.[0]?.message || 'Upload failed');
+				throw new Error(json.errors?.[0]?.message || t('common.uploadFailed'));
 			}
 		} catch (err: any) {
 			console.log('Error, handleImageUpload:', err);
-			sweetMixinErrorAlert(err.message || 'Image upload failed');
+			sweetMixinErrorAlert(tError(err, 'common.imageUploadFailed'));
 		} finally {
 			setUploadingImage(false);
 			if (fileInputRef.current) {
@@ -110,12 +112,12 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!user?._id) {
-			sweetMixinErrorAlert(Messages.error2);
+			sweetMixinErrorAlert(t(Messages.error2));
 			return;
 		}
 
 		if (!title.trim() || !content.trim()) {
-			sweetMixinErrorAlert(Messages.error3);
+			sweetMixinErrorAlert(t(Messages.error3));
 			return;
 		}
 
@@ -133,7 +135,7 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 					articleStatus: BoardArticleStatus.PUBLISHED,
 				};
 				await updateBoardArticle({ variables: { input: updateInput }, refetchQueries: ['GetMember'] });
-				sweetTopSmallSuccessAlert('Your story has been updated successfully!');
+				sweetTopSmallSuccessAlert(t('community.writeStory.updated'));
 			} else {
 				const input: BoardArticleInput = {
 					articleCategory: category,
@@ -142,7 +144,7 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 					articleImage: editArticle ? (imageUrl ? imageUrl : "") : (imageUrl || undefined),
 				};
 				await createBoardArticle({ variables: { input }, refetchQueries: ['GetMember'] });
-				sweetTopSmallSuccessAlert('Your story has been dispatched successfully!');
+				sweetTopSmallSuccessAlert(t('community.writeStory.published'));
 			}
 
 			setTitle('');
@@ -151,7 +153,7 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 			onClose();
 			onCreated();
 		} catch (err: any) {
-			sweetMixinErrorAlert(err.message || Messages.error1);
+			sweetMixinErrorAlert(tError(err, Messages.error1));
 		} finally {
 			setSubmitting(false);
 		}
@@ -166,13 +168,13 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 				<div className="modal-header">
 					<div className="title-group">
 						<span className="material-symbols-outlined icon">edit_note</span>
-						<h2>{editArticle ? 'Edit Your Story' : 'Dispatch a New Story'}</h2>
+						<h2>{editArticle ? t('community.writeStory.editYourStory') : t('community.writeStory.dispatchANewStory')}</h2>
 					</div>
 					<button
 						type="button"
 						className="close-btn"
 						onClick={onClose}
-						aria-label="Close modal"
+						aria-label={t('community.writeStory.closeModal')}
 					>
 						<span className="material-symbols-outlined">close</span>
 					</button>
@@ -181,27 +183,27 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 				<form onSubmit={handleSubmit} className="modal-form">
 					{/* Category selection */}
 					<div className="form-group">
-						<label>Story Category</label>
+						<label>{t('community.writeStory.storyCategory')}</label>
 						<select
 							value={category}
 							onChange={(e) => setCategory(e.target.value as BoardArticleCategory)}
 							className="form-select"
 							disabled={false} // typically category is not edited
 						>
-							<option value={BoardArticleCategory.TOUR}>Itinerary & Expeditions (TOUR)</option>
-							<option value={BoardArticleCategory.HOTEL}>Hotel & Stay Reviews (HOTEL)</option>
-							<option value={BoardArticleCategory.DESTINATION}>Photography & Sights (DESTINATION)</option>
-							<option value={BoardArticleCategory.GUIDE}>Expedition Logs (GUIDE)</option>
-							<option value={BoardArticleCategory.NEWS}>Local Insights (NEWS)</option>
+							<option value={BoardArticleCategory.TOUR}>{t('community.writeStory.categoryTour')}</option>
+							<option value={BoardArticleCategory.HOTEL}>{t('community.writeStory.categoryHotel')}</option>
+							<option value={BoardArticleCategory.DESTINATION}>{t('community.writeStory.categoryDestination')}</option>
+							<option value={BoardArticleCategory.GUIDE}>{t('community.writeStory.categoryGuide')}</option>
+							<option value={BoardArticleCategory.NEWS}>{t('community.writeStory.categoryNews')}</option>
 						</select>
 					</div>
 
 					{/* Title */}
 					<div className="form-group">
-						<label>Story Title</label>
+						<label>{t('community.writeStory.storyTitle')}</label>
 						<input
 							type="text"
-							placeholder="e.g. Solitude at 3,000m: High Alpine Cabins of Zermatt"
+							placeholder={t('community.writeStory.titlePlaceholder')}
 							value={title}
 							onChange={(e) => setTitle(e.target.value)}
 							className="form-input"
@@ -211,10 +213,10 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 
 					{/* Image Upload */}
 					<div className="form-group">
-						<label>Cover Photography (Optional)</label>
+						<label>{t('community.writeStory.coverPhotographyOptional')}</label>
 						{imageUrl ? (
 							<div style={{ position: 'relative', width: '100%', height: '160px', borderRadius: '8px', overflow: 'hidden', marginBottom: '8px', border: '1px solid rgba(220, 226, 247, 0.4)' }}>
-								<img src={getImageUrl(imageUrl)} alt="Cover preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+								<img src={getImageUrl(imageUrl)} alt={t('community.writeStory.coverPreview')} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
 								<button 
 									type="button" 
 									onClick={() => setImageUrl('')}
@@ -234,17 +236,17 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 									className="form-input"
 									style={{ padding: '8px 12px' }}
 								/>
-								{uploadingImage && <span style={{ position: 'absolute', right: '12px', top: '10px', fontSize: '13px', color: '#006194' }}>Uploading...</span>}
+								{uploadingImage && <span style={{ position: 'absolute', right: '12px', top: '10px', fontSize: '13px', color: '#006194' }}>{t('community.writeStory.uploading')}</span>}
 							</div>
 						)}
 					</div>
 
 					{/* Content */}
 					<div className="form-group">
-						<label>Story Content</label>
+						<label>{t('community.writeStory.storyContent')}</label>
 						<textarea
 							rows={6}
-							placeholder="Share the raw details, gear recommendations, hidden trailways, and atmosphere..."
+							placeholder={t('community.writeStory.contentPlaceholder')}
 							value={content}
 							onChange={(e) => setContent(e.target.value)}
 							className="form-textarea"
@@ -260,14 +262,14 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 							onClick={onClose}
 							disabled={submitting}
 						>
-							Cancel
+							{t('common.cancel')}
 						</button>
 						<button
 							type="submit"
 							className="publish-btn"
 							disabled={submitting}
 						>
-							{submitting ? 'Saving...' : (editArticle ? 'Save Changes' : 'Publish Dispatch')}
+							{submitting ? t('community.writeStory.saving') : (editArticle ? t('common.saveChanges') : t('community.writeStory.publishDispatch'))}
 						</button>
 					</div>
 				</form>

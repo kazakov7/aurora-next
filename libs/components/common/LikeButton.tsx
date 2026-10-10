@@ -1,4 +1,5 @@
 import React from 'react';
+import { useI18n } from '../../i18n';
 
 interface LikeButtonProps {
 	isLiked: boolean;
@@ -17,6 +18,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({
 	className = '',
 	style
 }) => {
+	const { t, formatNumber } = useI18n();
 	const computedStyle = { ...style };
 	if (isLiked) {
 		delete computedStyle.backgroundColor;
@@ -25,7 +27,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({
 	return (
 		<button
 			type="button"
-			aria-label={isLiked ? "Unlike" : "Like"}
+			aria-label={isLiked ? t('common.unlike') : t('common.like')}
 			className={`btn-like-standard size-${size} ${isLiked ? 'liked' : ''} ${className}`}
 			onClick={(e) => {
 				e.stopPropagation();
@@ -34,7 +36,7 @@ const LikeButton: React.FC<LikeButtonProps> = ({
 			style={computedStyle}
 		>
 			<span className="material-symbols-outlined">favorite</span>
-			{count !== undefined && <span className="like-count">{count.toLocaleString()}</span>}
+			{count !== undefined && <span className="like-count">{formatNumber(count)}</span>}
 		</button>
 	);
 };

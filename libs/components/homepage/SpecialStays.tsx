@@ -16,10 +16,10 @@ interface SpecialStaysProps {
 	error?: Error;
 }
 
-const formatUsd = (price: number | undefined, fallback: string) => (typeof price === 'number' ? `$${price.toLocaleString()}` : fallback);
+const formatUsd = (price: number | undefined, fallback: string) => (typeof price === 'number' ? `$${price.toLocaleString('en-US')}` : fallback);
 
 const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
-	const { t } = useI18n();
+	const { t, tError } = useI18n();
 	const user = useReactiveVar(userVar);
 	const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
 	const [updatingFavoriteIds, setUpdatingFavoriteIds] = useState<Record<string, boolean>>({});
@@ -33,13 +33,13 @@ const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
 		event.stopPropagation();
 		if (updatingFavoriteIds[propertyId]) return;
 		try {
-			if (!user?._id) throw new Error(Message.NOT_AUTHENTICATED);
+			if (!user?._id) throw new Error(t(Message.NOT_AUTHENTICATED));
 			setFavoriteOverrides((current) => ({ ...current, [propertyId]: !wasLiked }));
 			setUpdatingFavoriteIds((current) => ({ ...current, [propertyId]: true }));
 			await likeTargetProperty({ variables: { propertyId } });
 		} catch (err: unknown) {
 			setFavoriteOverrides((current) => ({ ...current, [propertyId]: wasLiked }));
-			const errorMessage = err instanceof Error ? err.message : 'Unable to update favorite status.';
+			const errorMessage = tError(err, 'home.stays.favoriteUpdateFailed');
 			console.log('ERROR, likePropertyHandler:', errorMessage);
 			sweetMixinErrorAlert(errorMessage);
 		} finally {

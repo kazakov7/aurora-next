@@ -15,8 +15,10 @@ import {
   sweetMixinErrorAlert,
 } from "../../../libs/sweetAlert";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../../libs/config";
+import { useI18n } from "../../../libs/i18n";
 
 const AdminMembersPage: NextPage = () => {
+  const { tEnum, tError, t, formatDate } = useI18n();
   const [members, setMembers] = useState<Member[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -100,7 +102,7 @@ const AdminMembersPage: NextPage = () => {
           },
         },
       });
-      await sweetTopSmallSuccessAlert(`Status updated to ${newStatus}`, 800);
+      await sweetTopSmallSuccessAlert(t("admin.users.statusUpdatedTo", { newStatus: tEnum("memberStatus", newStatus) }), 800);
       setOpenMenuId(null);
       if (selectedMember && selectedMember._id === memberId) {
         setSelectedMember((prev) =>
@@ -110,7 +112,7 @@ const AdminMembersPage: NextPage = () => {
       await refetch();
     } catch (err: any) {
       console.log("ERROR, handleStatusUpdate:", err.message);
-      sweetMixinErrorAlert(err.message);
+      sweetMixinErrorAlert(tError(err));
     }
   };
 
@@ -127,18 +129,18 @@ const AdminMembersPage: NextPage = () => {
 
   const exportCSV = () => {
     if (!members || members.length === 0) {
-      sweetMixinErrorAlert("No members data to export");
+      sweetMixinErrorAlert(t("admin.users.noMembersDataToExport"));
       return;
     }
     const headers = [
       "ID",
-      "Nick",
-      "Full Name",
-      "Email",
-      "Phone",
-      "Role",
-      "Status",
-      "Registered At",
+      t("admin.users.nick"),
+      t("common.fullName"),
+      t("admin.users.email"),
+      t("auth.signUp.phone"),
+      t("admin.users.role"),
+      t("common.status"),
+      t("admin.users.registeredAt"),
     ];
     const rows = members.map((m) => [
       m._id,
@@ -173,10 +175,9 @@ const AdminMembersPage: NextPage = () => {
       {/* TOP SECTION: HEADER */}
       <div className="overview-header">
         <div className="header-text">
-          <h1>Members Management</h1>
+          <h1>{t("admin.users.membersManagement")}</h1>
           <p>
-            Manage all registered platform accounts, access roles, and activity
-            records.
+            {t("admin.users.intro")}
           </p>
         </div>
       </div>
@@ -186,15 +187,15 @@ const AdminMembersPage: NextPage = () => {
         {/* TABLE HEADER & FILTERS */}
         <div className="table-header">
           <div className="header-left">
-            <h2>Directory</h2>
-            <span className="table-badge">{total} Members</span>
+            <h2>{t("common.directory")}</h2>
+            <span className="table-badge">{t("admin.users.members", { total })}</span>
           </div>
           <div className="header-right">
             <div className="search-box">
               <span className="material-symbols-outlined">search</span>
               <input
                 type="text"
-                placeholder="Search name, handle, email..."
+                placeholder={t("admin.users.searchNameHandleEmail")}
                 onChange={(e) => handleSearchChange(e.target.value)}
               />
             </div>
@@ -203,18 +204,18 @@ const AdminMembersPage: NextPage = () => {
                 className="filter-select"
                 onChange={(e) => handleRoleChange(e.target.value)}
               >
-                <option value="all">All Roles</option>
-                <option value="user">User</option>
-                <option value="agent">Agent</option>
-                <option value="admin">Admin</option>
+                <option value="all">{t("admin.users.allRoles")}</option>
+                <option value="user">{t("admin.users.user")}</option>
+                <option value="agent">{t("common.agent")}</option>
+                <option value="admin">{t("admin.users.admin")}</option>
               </select>
               <select
                 className="filter-select"
                 onChange={(e) => handleStatusChange(e.target.value)}
               >
-                <option value="all">All Statuses</option>
-                <option value="active">Active</option>
-                <option value="blocked">Banned</option>
+                <option value="all">{t("common.allStatuses")}</option>
+                <option value="active">{t("common.active")}</option>
+                <option value="blocked">{t("admin.users.banned")}</option>
               </select>
               <button
                 className="reset-filter-btn"
@@ -224,7 +225,7 @@ const AdminMembersPage: NextPage = () => {
                 <span className="material-symbols-outlined">
                   filter_alt_off
                 </span>
-                Reset
+                {t("common.reset")}
               </button>
             </div>
           </div>
@@ -235,12 +236,12 @@ const AdminMembersPage: NextPage = () => {
           <table>
             <thead>
               <tr>
-                <th className="px-6">Member</th>
-                <th>Contact Info</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Registration Date</th>
-                <th className="px-6 text-right">Actions</th>
+                <th className="px-6">{t("common.member")}</th>
+                <th>{t("admin.users.contactInfo")}</th>
+                <th>{t("admin.users.role")}</th>
+                <th>{t("common.status")}</th>
+                <th>{t("admin.users.registrationDate")}</th>
+                <th className="px-6 text-right">{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -250,7 +251,7 @@ const AdminMembersPage: NextPage = () => {
                     colSpan={6}
                     style={{ textAlign: "center", padding: "24px" }}
                   >
-                    <span style={{ color: "#707881" }}>No members found!</span>
+                    <span style={{ color: "#707881" }}>{t("admin.users.noMembersFound")}</span>
                   </td>
                 </tr>
               ) : (
@@ -259,7 +260,7 @@ const AdminMembersPage: NextPage = () => {
                   const initials = (
                     member.memberFullName ||
                     member.memberNick ||
-                    "User"
+                    t("admin.users.user")
                   )
                     .split(" ")
                     .map((n) => n[0])
@@ -332,7 +333,7 @@ const AdminMembersPage: NextPage = () => {
                               : "neutral"
                           }`}
                         >
-                          {member.memberType}
+                          {tEnum("memberType", member.memberType)}
                         </span>
                       </td>
                       <td>
@@ -345,14 +346,14 @@ const AdminMembersPage: NextPage = () => {
                         >
                           <span className="dot"></span>
                           {member.memberStatus === MemberStatus.BLOCKED
-                            ? "Banned"
-                            : member.memberStatus}
+                            ? t("admin.users.banned")
+                            : tEnum("memberStatus", member.memberStatus)}
                         </span>
                       </td>
                       <td>
                         <span className="date-text">
                           {member.createdAt
-                            ? moment(member.createdAt).format("MMM DD, YYYY")
+                            ? formatDate(member.createdAt, "medium")
                             : "-"}
                         </span>
                       </td>
@@ -366,7 +367,7 @@ const AdminMembersPage: NextPage = () => {
                             type="button"
                             onClick={() => openDrawer(member)}
                           >
-                            Inspect
+                            {t("admin.users.inspect")}
                           </button>
                           <button
                             className="more-btn"
@@ -418,7 +419,7 @@ const AdminMembersPage: NextPage = () => {
                               >
                                 visibility
                               </span>
-                              View Details
+                              {t("common.viewDetails")}
                             </button>
                             {member.memberStatus !== MemberStatus.ACTIVE && (
                               <button
@@ -449,7 +450,7 @@ const AdminMembersPage: NextPage = () => {
                                 >
                                   check_circle
                                 </span>
-                                Activate
+                                {t("admin.users.activate")}
                               </button>
                             )}
                             {member.memberStatus !== MemberStatus.BLOCKED && (
@@ -481,7 +482,7 @@ const AdminMembersPage: NextPage = () => {
                                 >
                                   block
                                 </span>
-                                Suspend
+                                {t("admin.users.suspend")}
                               </button>
                             )}
                           </div>
@@ -498,7 +499,7 @@ const AdminMembersPage: NextPage = () => {
         {/* TABLE PAGINATION FOOTER */}
         <div className="table-footer">
           <span>
-            Showing {startItem}–{endItem} of {total} records
+            {t("admin.showingRecords", { startItem, endItem, total })}
           </span>
           <div className="pagination">
             <button

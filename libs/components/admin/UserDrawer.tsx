@@ -2,25 +2,9 @@ import React, { useState } from "react";
 import { Member } from "../../types/member/member";
 import { MemberStatus, MemberType } from "../../enums/member.enum";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
+import { useI18n } from "../../i18n";
 
 // Custom format function without depending on date-fns if not installed
-const formatTimeAgo = (dateInput: Date | string) => {
-  const date = new Date(dateInput);
-  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-
-  let interval = seconds / 31536000;
-  if (interval > 1) return Math.floor(interval) + " years ago";
-  interval = seconds / 2592000;
-  if (interval > 1) return Math.floor(interval) + " months ago";
-  interval = seconds / 86400;
-  if (interval > 1) return Math.floor(interval) + " days ago";
-  interval = seconds / 3600;
-  if (interval > 1) return Math.floor(interval) + " hours ago";
-  interval = seconds / 60;
-  if (interval > 1) return Math.floor(interval) + " mins ago";
-  return Math.floor(seconds) + " secs ago";
-};
-
 interface UserDrawerProps {
   selectedMember: Member;
   closeDrawer: () => void;
@@ -32,6 +16,7 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
   closeDrawer,
   handleStatusUpdate,
 }) => {
+  const { tEnum, t, formatDate, formatRelativeTime } = useI18n();
   const [activeTab, setActiveTab] = useState("overview");
 
   const isAgent = selectedMember.memberType === MemberType.AGENT;
@@ -44,8 +29,8 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
   };
 
   const lastActiveStr = selectedMember.lastLoginAt
-    ? formatTimeAgo(selectedMember.lastLoginAt)
-    : "Never";
+    ? formatRelativeTime(selectedMember.lastLoginAt)
+    : t("admin.userDrawer.never");
 
   return (
     <>
@@ -54,7 +39,7 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
         <div className="drawer-header">
           <div className="header-title">
             <span className="material-symbols-outlined icon-main">badge</span>
-            <span className="title-text">Member Inspection & Management</span>
+            <span className="title-text">{t("admin.userDrawer.memberInspectionManagement")}</span>
             <span className="id-badge">
               AURA-
               {selectedMember._id
@@ -82,7 +67,7 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
                         selectedMember.memberImage,
                         DEFAULT_USER_AVATAR,
                       )}
-                      alt="Avatar"
+                      alt={t("admin.userDrawer.avatar")}
                     />
                   ) : (
                     <div className="avatar-initials">{getAvatarInitials()}</div>
@@ -102,7 +87,7 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
                         <span className="material-symbols-outlined">
                           verified
                         </span>
-                        ID Verified
+                        {t("admin.userDrawer.idVerified")}
                       </span>
                     )}
                   </div>
@@ -111,10 +96,10 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
                     <span className="dot">•</span>
                     <span className="type">
                       {isAgent
-                        ? "Tour Operator Agent"
+                        ? t("admin.userDrawer.tourOperatorAgent")
                         : isAdmin
-                        ? "Platform Administrator"
-                        : "Standard Member"}
+                        ? t("admin.userDrawer.platformAdministrator")
+                        : t("admin.userDrawer.standardMember")}
                     </span>
                     {selectedMember.memberAddress && (
                       <>
@@ -131,17 +116,17 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
               <div className="tags-section">
                 <div className="role-tags">
                   <span className="tag-primary">
-                    {selectedMember.memberType}
+                    {tEnum("memberType", selectedMember.memberType)}
                   </span>
-                  {isAgent && <span className="tag-secondary">Specialist</span>}
+                  {isAgent && <span className="tag-secondary">{t("admin.userDrawer.specialist")}</span>}
                 </div>
                 <div
                   className={`status-indicator ${selectedMember.memberStatus.toLowerCase()}`}
                 >
                   <span className="dot"></span>
                   {selectedMember.memberStatus === MemberStatus.ACTIVE
-                    ? "Active (Normal)"
-                    : selectedMember.memberStatus}
+                    ? t("admin.userDrawer.activeNormal")
+                    : tEnum("memberStatus", selectedMember.memberStatus)}
                 </div>
               </div>
             </div>
@@ -152,20 +137,16 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
                   <span className="material-symbols-outlined">
                     shield_person
                   </span>
-                  Auth: {selectedMember.memberAuthType}
+                  {t("admin.userDrawer.authType", { type: tEnum("memberAuthType", selectedMember.memberAuthType) })}
                 </span>
               </div>
               <div className="bottom-right">
                 <span>
-                  Registered:{" "}
-                  {new Date(selectedMember.createdAt).toLocaleDateString(
-                    "en-US",
-                    { month: "short", day: "numeric", year: "numeric" },
-                  )}
+                  {t("admin.userDrawer.registered", { localeDateString: formatDate(selectedMember.createdAt, { month: "short", day: "numeric", year: "numeric" }) })}
                 </span>
                 <span className="dot">•</span>
                 <span>
-                  Last active:{" "}
+                  {t("admin.userDrawer.lastActive")}{" "}
                   <span className="highlight">{lastActiveStr}</span>
                 </span>
               </div>
@@ -176,53 +157,52 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
           <div className="stats-grid">
             <div className="stat-card">
               <div className="stat-header">
-                <span className="stat-title">PUBLISHED ITEMS</span>
+                <span className="stat-title">{t("admin.userDrawer.publishedItems")}</span>
                 <span className="material-symbols-outlined icon">explore</span>
               </div>
               <div className="stat-main">
                 <span className="stat-val">
                   {selectedMember.memberProperties + selectedMember.memberTours}
                 </span>
-                <span className="stat-subval active">Active</span>
+                <span className="stat-subval active">{t("common.active")}</span>
               </div>
               <div className="stat-footer">
-                {selectedMember.memberProperties} properties •{" "}
-                {selectedMember.memberTours} tours
+                {t("admin.userDrawer.propertiesTours", { memberProperties: selectedMember.memberProperties, memberTours: selectedMember.memberTours })}
               </div>
             </div>
             <div className="stat-card">
               <div className="stat-header">
-                <span className="stat-title">NETWORK</span>
+                <span className="stat-title">{t("admin.userDrawer.network")}</span>
                 <span className="material-symbols-outlined icon">group</span>
               </div>
               <div className="stat-main">
                 <span className="stat-val">
                   {selectedMember.memberFollowers}
                 </span>
-                <span className="stat-subval">followers</span>
+                <span className="stat-subval">{t("admin.userDrawer.followers")}</span>
               </div>
               <div className="stat-footer">
-                {selectedMember.memberFollowings} following
+                {t("admin.userDrawer.following", { memberFollowings: selectedMember.memberFollowings })}
               </div>
             </div>
             <div className="stat-card">
               <div className="stat-header">
-                <span className="stat-title">COMMUNITY</span>
+                <span className="stat-title">{t("admin.userDrawer.community")}</span>
                 <span className="material-symbols-outlined icon">forum</span>
               </div>
               <div className="stat-main">
                 <span className="stat-val">
                   {selectedMember.memberArticles}
                 </span>
-                <span className="stat-subval">articles</span>
+                <span className="stat-subval">{t("admin.userDrawer.articles")}</span>
               </div>
               <div className="stat-footer">
-                {selectedMember.memberComments} comments posted
+                {t("admin.userDrawer.commentsPosted", { memberComments: selectedMember.memberComments })}
               </div>
             </div>
             <div className="stat-card">
               <div className="stat-header">
-                <span className="stat-title">ENGAGEMENT</span>
+                <span className="stat-title">{t("admin.userDrawer.engagement")}</span>
                 <span className="material-symbols-outlined icon">star</span>
               </div>
               <div className="stat-main">
@@ -232,7 +212,7 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
                 </span>
               </div>
               <div className="stat-footer">
-                {selectedMember.memberViews} profile views
+                {t("admin.userDrawer.profileViews", { memberViews: selectedMember.memberViews })}
               </div>
             </div>
           </div>
@@ -246,7 +226,7 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
                 }`}
                 onClick={() => setActiveTab("business")}
               >
-                Business
+                {t("admin.userDrawer.business")}
               </button>
             )}
           </div>
@@ -260,25 +240,25 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
                     <span className="material-symbols-outlined">
                       account_circle
                     </span>
-                    <h4>Personal & Contact Information</h4>
+                    <h4>{t("admin.userDrawer.personalContactInformation")}</h4>
                   </div>
                 </div>
 
                 <div className="info-grid">
                   <div className="info-box">
-                    <span className="info-label">Full Name</span>
+                    <span className="info-label">{t("common.fullName")}</span>
                     <span className="info-value">
                       {selectedMember.memberFullName || "-"}
                     </span>
                   </div>
                   <div className="info-box">
-                    <span className="info-label">Handle / Slug</span>
+                    <span className="info-label">{t("admin.userDrawer.handleSlug")}</span>
                     <span className="info-value">
                       @{selectedMember.memberNick}
                     </span>
                   </div>
                   <div className="info-box">
-                    <span className="info-label">Email Address</span>
+                    <span className="info-label">{t("admin.userDrawer.emailAddress")}</span>
                     <div className="info-value-row">
                       <span className="info-value">
                         {selectedMember.memberEmail || "-"}
@@ -289,7 +269,7 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
                     </div>
                   </div>
                   <div className="info-box">
-                    <span className="info-label">Primary Phone</span>
+                    <span className="info-label">{t("admin.userDrawer.primaryPhone")}</span>
                     <div className="info-value-row">
                       <span className="info-value">
                         {selectedMember.memberPhone || "-"}
@@ -301,7 +281,7 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
                   </div>
                   <div className="info-box full-width">
                     <span className="info-label">
-                      Primary Location / Residence
+                      {t("admin.userDrawer.primaryLocationResidence")}
                     </span>
                     <span className="info-value">
                       {selectedMember.memberAddress || "-"}
@@ -309,10 +289,10 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
                   </div>
                   <div className="info-box full-width bio">
                     <span className="info-label">
-                      {isAgent ? "Agent Professional Bio" : "Member Bio"}
+                      {isAgent ? t("admin.userDrawer.agentProfessionalBio") : t("admin.userDrawer.memberBio")}
                     </span>
                     <span className="info-value">
-                      {selectedMember.memberDesc || "No biography provided."}
+                      {selectedMember.memberDesc || t("admin.userDrawer.noBiographyProvided")}
                     </span>
                   </div>
                 </div>
@@ -320,22 +300,22 @@ const UserDrawer: React.FC<UserDrawerProps> = ({
                 <div className="section-header mt-6">
                   <div className="title">
                     <span className="material-symbols-outlined">domain</span>
-                    <h4>Platform Metrics & Rankings</h4>
+                    <h4>{t("admin.userDrawer.platformMetricsRankings")}</h4>
                   </div>
-                  <span className="verified-badge-label">Verified Data</span>
+                  <span className="verified-badge-label">{t("admin.userDrawer.verifiedData")}</span>
                 </div>
 
                 <div className="info-grid">
                   <div className="info-box">
-                    <span className="info-label">Member Points</span>
+                    <span className="info-label">{t("admin.userDrawer.memberPoints")}</span>
                     <span className="info-value">
-                      {selectedMember.memberPoints} pts
+                      {t("admin.userDrawer.pts", { memberPoints: selectedMember.memberPoints })}
                     </span>
                   </div>
                   <div className="info-box">
-                    <span className="info-label">Platform Rank</span>
+                    <span className="info-label">{t("admin.userDrawer.platformRank")}</span>
                     <span className="info-value">
-                      Level {selectedMember.memberRank}
+                      {t("admin.userDrawer.level", { memberRank: selectedMember.memberRank })}
                     </span>
                   </div>
                 </div>

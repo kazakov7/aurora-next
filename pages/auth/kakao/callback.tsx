@@ -6,10 +6,12 @@ import { useMutation } from '@apollo/client';
 import { KAKAO_AUTH } from '../../../apollo/user/mutation';
 import { setJwtToken, updateUserInfo } from '../../../libs/auth';
 import { consumeKakaoAuthorizationState, getKakaoRedirectUri } from '../../../libs/auth/social';
+import { useI18n } from '../../../libs/i18n';
 
 const KakaoCallbackPage: NextPage = () => {
+	const { t } = useI18n();
 	const router = useRouter();
-	const [message, setMessage] = useState('Completing Kakao sign-in…');
+	const [message, setMessage] = useState(t('auth.kakao.completing'));
 	const processedRef = useRef(false);
 	const [kakaoAuth] = useMutation(KAKAO_AUTH);
 
@@ -22,11 +24,11 @@ const KakaoCallbackPage: NextPage = () => {
 		const redirectTarget = consumeKakaoAuthorizationState(state);
 
 		if (providerError || !code) {
-			setMessage(providerError === 'access_denied' ? 'Kakao sign-in was cancelled.' : 'Kakao sign-in could not be completed.');
+			setMessage(providerError === 'access_denied' ? t('auth.kakao.cancelled') : t('auth.kakao.failed'));
 			return;
 		}
 		if (!redirectTarget) {
-			setMessage('This Kakao sign-in request is invalid or has expired.');
+			setMessage(t('auth.kakao.invalidRequest'));
 			return;
 		}
 		void (async () => {
@@ -40,14 +42,14 @@ const KakaoCallbackPage: NextPage = () => {
 				updateUserInfo(member.accessToken);
 				await router.replace(redirectTarget);
 			} catch {
-				setMessage('Kakao sign-in could not be completed. Please return and try again.');
+				setMessage(t('auth.kakao.failedRetry'));
 			}
 		})();
 	}, [kakaoAuth, router, router.isReady, router.query.code, router.query.error, router.query.state]);
 
 	return (
 		<>
-			<Head><title>Kakao sign-in — AURORA</title></Head>
+			<Head><title>{t('auth.kakao.metaTitle')}</title></Head>
 			<main className="auth-callback-status" aria-live="polite"><p>{message}</p></main>
 		</>
 	);

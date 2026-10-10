@@ -5,6 +5,7 @@ import { userVar } from "../../../apollo/store";
 import { GET_MEMBER } from "../../../apollo/user/query";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
 import { setJwtToken, updateUserInfo } from "../../auth";
+import { useI18n } from "../../i18n";
 
 
 interface MyProfileHeaderProps {
@@ -14,6 +15,7 @@ interface MyProfileHeaderProps {
 const MyProfileHeader: React.FC<MyProfileHeaderProps> = ({
   onCategoryChange,
 }) => {
+  const { t, tEnum } = useI18n();
   const user = useReactiveVar(userVar);
   const router = useRouter();
 
@@ -57,8 +59,8 @@ const MyProfileHeader: React.FC<MyProfileHeaderProps> = ({
   };
 
   const profileImg = getImageUrl(profile?.memberImage, DEFAULT_USER_AVATAR);
-  const userNick = profile?.memberNick || "AURA traveller";
-  const userAddress = profile?.memberAddress || "Location not provided";
+  const userNick = profile?.memberNick || t("profile.header.auroraTraveller");
+  const userAddress = profile?.memberAddress || t("common.locationNotProvided");
 
   return (
     <section className="profile-header-card">
@@ -77,7 +79,7 @@ const MyProfileHeader: React.FC<MyProfileHeaderProps> = ({
             <div className="name-row">
               <h1>{userNick}</h1>
               <span className="verified-pill">
-                {profile?.memberType || "USER"}
+                {tEnum("memberType", profile?.memberType || "USER")}
               </span>
             </div>
 
@@ -115,21 +117,21 @@ const MyProfileHeader: React.FC<MyProfileHeaderProps> = ({
               <div className="metric-number">
                 {profile?.memberArticles ?? 0}
               </div>
-              <div className="metric-label">Articles</div>
+              <div className="metric-label">{t("common.articles")}</div>
             </div>
             <div className="metric-divider"></div>
             <div className="metric-item" onClick={() => handleNav("followers")}>
               <div className="metric-number">
                 {profile?.memberFollowers ?? 0}
               </div>
-              <div className="metric-label">Followers</div>
+              <div className="metric-label">{t("common.followers")}</div>
             </div>
             <div className="metric-divider"></div>
             <div className="metric-item" onClick={() => handleNav("following")}>
               <div className="metric-number">
                 {profile?.memberFollowings ?? 0}
               </div>
-              <div className="metric-label">Following</div>
+              <div className="metric-label">{t("common.followButton.following")}</div>
             </div>
           </div>
 
@@ -141,7 +143,7 @@ const MyProfileHeader: React.FC<MyProfileHeaderProps> = ({
                 onClick={() => handleNav("partner")}
               >
                 <span className="material-symbols-outlined">handshake</span>
-                <span>Become a Partner</span>
+                <span>{t("profile.becomeAPartner")}</span>
               </button>
             )}
             <button
@@ -151,7 +153,7 @@ const MyProfileHeader: React.FC<MyProfileHeaderProps> = ({
               onClick={() => handleNav("settings")}
             >
               <span className="material-symbols-outlined">edit</span>
-              <span>Edit Profile</span>
+              <span>{t("profile.header.editProfile")}</span>
             </button>
           </div>
         </div>

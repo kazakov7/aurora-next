@@ -7,6 +7,7 @@ import { Tour } from '../../../types/tour/tour';
 import { Destination } from '../../../types/destination/destination';
 import { getImageUrl } from '../../../config';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../../sweetAlert';
+import { useI18n } from '../../../i18n';
 
 interface AgentTourFormProps {
 	tour?: Tour | null;
@@ -20,6 +21,7 @@ const toDateInput = (value?: Date | string): string => (value ? moment(value).fo
 
 /** Create / edit form for an approved TOUR agent; values are sent to createTour / updateTour **/
 const AgentTourForm = (props: AgentTourFormProps) => {
+	const { t, tError } = useI18n();
 	const { tour, onClose, onSaved } = props;
 	const isEdit = Boolean(tour?._id);
 	const [form, setForm] = useState({
@@ -79,10 +81,10 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 			setUploading(true);
 			const { data } = await imagesUploader({ variables: { files, target: 'tour' } });
 			const uploaded: string[] = (data?.imagesUploader ?? []).filter(Boolean);
-			if (!uploaded.length) throw new Error('Image upload failed');
+			if (!uploaded.length) throw new Error(t('common.imageUploadFailed'));
 			setImages((previous) => [...previous, ...uploaded].slice(0, MAX_IMAGES));
 		} catch (err: any) {
-			await sweetMixinErrorAlert(err?.message || 'Image upload failed');
+			await sweetMixinErrorAlert(tError(err, 'common.imageUploadFailed'));
 		} finally {
 			setUploading(false);
 		}
@@ -96,19 +98,19 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 		const end = moment(form.tourEndDate, 'YYYY-MM-DD', true);
 
 		if (!form.destinationId || !form.tourName.trim()) {
-			await sweetMixinErrorAlert('Destination and tour name are required.');
+			await sweetMixinErrorAlert(t('agent.tourForm.requiredFields'));
 			return;
 		}
 		if (!Number.isFinite(tourPrice) || tourPrice <= 0) {
-			await sweetMixinErrorAlert('Enter a valid price per person.');
+			await sweetMixinErrorAlert(t('agent.tourForm.invalidPrice'));
 			return;
 		}
 		if (!start.isValid() || !end.isValid() || !end.isAfter(start)) {
-			await sweetMixinErrorAlert('The end date must be after the start date.');
+			await sweetMixinErrorAlert(t('agent.tourForm.invalidDates'));
 			return;
 		}
 		if (!Number.isInteger(tourCapacity) || tourCapacity < Math.max(1, reservedSeats)) {
-			await sweetMixinErrorAlert(`Capacity must be at least ${Math.max(1, reservedSeats)}.`);
+			await sweetMixinErrorAlert(t('agent.tourForm.capacityTooLow', { math: Math.max(1, reservedSeats) }));
 			return;
 		}
 
@@ -133,14 +135,14 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 			setSubmitting(true);
 			if (isEdit && tour) {
 				await updateTour({ variables: { input: { _id: tour._id, ...payload } } });
-				await sweetTopSmallSuccessAlert('Tour updated', 1200);
+				await sweetTopSmallSuccessAlert(t('agent.tourForm.tourUpdated'), 1200);
 			} else {
 				await createTour({ variables: { input: payload } });
-				await sweetTopSmallSuccessAlert('Tour created', 1200);
+				await sweetTopSmallSuccessAlert(t('agent.tourForm.tourCreated'), 1200);
 			}
 			onSaved();
 		} catch (err: any) {
-			await sweetMixinErrorAlert(err?.message || 'Could not save the tour.');
+			await sweetMixinErrorAlert(tError(err, 'agent.tourForm.saveFailed'));
 		} finally {
 			setSubmitting(false);
 		}
@@ -152,9 +154,9 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 				<div className="modal-header">
 					<div className="title-group">
 						<span className="material-symbols-outlined icon">hiking</span>
-						<h2>{isEdit ? 'Edit Tour' : 'Add Tour'}</h2>
+						<h2>{isEdit ? t('agent.tourForm.editTour') : t('agent.addTour')}</h2>
 					</div>
-					<button type="button" className="close-btn" onClick={onClose} aria-label="Close">
+					<button type="button" className="close-btn" onClick={onClose} aria-label={t('common.close')}>
 						<span className="material-symbols-outlined">close</span>
 					</button>
 				</div>
@@ -162,9 +164,9 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 				<form className="modal-form" onSubmit={submitHandler}>
 					<div className="form-row">
 						<div className="form-group">
-							<label>Destination</label>
+							<label>{t('common.destination')}</label>
 							<select className="form-select" value={form.destinationId} onChange={destinationChangeHandler} required>
-								<option value="">{destinationsLoading ? 'Loading destinations…' : 'Select destination'}</option>
+								<option value="">{destinationsLoading ? t('agent.loadingDestinations') : t('agent.selectDestination')}</option>
 								{destinations.map((destination) => (
 									<option key={destination._id} value={destination._id}>
 										{destination.destinationName}
@@ -174,69 +176,69 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 							</select>
 						</div>
 						<div className="form-group">
-							<label>Destination City</label>
+							<label>{t('agent.tourForm.destinationCity')}</label>
 							<input className="form-input" value={form.tourDestinationCity} onChange={updateField('tourDestinationCity')} />
 						</div>
 					</div>
 
 					<div className="form-group">
-						<label>Tour Name</label>
+						<label>{t('agent.tourForm.tourName')}</label>
 						<input className="form-input" value={form.tourName} onChange={updateField('tourName')} maxLength={200} required />
 					</div>
 
 					<div className="form-row four">
 						<div className="form-group">
-							<label>Price / person ($)</label>
+							<label>{t('agent.tourForm.pricePerPersonUsd')}</label>
 							<input className="form-input" type="number" min={0.01} step={0.01} value={form.tourPrice} onChange={updateField('tourPrice')} required />
 						</div>
 						<div className="form-group">
-							<label>Capacity</label>
+							<label>{t('common.capacity')}</label>
 							<input className="form-input" type="number" min={Math.max(1, reservedSeats)} value={form.tourCapacity} onChange={updateField('tourCapacity')} required />
 						</div>
 						<div className="form-group">
-							<label>Start Date</label>
+							<label>{t('agent.tourForm.startDate')}</label>
 							<input className="form-input" type="date" value={form.tourStartDate} onChange={updateField('tourStartDate')} required />
 						</div>
 						<div className="form-group">
-							<label>End Date</label>
+							<label>{t('agent.tourForm.endDate')}</label>
 							<input className="form-input" type="date" min={form.tourStartDate ? moment(form.tourStartDate).add(1, 'day').format('YYYY-MM-DD') : undefined} value={form.tourEndDate} onChange={updateField('tourEndDate')} required />
 						</div>
 					</div>
 
 					<div className="form-row three">
 						<div className="form-group">
-							<label>Departure Country</label>
+							<label>{t('agent.tourForm.departureCountry')}</label>
 							<input className="form-input" value={form.tourDepartureCountry} onChange={updateField('tourDepartureCountry')} />
 						</div>
 						<div className="form-group">
-							<label>Departure City</label>
+							<label>{t('agent.tourForm.departureCity')}</label>
 							<input className="form-input" value={form.tourDepartureCity} onChange={updateField('tourDepartureCity')} />
 						</div>
 						<div className="form-group">
-							<label>Meeting Point</label>
+							<label>{t('agent.tourForm.meetingPoint')}</label>
 							<input className="form-input" value={form.tourDeparturePlace} onChange={updateField('tourDeparturePlace')} />
 						</div>
 					</div>
 
 					<div className="form-group">
-						<label>Description</label>
+						<label>{t('common.description')}</label>
 						<textarea className="form-textarea" rows={4} value={form.tourDesc} onChange={updateField('tourDesc')} maxLength={5000} />
 					</div>
 
 					<div className="form-group">
-						<label>Additional Information</label>
+						<label>{t('agent.tourForm.additionalInformation')}</label>
 						<textarea className="form-textarea" rows={2} value={form.tourAdditionalInfo} onChange={updateField('tourAdditionalInfo')} />
 					</div>
 
 					<div className="form-group">
 						<label>
-							Photos ({images.length}/{MAX_IMAGES})
+							{t('agent.photosCount', { count: images.length, mAXIMAGES: MAX_IMAGES })}
 						</label>
 						<div className="image-grid">
 							{images.map((image) => (
 								<div key={image} className="image-thumb">
-									<img src={getImageUrl(image)} alt="Tour" />
-									<button type="button" onClick={() => setImages((previous) => previous.filter((item) => item !== image))} aria-label="Remove photo">
+									<img src={getImageUrl(image)} alt={t('common.tour')} />
+									<button type="button" onClick={() => setImages((previous) => previous.filter((item) => item !== image))} aria-label={t('agent.removePhoto')}>
 										<span className="material-symbols-outlined">close</span>
 									</button>
 								</div>
@@ -244,7 +246,7 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 							{images.length < MAX_IMAGES && (
 								<label className={`image-add ${uploading ? 'disabled' : ''}`}>
 									<span className="material-symbols-outlined">{uploading ? 'hourglass_top' : 'add_photo_alternate'}</span>
-									<span>{uploading ? 'Uploading…' : 'Add photos'}</span>
+									<span>{uploading ? t('agent.uploading') : t('agent.addPhotos')}</span>
 									<input type="file" accept="image/jpeg, image/png" multiple hidden disabled={uploading} onChange={imageUploadHandler} />
 								</label>
 							)}
@@ -253,10 +255,10 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 
 					<div className="modal-actions-bar">
 						<button type="button" className="cancel-btn" onClick={onClose} disabled={submitting}>
-							Cancel
+							{t('common.cancel')}
 						</button>
 						<button type="submit" className="publish-btn" disabled={submitting || uploading}>
-							{submitting ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Tour'}
+							{submitting ? t('agent.saving') : isEdit ? t('common.saveChanges') : t('agent.tourForm.createTour')}
 						</button>
 					</div>
 				</form>

@@ -12,12 +12,14 @@ import {
 	startTelegramAuthorization,
 } from '../../auth/social';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { useI18n } from '../../i18n';
 
 interface SignInProps {
 	onSwitchToSignUp?: () => void;
 }
 
 const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
+	const { t, tError, locale } = useI18n();
 	const router = useRouter();
 
 	const [identifier, setIdentifier] = useState<string>('');
@@ -47,11 +49,11 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 	const handleIdentifierChange = (val: string) => {
 		setIdentifier(val);
 		if (val.includes('@') && val.includes('.')) {
-			setIdentifierHint('Valid Email');
+			setIdentifierHint(t('auth.signIn.validEmail'));
 		} else if (val.startsWith('@') && val.length > 2) {
-			setIdentifierHint('Valid Handle');
+			setIdentifierHint(t('auth.signIn.validHandle'));
 		} else if (val.trim().length >= 3) {
-			setIdentifierHint('Valid Nickname');
+			setIdentifierHint(t('auth.signIn.validNickname'));
 		} else {
 			setIdentifierHint('');
 		}
@@ -60,7 +62,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!identifier.trim() || !password) {
-			sweetMixinErrorAlert('Please enter your email/nickname and password.');
+			sweetMixinErrorAlert(t('auth.signIn.missingCredentials'));
 			return;
 		}
 
@@ -77,12 +79,12 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 			if (data?.login?.accessToken) {
 				setJwtToken(data.login.accessToken);
 				updateUserInfo(data.login.accessToken);
-				await sweetTopSmallSuccessAlert(`Welcome back, ${data.login.memberNick}!`, 800);
+				await sweetTopSmallSuccessAlert(t('auth.signIn.welcomeBackUser', { memberNick: data.login.memberNick }), 800);
 				await router.push(getSafeAuthRedirect(router.query.referrer));
 			}
 		} catch (err: any) {
 			console.error('Login error:', err);
-			sweetMixinErrorAlert(err?.message || 'Login failed. Please check your credentials.');
+			sweetMixinErrorAlert(tError(err, 'auth.signIn.loginFailed'));
 		}
 	};
 
@@ -95,14 +97,14 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 			if (!member?.accessToken) throw new Error('SOCIAL_AUTH_FAILED');
 			setJwtToken(member.accessToken);
 			updateUserInfo(member.accessToken);
-			await sweetTopSmallSuccessAlert(`Welcome, ${member.memberNick}!`, 800);
+			await sweetTopSmallSuccessAlert(t('auth.signIn.welcome', { memberNick: member.memberNick }), 800);
 			await router.push(getSafeAuthRedirect(router.query.referrer));
 		} catch (error) {
 			sweetMixinErrorAlert(getGoogleAuthErrorMessage(error, 'sign-in'));
 		} finally {
 			setSocialLoading('');
 		}
-	}, [googleAuth, router, socialLoading]);
+	}, [googleAuth, router, socialLoading, t]);
 
 	useEffect(() => {
 		const container = googleButtonRef.current;
@@ -110,14 +112,14 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 		let disposed = false;
 		void renderGoogleSignInButton(container, (credential) => {
 			if (!disposed) void handleGoogleLogin(credential);
-		}).catch((error) => {
+		}, locale).catch((error) => {
 			if (!disposed) sweetMixinErrorAlert(getGoogleAuthErrorMessage(error, 'sign-in'));
 		});
 		return () => {
 			disposed = true;
 			container.replaceChildren();
 		};
-	}, [handleGoogleLogin]);
+	}, [handleGoogleLogin, locale]);
 
 	const handleKakaoLogin = () => {
 		if (socialLoading) return;
@@ -126,7 +128,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 			startKakaoAuthorization(router.query.referrer);
 		} catch {
 			setSocialLoading('');
-			sweetMixinErrorAlert('Kakao sign-in is not configured.');
+			sweetMixinErrorAlert(t('auth.social.kakaoSignInNotConfigured'));
 		}
 	};
 
@@ -149,18 +151,18 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 				<div className="top-meta-bar">
 					<div className="meta-left">
 						<span className="pulse-dot"></span>
-						<span className="meta-title">Account Access</span>
+						<span className="meta-title">{t('auth.signIn.accountAccess')}</span>
 					</div>
-					<span className="meta-version">Auth Portal v2.4</span>
+					<span className="meta-version">{t('auth.signIn.authPortalV24')}</span>
 				</div>
 
 				{/* Main Form Header & Interactive Body */}
 				<div style={{ maxWidth: '440px', width: '100%', margin: 'auto 0', padding: '10px 0' }}>
 					{/* Eyebrow & Title */}
 					<div className="heading-group">
-						<span className="eyebrow">Welcome Back</span>
-						<h1>Sign in to your account</h1>
-						<p>Sign in to continue your curated journey with AURA.</p>
+						<span className="eyebrow">{t('auth.signIn.welcomeBackTitle')}</span>
+						<h1>{t('auth.signIn.signInToYourAccount')}</h1>
+						<p>{t('auth.signIn.subtitle')}</p>
 					</div>
 
 					{/* Form Elements */}
@@ -168,7 +170,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 						{/* Identity Field */}
 						<div className="field-group">
 							<div className="field-header">
-								<label htmlFor="identifier">Email or Nickname</label>
+								<label htmlFor="identifier">{t('auth.signIn.emailOrNickname')}</label>
 								{identifierHint && (
 									<span className="field-hint" style={{ opacity: 1 }}>
 										{identifierHint}
@@ -183,7 +185,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 									required
 									value={identifier}
 									onChange={(e) => handleIdentifierChange(e.target.value)}
-									placeholder="name@example.com or @handle"
+									placeholder={t('auth.signIn.identifierPlaceholder')}
 									className="with-suffix"
 								/>
 								<span className="material-symbols-outlined suffix-icon">person_outline</span>
@@ -193,16 +195,16 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 						{/* Password Field */}
 						<div className="field-group">
 							<div className="field-header">
-								<label htmlFor="password">Password</label>
+								<label htmlFor="password">{t('auth.signIn.password')}</label>
 								<a
 									href="#"
 									className="forgot-link"
 									onClick={(e) => {
 										e.preventDefault();
-										sweetMixinErrorAlert('Password recovery link has been sent to your registered email.');
+										sweetMixinErrorAlert(t('auth.signIn.recoveryLinkSent'));
 									}}
 								>
-									Forgot password?
+									{t('auth.signIn.forgotPassword')}
 								</a>
 							</div>
 							<div className="input-wrapper">
@@ -220,7 +222,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 									type="button"
 									className="toggle-eye-btn"
 									onClick={() => setShowPassword(!showPassword)}
-									aria-label="Toggle password visibility"
+									aria-label={t('auth.togglePasswordVisibility')}
 								>
 									<span className="material-symbols-outlined">
 										{showPassword ? 'visibility_off' : 'visibility'}
@@ -237,11 +239,11 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 									checked={rememberMe}
 									onChange={(e) => setRememberMe(e.target.checked)}
 								/>
-								<span>Remember this device</span>
+								<span>{t('auth.signIn.rememberThisDevice')}</span>
 							</label>
 							<div className="security-badge">
 								<span className="material-symbols-outlined">lock</span>
-								<span>256-bit SSL</span>
+								<span>{t('auth.signIn.n256BitSsl')}</span>
 							</div>
 						</div>
 
@@ -249,12 +251,12 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 						<button type="submit" className="submit-btn" disabled={loading}>
 							{loading ? (
 								<>
-									<span>Authenticating...</span>
+									<span>{t('auth.signIn.authenticating')}</span>
 									<span className="spinner"></span>
 								</>
 							) : (
 								<>
-									<span>Sign In</span>
+									<span>{t('auth.signInButton')}</span>
 									<span className="material-symbols-outlined">east</span>
 								</>
 							)}
@@ -263,7 +265,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 
 					{/* Social Separator */}
 					<div className="social-divider">
-						<span>or continue with</span>
+						<span>{t('auth.orContinueWith')}</span>
 					</div>
 
 					{/* Google Primary Button */}
@@ -271,7 +273,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 						<div
 							ref={googleButtonRef}
 							className={`google-auth-button ${loading || googleLoading || socialLoading ? 'is-disabled' : ''}`}
-							aria-label="Continue with Google"
+							aria-label={t('auth.continueWithGoogle')}
 						/>
 					</div>
 
@@ -282,7 +284,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 						<button
 							type="button"
 							className="social-btn"
-							title="Continue with Kakao"
+							title={t('auth.continueWithKakao')}
 							onClick={handleKakaoLogin}
 							disabled={loading || googleLoading || Boolean(socialLoading)}
 						>
@@ -296,7 +298,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 						<button
 							type="button"
 							className="social-btn"
-							title="Continue with Telegram"
+							title={t('auth.continueWithTelegram')}
 							onClick={handleTelegramLogin}
 							disabled={loading || googleLoading || Boolean(socialLoading)}
 						>
@@ -311,7 +313,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 				{/* Bottom Sign-Up Link */}
 				<div className="bottom-redirect">
 					<p>
-						New to AURA?
+						{t('auth.signIn.newToAurora')}
 						<button
 							type="button"
 							onClick={() => {
@@ -319,7 +321,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 								else router.push('/account/join?view=signup');
 							}}
 						>
-							Create an account
+							{t('auth.signIn.createAnAccount')}
 						</button>
 					</p>
 				</div>
@@ -328,7 +330,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 			{/* Right Column: Immersive Luxury Editorial Feature */}
 			<div className="editorial-panel">
 				<img
-					alt="Swiss Alps sanctuary luxury retreat"
+					alt={t('auth.panel.imageAlt')}
 					className="bg-visual-img"
 					src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkvikJZPxn7yNSStoZcrIZiB9AtnKNq6QmfTprY_UCYBPyotZKq5F1P_-rWXJYgWpYKPkDXR5PlGZzy1pp8G8YEWrl-Vl3ZwzQ5LVxuqo_EOmUc-tLbl-2emPIA9q9I4Eeot93ADLf263PGUWrleJirgxadKRfye7QuCgIygtkavdIU4MytCH7a0E7ueii6KfAknxKjPicub1MI4auuIH0QNF_uxkQzwGxUUX30_BmJIvBodlYQfYA"
 				/>
@@ -339,18 +341,18 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 				<div className="top-badge-row">
 					<div className="collection-tag">
 						<span className="material-symbols-outlined">verified</span>
-						<span>Swiss Alps · Sanctuary Collection</span>
+						<span>{t('auth.panel.collection')}</span>
 					</div>
-					<button type="button" className="info-btn" aria-label="Explore sanctuary">
+					<button type="button" className="info-btn" aria-label={t('auth.panel.explore')}>
 						<span className="material-symbols-outlined">explore</span>
 					</button>
 				</div>
 
 				{/* Bottom Content Narrative */}
 				<div className="bottom-content">
-					<span className="feature-eyebrow">Editorial Feature</span>
-					<h2>Your next journey starts here.</h2>
-					<p>Curated stays, bespoke expeditions, and private alpine retreats across the world.</p>
+					<span className="feature-eyebrow">{t('auth.panel.eyebrow')}</span>
+					<h2>{t('auth.panel.title')}</h2>
+					<p>{t('auth.panel.text')}</p>
 					<div className="indicator-pills">
 						<span className="pill active"></span>
 						<span className="pill inactive"></span>

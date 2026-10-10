@@ -9,12 +9,36 @@ import PropertyCard from '../property/PropertyCard';
 import TourCard from '../tour/TourCard';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 import { Message } from '../../enums/common.enum';
+import { useI18n } from '../../i18n';
 
 interface MemberProductsProps {
 	member: Member;
 }
 
+/** Dictionary keys per product kind, so no sentence is assembled from an English noun **/
+const PRODUCT_KEYS = {
+	hotel: {
+		title: 'member.products.title.hotel',
+		loading: 'member.products.loading.hotel',
+		empty: 'member.products.empty.hotel',
+		emptyText: 'member.products.emptyText.hotel',
+	},
+	tour: {
+		title: 'member.products.title.tour',
+		loading: 'member.products.loading.tour',
+		empty: 'member.products.empty.tour',
+		emptyText: 'member.products.emptyText.tour',
+	},
+	products: {
+		title: 'member.products.title.products',
+		loading: 'member.products.loading.products',
+		empty: 'member.products.empty.products',
+		emptyText: 'member.products.emptyText.products',
+	},
+};
+
 const MemberProducts: React.FC<MemberProductsProps> = ({ member }) => {
+	const { t, tError } = useI18n();
 	const [page, setPage] = useState<number>(1);
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
@@ -59,7 +83,7 @@ const MemberProducts: React.FC<MemberProductsProps> = ({ member }) => {
 	const likePropertyHandler = async (e: React.MouseEvent, id: string) => {
 		e.stopPropagation();
 		if (!user?._id) {
-			sweetMixinErrorAlert('Please log in first');
+			sweetMixinErrorAlert(t('common.pleaseLogInFirst'));
 			router.push('/account/login');
 			return;
 		}
@@ -67,14 +91,14 @@ const MemberProducts: React.FC<MemberProductsProps> = ({ member }) => {
 			await likeTargetProperty({ variables: { propertyId: id } });
 			refetchProps();
 		} catch (err: any) {
-			sweetMixinErrorAlert(err.message || 'Action failed');
+			sweetMixinErrorAlert(tError(err, 'common.actionFailed'));
 		}
 	};
 
 	const likeTourHandler = async (e: React.MouseEvent, id: string) => {
 		e.stopPropagation();
 		if (!user?._id) {
-			sweetMixinErrorAlert('Please log in first');
+			sweetMixinErrorAlert(t('common.pleaseLogInFirst'));
 			router.push('/account/login');
 			return;
 		}
@@ -82,7 +106,7 @@ const MemberProducts: React.FC<MemberProductsProps> = ({ member }) => {
 			await likeTargetTour({ variables: { tourId: id } });
 			refetchTours();
 		} catch (err: any) {
-			sweetMixinErrorAlert(err.message || 'Action failed');
+			sweetMixinErrorAlert(tError(err, 'common.actionFailed'));
 		}
 	};
 
@@ -97,8 +121,9 @@ const MemberProducts: React.FC<MemberProductsProps> = ({ member }) => {
 	const totalPages = Math.ceil(total / 12) || 1;
 	const list = isHotel ? propertiesList : toursList;
 
-	const memberName = member?.memberFullName || member?.memberNick || 'Member';
-	const title = isHotel ? 'Hotel' : isTour ? 'Tour' : 'Products';
+	const memberName = member?.memberFullName || member?.memberNick || t('common.member');
+	const productKeys = PRODUCT_KEYS[isHotel ? 'hotel' : isTour ? 'tour' : 'products'];
+	const title = t(productKeys.title);
 	const gridClass = isHotel ? 'hotels-grid' : 'tours-grid';
 
 	return (
@@ -108,14 +133,14 @@ const MemberProducts: React.FC<MemberProductsProps> = ({ member }) => {
 				<div className="header-title-box">
 					<div className="title-badge-wrap">
 						<h2>{title}</h2>
-						<span className="count-pill">{total} available</span>
+						<span className="count-pill">{t('member.products.available', { total })}</span>
 					</div>
-					<p className="header-subtitle">Explore offerings from {memberName}.</p>
+					<p className="header-subtitle">{t('member.products.exploreOfferingsFrom', { memberName })}</p>
 				</div>
 			</div>
 
 			{loading && list.length === 0 ? (
-				<p className="member-profile-state">Loading {title.toLowerCase()}...</p>
+				<p className="member-profile-state">{t(productKeys.loading)}</p>
 			) : list.length > 0 ? (
 				<div className={isHotel ? "property-page-wrapper" : "tour-page-wrapper"} style={{ background: 'transparent' }}>
 					<div className={isHotel ? "property-listing-main" : "tour-listing-main"}>
@@ -143,8 +168,8 @@ const MemberProducts: React.FC<MemberProductsProps> = ({ member }) => {
 					<div className="empty-icon-box">
 						<span className="material-symbols-outlined">inventory_2</span>
 					</div>
-					<h3>No {title.toLowerCase()} yet</h3>
-					<p>{memberName} has not published any {title.toLowerCase()} yet.</p>
+					<h3>{t(productKeys.empty)}</h3>
+					<p>{t(productKeys.emptyText, { memberName })}</p>
 				</div>
 			)}
 
@@ -152,7 +177,7 @@ const MemberProducts: React.FC<MemberProductsProps> = ({ member }) => {
 			{totalPages > 1 && (
 				<div className="pagination-wrapper">
 					<span className="pagination-info">
-						Showing {(page - 1) * 12 + 1}–{Math.min(page * 12, total)} of {total}
+						{t('member.products.showingRange', { page: (page - 1) * 12 + 1, math: Math.min(page * 12, total), total })}
 					</span>
 					<div className="pagination-pills">
 						<button

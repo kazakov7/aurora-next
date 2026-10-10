@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { sweetErrorAlert, sweetTopSmallSuccessAlert } from '../../../sweetAlert';
+import { AppLocale, useI18n } from '../../../i18n';
 
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
+/** Stripe Elements has no Uzbek translation, so `uz` lets Stripe pick from the browser language **/
+const STRIPE_LOCALES: Record<AppLocale, 'en' | 'ko' | 'auto'> = { en: 'en', ko: 'ko', uz: 'auto' };
 
 interface PropertyPaymentModalProps {
 	clientSecret: string;
@@ -23,6 +26,7 @@ interface PropertyPaymentFormProps {
 export const isStripePaymentConfigured = Boolean(stripePublishableKey);
 
 const PropertyPaymentForm = ({ paymentAmount, onClose, onPaymentConfirmed, onSubmittingChange }: PropertyPaymentFormProps) => {
+	const { t, tError } = useI18n();
 	const stripe = useStripe();
 	const elements = useElements();
 	const [submitting, setSubmitting] = useState(false);
@@ -40,16 +44,16 @@ const PropertyPaymentForm = ({ paymentAmount, onClose, onPaymentConfirmed, onSub
 				redirect: 'if_required',
 			});
 
-			if (error) throw new Error(error.message || 'Payment could not be completed.');
+			if (error) throw new Error(tError(error, 'hotels.paymentModal.paymentFailed'));
 			if (paymentIntent?.status !== 'succeeded') {
-				throw new Error('Payment is still processing. Please check your bookings shortly.');
+				throw new Error(t('hotels.paymentModal.stillProcessing'));
 			}
 
 			await onPaymentConfirmed();
-			await sweetTopSmallSuccessAlert('Payment confirmed. Your booking is being finalized.', 1800);
+			await sweetTopSmallSuccessAlert(t('hotels.paymentModal.paymentConfirmed'), 1800);
 			onClose();
 		} catch (error: unknown) {
-			const message = error instanceof Error ? error.message : 'Payment could not be completed.';
+			const message = tError(error, 'hotels.paymentModal.paymentFailed');
 			await sweetErrorAlert(message);
 		} finally {
 			setSubmitting(false);
@@ -62,10 +66,10 @@ const PropertyPaymentForm = ({ paymentAmount, onClose, onPaymentConfirmed, onSub
 			<PaymentElement />
 			<div className="payment-modal-actions">
 				<button type="button" className="payment-cancel-btn" disabled={submitting} onClick={onClose}>
-					Cancel
+					{t('common.cancel')}
 				</button>
 				<button type="submit" className="payment-confirm-btn" disabled={!stripe || submitting}>
-					{submitting ? 'Confirming...' : `Pay $${paymentAmount.toLocaleString()}`}
+					{submitting ? t('hotels.paymentModal.confirming') : t('hotels.paymentModal.pay', { paymentAmount: paymentAmount.toLocaleString('en-US') })}
 				</button>
 			</div>
 		</form>
@@ -73,24 +77,25 @@ const PropertyPaymentForm = ({ paymentAmount, onClose, onPaymentConfirmed, onSub
 };
 
 const PropertyPaymentModal = ({ clientSecret, paymentAmount, onClose, onPaymentConfirmed }: PropertyPaymentModalProps) => {
+	const { t, locale } = useI18n();
 	const [submitting, setSubmitting] = useState(false);
 
 	if (!stripePromise) return null;
 
 	return (
-		<div className="property-payment-modal" role="dialog" aria-modal="true" aria-label="Secure payment">
+		<div className="property-payment-modal" role="dialog" aria-modal="true" aria-label={t('hotels.paymentModal.securePayment')}>
 			<div className="payment-modal-backdrop" />
 			<div className="payment-modal-content">
 				<div className="payment-modal-heading">
 					<div>
-						<span className="payment-modal-eyebrow">Secure Stripe checkout</span>
-						<h2>Complete your reservation</h2>
+						<span className="payment-modal-eyebrow">{t('hotels.paymentModal.secureStripeCheckout')}</span>
+						<h2>{t('hotels.paymentModal.completeYourReservation')}</h2>
 					</div>
-					<button type="button" className="payment-close-btn" aria-label="Close payment" disabled={submitting} onClick={onClose}>
+					<button type="button" className="payment-close-btn" aria-label={t('hotels.paymentModal.closePayment')} disabled={submitting} onClick={onClose}>
 						<span className="material-symbols-outlined">close</span>
 					</button>
 				</div>
-				<Elements stripe={stripePromise} options={{ clientSecret }}>
+				<Elements stripe={stripePromise} options={{ clientSecret, locale: STRIPE_LOCALES[locale] }}>
 					<PropertyPaymentForm
 						paymentAmount={paymentAmount}
 						onClose={onClose}

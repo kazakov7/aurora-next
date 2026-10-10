@@ -11,8 +11,10 @@ import { PropertyStatus } from '../../../libs/enums/property.enum';
 import { Direction } from '../../../libs/enums/common.enum';
 import { sweetTopSmallSuccessAlert, sweetMixinErrorAlert, sweetConfirmAlert } from '../../../libs/sweetAlert';
 import { DEFAULT_USER_AVATAR, getImageUrl } from '../../../libs/config';
+import { useI18n } from '../../../libs/i18n';
 
 const AdminPropertiesPage: NextPage = () => {
+	const { t, tEnum, tError, formatDate } = useI18n();
 	const [properties, setProperties] = useState<Property[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
@@ -88,21 +90,21 @@ const AdminPropertiesPage: NextPage = () => {
 
 	const handleEditStatus = async (property: Property) => {
 		const { value: newStatus } = await Swal.fire({
-			title: 'Update Property Status',
-			text: `Select new status for "${property.propertyName}":`,
+			title: t('admin.properties.updatePropertyStatus'),
+			text: t('admin.properties.selectNewStatusFor', { propertyName: property.propertyName }),
 			input: 'select',
 			inputOptions: {
-				ACTIVE: 'Active',
-				PENDING: 'Pending',
-				INACTIVE: 'Inactive',
-				REJECTED: 'Rejected',
+				ACTIVE: t('common.active'),
+				PENDING: t('common.pending'),
+				INACTIVE: t('common.inactive'),
+				REJECTED: t('common.rejected'),
 			},
 			inputValue: property.propertyStatus,
 			showCancelButton: true,
 			confirmButtonColor: '#006194',
 			cancelButtonColor: '#94a3b8',
-			confirmButtonText: 'Save Status',
-			cancelButtonText: 'Cancel',
+			confirmButtonText: t('admin.properties.saveStatus'),
+			cancelButtonText: t('common.cancel'),
 		});
 
 		if (newStatus && newStatus !== property.propertyStatus) {
@@ -110,11 +112,11 @@ const AdminPropertiesPage: NextPage = () => {
 				await updatePropertyStatusByAdmin({
 					variables: { input: { _id: property._id, propertyStatus: newStatus as PropertyStatus } },
 				});
-				await sweetTopSmallSuccessAlert('Property status updated successfully!', 1000);
+				await sweetTopSmallSuccessAlert(t('admin.properties.propertyStatusUpdatedSuccessfully'), 1000);
 				setSelectedProperty((prev) => (prev ? { ...prev, propertyStatus: newStatus as PropertyStatus } : null));
 				refetch();
 			} catch (err: any) {
-				sweetMixinErrorAlert(err.message);
+				sweetMixinErrorAlert(tError(err));
 			}
 		}
 	};
@@ -122,19 +124,18 @@ const AdminPropertiesPage: NextPage = () => {
 	const handleToggleActivation = async (property: Property) => {
 		const isCurrentlyActive = property.propertyStatus === PropertyStatus.ACTIVE;
 		const targetStatus = isCurrentlyActive ? PropertyStatus.INACTIVE : PropertyStatus.ACTIVE;
-		const actionName = isCurrentlyActive ? 'Deactivate' : 'Activate';
 
 		const result = await Swal.fire({
-			title: `${actionName} Property?`,
+			title: t(isCurrentlyActive ? 'admin.properties.deactivateTitle' : 'admin.properties.activateTitle'),
 			text: isCurrentlyActive
-				? `Deactivating "${property.propertyName}" will remove it from guest search results immediately.`
-				: `Activating "${property.propertyName}" will make it visible to guests.`,
+				? t('admin.properties.deactivateText', { propertyName: property.propertyName })
+				: t('admin.properties.activateText', { propertyName: property.propertyName }),
 			icon: isCurrentlyActive ? 'warning' : 'question',
 			showCancelButton: true,
 			confirmButtonColor: isCurrentlyActive ? '#dc2626' : '#006194',
 			cancelButtonColor: '#94a3b8',
-			confirmButtonText: `Yes, ${actionName}`,
-			cancelButtonText: 'Cancel',
+			confirmButtonText: t(isCurrentlyActive ? 'admin.properties.confirmDeactivate' : 'admin.properties.confirmActivate'),
+			cancelButtonText: t('common.cancel'),
 			reverseButtons: true,
 		});
 
@@ -144,21 +145,24 @@ const AdminPropertiesPage: NextPage = () => {
 			await updatePropertyStatusByAdmin({
 				variables: { input: { _id: property._id, propertyStatus: targetStatus } },
 			});
-			await sweetTopSmallSuccessAlert(`Property ${actionName.toLowerCase()}d successfully!`, 1000);
+			await sweetTopSmallSuccessAlert(t(isCurrentlyActive ? 'admin.properties.deactivated' : 'admin.properties.activated'), 1000);
 			setSelectedProperty((prev) => (prev ? { ...prev, propertyStatus: targetStatus } : null));
 			refetch();
 		} catch (err: any) {
-			sweetMixinErrorAlert(err.message);
+			sweetMixinErrorAlert(tError(err));
 		}
 	};
 
 	const handleEmailAgent = (email?: string, name?: string) => {
 		if (email) {
-			window.location.href = `mailto:${email}?subject=Regarding Property: ${selectedProperty?.propertyName}`;
+			window.location.href = `mailto:${email}?subject=${encodeURIComponent(t('admin.properties.emailSubject', { propertyName: selectedProperty?.propertyName }))}`;
 		} else {
 			Swal.fire({
-				title: 'Agent Contact',
-				text: `Agent contact for ${name || 'this property'}: ${selectedProperty?.memberData?.memberPhone || selectedProperty?.memberData?.memberNick || 'N/A'}`,
+				title: t('admin.properties.agentContact'),
+				text: t('admin.properties.agentContactText', {
+					name: name || t('admin.properties.thisProperty'),
+					contact: selectedProperty?.memberData?.memberPhone || selectedProperty?.memberData?.memberNick || t('admin.properties.notAvailable'),
+				}),
 				icon: 'info',
 				confirmButtonColor: '#006194',
 			});
@@ -171,33 +175,33 @@ const AdminPropertiesPage: NextPage = () => {
 				await updatePropertyStatusByAdmin({
 					variables: { input: { _id: selectedProperty._id, propertyStatus: formStatus } },
 				});
-				sweetTopSmallSuccessAlert('Property status updated!', 800);
+				sweetTopSmallSuccessAlert(t('admin.properties.propertyStatusUpdated'), 800);
 			}
 			closeDrawer();
 			refetch();
 		} catch (err: any) {
-			sweetMixinErrorAlert(err.message);
+			sweetMixinErrorAlert(tError(err));
 		}
 	};
 
 	const handleDelete = async (id: string) => {
-		if (await sweetConfirmAlert('Are you sure you want to delete this property?')) {
+		if (await sweetConfirmAlert(t('admin.properties.deleteConfirm'))) {
 			try {
 				await removePropertyByAdmin({ variables: { propertyId: id } });
-				sweetTopSmallSuccessAlert('Property deleted!', 800);
+				sweetTopSmallSuccessAlert(t('admin.properties.propertyDeleted'), 800);
 				refetch();
 			} catch (err: any) {
-				sweetMixinErrorAlert(err.message);
+				sweetMixinErrorAlert(tError(err));
 			}
 		}
 	};
 
 	const exportCSV = () => {
 		if (!properties || properties.length === 0) {
-			sweetMixinErrorAlert('No data to export');
+			sweetMixinErrorAlert(t('common.noDataToExport'));
 			return;
 		}
-		const headers = ['ID', 'Name', 'Type', 'City', 'Price', 'Status', 'Created Date'];
+		const headers = ['ID', t('common.name'), t('common.type'), t('admin.properties.city'), t('admin.properties.price'), t('common.status'), t('common.createdDate')];
 		const rows = properties.map((p) => [
 			p._id,
 			`"${p.propertyName.replace(/"/g, '""')}"`,
@@ -205,7 +209,7 @@ const AdminPropertiesPage: NextPage = () => {
 			`"${p.propertyCity}"`,
 			p.pricePerNight,
 			p.propertyStatus,
-			new Date(p.createdAt).toLocaleDateString(),
+			formatDate(p.createdAt),
 		]);
 
 		const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
@@ -226,8 +230,8 @@ const AdminPropertiesPage: NextPage = () => {
 		<div className="admin-overview dashboard-container">
 			<div className="overview-header">
 				<div className="header-text">
-					<h1>Hotels & Properties Management</h1>
-					<p>Review, approve, and moderate property listings.</p>
+					<h1>{t('admin.properties.hotelsPropertiesManagement')}</h1>
+					<p>{t('admin.properties.intro')}</p>
 				</div>
 
 			</div>
@@ -235,29 +239,29 @@ const AdminPropertiesPage: NextPage = () => {
 			<section className="admin-table-section">
 				<div className="table-header">
 					<div className="header-left">
-						<h2>Directory</h2>
-						<span className="table-badge">{total} Properties</span>
+						<h2>{t('common.directory')}</h2>
+						<span className="table-badge">{t('admin.properties.properties', { total })}</span>
 					</div>
 					<div className="header-right">
 						<div className="search-box">
 							<span className="material-symbols-outlined">search</span>
 							<input
 								type="text"
-								placeholder="Search city..."
+								placeholder={t('admin.properties.searchCity')}
 								onChange={(e) => handleSearchChange(e.target.value)}
 							/>
 						</div>
 						<div className="filter-select-group">
 							<select className="filter-select" onChange={(e) => handleStatusChange(e.target.value)}>
-								<option value="all">All Statuses</option>
-								<option value={PropertyStatus.ACTIVE}>Active</option>
-								<option value={PropertyStatus.PENDING}>Pending</option>
-								<option value={PropertyStatus.INACTIVE}>Inactive</option>
-								<option value={PropertyStatus.REJECTED}>Rejected</option>
+								<option value="all">{t('common.allStatuses')}</option>
+								<option value={PropertyStatus.ACTIVE}>{t('common.active')}</option>
+								<option value={PropertyStatus.PENDING}>{t('common.pending')}</option>
+								<option value={PropertyStatus.INACTIVE}>{t('common.inactive')}</option>
+								<option value={PropertyStatus.REJECTED}>{t('common.rejected')}</option>
 							</select>
 							<button className="reset-filter-btn" type="button" onClick={resetFilters}>
 								<span className="material-symbols-outlined">filter_alt_off</span>
-								Reset
+								{t('common.reset')}
 							</button>
 						</div>
 					</div>
@@ -267,25 +271,25 @@ const AdminPropertiesPage: NextPage = () => {
 					<table className="admin-table">
 						<thead>
 							<tr>
-								<th>Property Name</th>
-								<th>Location</th>
-								<th>Price (Per Night)</th>
-								<th>Metrics</th>
-								<th>Status</th>
-								<th style={{ width: 120, textAlign: 'right' }}>Actions</th>
+								<th>{t('admin.properties.propertyName')}</th>
+								<th>{t('common.location')}</th>
+								<th>{t('admin.properties.pricePerNight')}</th>
+								<th>{t('common.metrics')}</th>
+								<th>{t('common.status')}</th>
+								<th style={{ width: 120, textAlign: 'right' }}>{t('common.actions')}</th>
 							</tr>
 						</thead>
 						<tbody>
 							{loading ? (
 								<tr>
 									<td colSpan={6} style={{ textAlign: 'center', padding: '40px' }}>
-										Loading...
+										{t('common.loading')}
 									</td>
 								</tr>
 							) : properties.length === 0 ? (
 								<tr>
 									<td colSpan={6} style={{ textAlign: 'center', padding: '40px' }}>
-										No properties found.
+										{t('admin.properties.noPropertiesFound')}
 									</td>
 								</tr>
 							) : (
@@ -297,7 +301,7 @@ const AdminPropertiesPage: NextPage = () => {
 												onClick={() => openEditDrawer(property)}
 											>
 												<span style={{ fontWeight: 600, color: '#141b2b' }}>{property.propertyName}</span>
-												<span style={{ fontSize: 13, color: '#707881' }}>{property.propertyType}</span>
+												<span style={{ fontSize: 13, color: '#707881' }}>{tEnum('propertyType', property.propertyType)}</span>
 											</div>
 										</td>
 										<td>
@@ -307,7 +311,7 @@ const AdminPropertiesPage: NextPage = () => {
 											</div>
 										</td>
 										<td>
-											<span style={{ fontWeight: 600, color: '#006194' }}>{property.currency === 'USD' ? '$' : '$'}{property.pricePerNight.toLocaleString()}</span>
+											<span style={{ fontWeight: 600, color: '#006194' }}>{property.currency === 'USD' ? '$' : '$'}{property.pricePerNight.toLocaleString('en-US')}</span>
 										</td>
 										<td>
 											<div style={{ display: 'flex', gap: 12, fontSize: 12, color: '#707881' }}>
@@ -328,7 +332,7 @@ const AdminPropertiesPage: NextPage = () => {
 												}`}
 											>
 												<span className="dot"></span>
-												{property.propertyStatus}
+												{tEnum('propertyStatus', property.propertyStatus)}
 											</span>
 										</td>
 										<td style={{ textAlign: 'right' }}>
@@ -376,7 +380,7 @@ const AdminPropertiesPage: NextPage = () => {
 
 				<div className="table-footer">
 					<span>
-						Showing {startItem}–{endItem} of {total} records
+						{t('admin.showingRecords', { startItem, endItem, total })}
 					</span>
 					<div className="pagination">
 						<button
@@ -417,7 +421,7 @@ const AdminPropertiesPage: NextPage = () => {
 						{/* 1. Modal Header */}
 						<div className="modal-header">
 							<div className="header-left">
-								<h2 className="modal-title">Property Details</h2>
+								<h2 className="modal-title">{t('admin.properties.propertyDetails')}</h2>
 								<div
 									className={`status-pill ${
 										selectedProperty.propertyStatus === PropertyStatus.ACTIVE
@@ -430,10 +434,10 @@ const AdminPropertiesPage: NextPage = () => {
 									}`}
 								>
 									<span className="status-dot" />
-									<span>{selectedProperty.propertyStatus}</span>
+									<span>{tEnum('propertyStatus', selectedProperty.propertyStatus)}</span>
 								</div>
 							</div>
-							<button className="modal-close-btn" type="button" onClick={closeDrawer} aria-label="Close">
+							<button className="modal-close-btn" type="button" onClick={closeDrawer} aria-label={t('common.close')}>
 								<span className="material-symbols-outlined">close</span>
 							</button>
 						</div>
@@ -457,14 +461,14 @@ const AdminPropertiesPage: NextPage = () => {
 								/>
 								<div className="banner-overlay">
 									<span className="type-tag">
-										{selectedProperty.propertyType?.replace(/_/g, ' ') || 'Property'}
+										{selectedProperty.propertyType ? tEnum('propertyType', selectedProperty.propertyType) : t('common.property')}
 									</span>
 									<h3 className="banner-title">{selectedProperty.propertyName}</h3>
 									<p className="banner-subtitle">
-										ID: #{selectedProperty._id.slice(-6).toUpperCase()} ·{' '}
+										{t('admin.properties.idLabel', { id: selectedProperty._id.slice(-6).toUpperCase() })} ·{' '}
 										{[selectedProperty.propertyCity, selectedProperty.propertyAddress]
 											.filter(Boolean)
-											.join(', ') || 'Location not provided'}
+											.join(', ') || t('common.locationNotProvided')}
 									</p>
 								</div>
 							</div>
@@ -504,7 +508,7 @@ const AdminPropertiesPage: NextPage = () => {
 											<span className="material-symbols-outlined verified-icon">verified</span>
 										</div>
 										<span className="agent-role">
-											Verified Agent •{' '}
+											{t('admin.properties.verifiedAgent')} •{' '}
 											{selectedProperty.memberData?.memberNick
 												? `${selectedProperty.memberData.memberNick} Atelier`
 												: 'Swiss Alpine Atelier'}
@@ -514,7 +518,7 @@ const AdminPropertiesPage: NextPage = () => {
 								<button
 									className="agent-mail-btn"
 									type="button"
-									title="Contact Agent"
+									title={t('admin.properties.contactAgent')}
 									onClick={() =>
 										handleEmailAgent(
 											selectedProperty.memberData?.memberEmail,
@@ -531,50 +535,45 @@ const AdminPropertiesPage: NextPage = () => {
 							<div className="property-meta-grid">
 								{/* 1. Property Type */}
 								<div className="meta-card">
-									<span className="meta-label">Property Type</span>
+									<span className="meta-label">{t('common.propertyType')}</span>
 									<span className="meta-value">
-										{selectedProperty.propertyType
-											? selectedProperty.propertyType.charAt(0).toUpperCase() +
-											  selectedProperty.propertyType.slice(1).toLowerCase().replace(/_/g, ' ')
-											: 'Hotel'}
+										{selectedProperty.propertyType ? tEnum('propertyType', selectedProperty.propertyType) : t('common.hotel')}
 									</span>
 								</div>
 
 								{/* 2. Location */}
 								<div className="meta-card">
-									<span className="meta-label">Location</span>
+									<span className="meta-label">{t('common.location')}</span>
 									<span className="meta-value" title={[selectedProperty.propertyCity, selectedProperty.propertyAddress].filter(Boolean).join(', ')}>
-										{[selectedProperty.propertyCity, selectedProperty.propertyAddress].filter(Boolean).join(', ') || 'Location not provided'}
+										{[selectedProperty.propertyCity, selectedProperty.propertyAddress].filter(Boolean).join(', ') || t('common.locationNotProvided')}
 									</span>
 								</div>
 
 								{/* 3. Base Price */}
 								<div className="meta-card">
-									<span className="meta-label">Base Price</span>
+									<span className="meta-label">{t('admin.properties.basePrice')}</span>
 									<span className="meta-value price">
 										{selectedProperty.currency === 'USD' ? '$' : '$'}
-										{selectedProperty.pricePerNight?.toLocaleString() || '680'} / night
+										{selectedProperty.pricePerNight?.toLocaleString('en-US') || '680'} {t('common.perNight')}
 									</span>
 								</div>
 
 								{/* 4. Rating */}
 								<div className="meta-card">
-									<span className="meta-label">Rating</span>
+									<span className="meta-label">{t('admin.properties.rating')}</span>
 									<span className="meta-value rating">
 										<span className="star">★</span>
 										<span>
-											{(selectedProperty.propertyRating || 4.98).toFixed(2)} (
-											{selectedProperty.propertyReviews ??
+											{t('admin.properties.reviews', { propertyRating: (selectedProperty.propertyRating || 4.98).toFixed(2), propertyReviews: selectedProperty.propertyReviews ??
 												selectedProperty.propertyComments ??
-												124}{' '}
-											reviews)
+												124 })}
 										</span>
 									</span>
 								</div>
 
 								{/* 5. Status */}
 								<div className="meta-card">
-									<span className="meta-label">Status</span>
+									<span className="meta-label">{t('common.status')}</span>
 									<span
 										className={`meta-value ${
 											selectedProperty.propertyStatus === PropertyStatus.ACTIVE
@@ -586,27 +585,24 @@ const AdminPropertiesPage: NextPage = () => {
 												: 'status-inactive'
 										}`}
 									>
-										{selectedProperty.propertyStatus
-											? selectedProperty.propertyStatus.charAt(0).toUpperCase() +
-											  selectedProperty.propertyStatus.slice(1).toLowerCase()
-											: 'Active'}
+										{selectedProperty.propertyStatus ? tEnum('propertyStatus', selectedProperty.propertyStatus) : t('common.active')}
 									</span>
 								</div>
 
 								{/* 6. Rooms / Units */}
 								<div className="meta-card">
-									<span className="meta-label">Rooms / Units</span>
+									<span className="meta-label">{t('admin.properties.roomsUnits')}</span>
 									<span className="meta-value">
 										{selectedProperty.bedrooms
-											? `${selectedProperty.bedrooms} Suites`
-											: `${selectedProperty.maxGuests || 2} Guests Max`}
+											? t('admin.properties.suites', { bedrooms: selectedProperty.bedrooms })
+											: t('admin.properties.guestsMax', { maxGuests: selectedProperty.maxGuests || 2 })}
 									</span>
 								</div>
 							</div>
 
 							{/* Summary */}
 							<div className="property-summary-section">
-								<h4 className="summary-heading">Summary</h4>
+								<h4 className="summary-heading">{t('admin.properties.summary')}</h4>
 								<p className="summary-text">
 									{selectedProperty.propertyDesc ||
 										'A secluded luxury sanctuary nestled in the Swiss Alps facing the Matterhorn, offering private thermal baths, helipad access, and Michelin-starred dining.'}
@@ -621,7 +617,7 @@ const AdminPropertiesPage: NextPage = () => {
 								className="btn-view-full"
 								onClick={() => handleViewFullProperty(selectedProperty._id)}
 							>
-								<span>View Full Property</span>
+								<span>{t('admin.properties.viewFullProperty')}</span>
 								<span className="material-symbols-outlined">arrow_outward</span>
 							</button>
 
@@ -630,7 +626,7 @@ const AdminPropertiesPage: NextPage = () => {
 								className="btn-edit-details"
 								onClick={() => handleEditStatus(selectedProperty)}
 							>
-								Edit Details
+								{t('admin.properties.editDetails')}
 							</button>
 
 							<div className="deactivate-action">
@@ -640,13 +636,13 @@ const AdminPropertiesPage: NextPage = () => {
 									onClick={() => handleToggleActivation(selectedProperty)}
 								>
 									{selectedProperty.propertyStatus === PropertyStatus.ACTIVE
-										? 'Deactivate Property'
-										: 'Activate Property'}
+										? t('admin.properties.deactivateProperty')
+										: t('admin.properties.activateProperty')}
 								</button>
 								<p className="deactivate-note">
 									{selectedProperty.propertyStatus === PropertyStatus.ACTIVE
-										? 'Deactivation removes property from guest search results immediately.'
-										: 'Activation makes property visible to guest search results immediately.'}
+										? t('admin.properties.deactivateNote')
+										: t('admin.properties.activateNote')}
 								</p>
 							</div>
 						</div>

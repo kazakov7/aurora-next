@@ -15,6 +15,7 @@ import { GET_PROPERTIES } from "../../apollo/user/query";
 import { LIKE_TARGET_PROPERTY } from "../../apollo/user/mutation";
 import { userVar } from "../../apollo/store";
 import { sweetMixinErrorAlert } from "../../libs/sweetAlert";
+import { useI18n } from "../../libs/i18n";
 
 const defaultInput: PropertiesInquiry = {
   page: 1,
@@ -24,15 +25,17 @@ const defaultInput: PropertiesInquiry = {
   search: {},
 };
 
+/** Sort state holds stable ids (RECOMMENDED, PRICE_ASC, PRICE_DESC, RATING_DESC, NEWEST); labels come from the dictionary **/
 const quickChips = [
-  { label: "All Stays", value: "ALL" },
-  { label: "Villas", value: PropertyType.VILLA },
-  { label: "Resorts", value: PropertyType.RESORT },
-  { label: "Hotels", value: PropertyType.HOTEL },
-  { label: "Apartments", value: PropertyType.APARTMENT },
+  { labelKey: "hotels.list.chipAll", value: "ALL" },
+  { labelKey: "hotels.list.chipVillas", value: PropertyType.VILLA },
+  { labelKey: "hotels.list.chipResorts", value: PropertyType.RESORT },
+  { labelKey: "hotels.list.chipHotels", value: PropertyType.HOTEL },
+  { labelKey: "hotels.list.chipApartments", value: PropertyType.APARTMENT },
 ];
 
 const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
+  const { t, tError } = useI18n();
   const router = useRouter();
   const user = useReactiveVar(userVar);
 
@@ -50,7 +53,7 @@ const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
   const [properties, setProperties] = useState<Property[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [selectedSort, setSelectedSort] = useState<string>("Recommended");
+  const [selectedSort, setSelectedSort] = useState<string>("RECOMMENDED");
   const [activeChip, setActiveChip] = useState<string>("ALL");
 
   /** APOLLO REQUESTS **/
@@ -87,14 +90,14 @@ const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
         // Sync sort dropdown state
         if (parsed.sort === "pricePerNight") {
           if (parsed.direction === Direction.ASC)
-            setSelectedSort("Price: Low to High");
-          else setSelectedSort("Price: High to Low");
+            setSelectedSort("PRICE_ASC");
+          else setSelectedSort("PRICE_DESC");
         } else if (parsed.sort === "propertyRating") {
-          setSelectedSort("Top Rated");
+          setSelectedSort("RATING_DESC");
         } else if (parsed.sort === "createdAt") {
-          setSelectedSort("Newest");
+          setSelectedSort("NEWEST");
         } else {
-          setSelectedSort("Recommended");
+          setSelectedSort("RECOMMENDED");
         }
 
         // Sync active chip
@@ -135,14 +138,14 @@ const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
   ) => {
     e.stopPropagation();
     try {
-      if (!user?._id) throw new Error(Message.NOT_AUTHENTICATED);
+      if (!user?._id) throw new Error(t(Message.NOT_AUTHENTICATED));
       await likeTargetProperty({
         variables: { propertyId },
       });
       await refetchProperties({ input: searchFilter });
     } catch (err: any) {
       console.log("ERROR, likePropertyHandler:", err.message);
-      sweetMixinErrorAlert(err.message);
+      sweetMixinErrorAlert(tError(err));
     }
   };
 
@@ -154,23 +157,23 @@ const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
     let sortDirection = Direction.DESC;
 
     switch (val) {
-      case "Price: Low to High":
+      case "PRICE_ASC":
         sortField = "pricePerNight";
         sortDirection = Direction.ASC;
         break;
-      case "Price: High to Low":
+      case "PRICE_DESC":
         sortField = "pricePerNight";
         sortDirection = Direction.DESC;
         break;
-      case "Top Rated":
+      case "RATING_DESC":
         sortField = "propertyRating";
         sortDirection = Direction.DESC;
         break;
-      case "Newest":
+      case "NEWEST":
         sortField = "createdAt";
         sortDirection = Direction.DESC;
         break;
-      case "Recommended":
+      case "RECOMMENDED":
       default:
         sortField = "propertyViews";
         sortDirection = Direction.DESC;
@@ -242,30 +245,30 @@ const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
             <div className="listing-header-box">
               <div className="header-top-row">
                 <div className="heading-with-counter">
-                  <h2 className="listing-heading">Explore Hotels</h2>
+                  <h2 className="listing-heading">{t("hotels.list.exploreHotels")}</h2>
                   <span className="journeys-badge">
-                    {total} stays available
+                    {t("hotels.list.staysAvailable", { total })}
                   </span>
                 </div>
 
                 {/* Sort Dropdown */}
                 <div className="sort-group">
-                  <span className="sort-title">SORT BY</span>
+                  <span className="sort-title">{t("hotels.list.sortBy")}</span>
                   <div className="sort-dropdown-box">
                     <select
                       value={selectedSort}
                       onChange={sortChangeHandler}
                       className="sort-dropdown"
                     >
-                      <option value="Recommended">Recommended</option>
-                      <option value="Price: Low to High">
-                        Price: Low to High
+                      <option value="RECOMMENDED">{t("hotels.list.recommended")}</option>
+                      <option value="PRICE_ASC">
+                        {t("hotels.list.priceLowToHigh")}
                       </option>
-                      <option value="Price: High to Low">
-                        Price: High to Low
+                      <option value="PRICE_DESC">
+                        {t("hotels.list.priceHighToLow")}
                       </option>
-                      <option value="Top Rated">Top Rated</option>
-                      <option value="Newest">Newest</option>
+                      <option value="RATING_DESC">{t("common.topRated")}</option>
+                      <option value="NEWEST">{t("common.newest")}</option>
                     </select>
                     <span className="material-symbols-outlined dropdown-icon">
                       expand_more
@@ -286,7 +289,7 @@ const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
                   }`}
                   onClick={() => chipClickHandler(chip.value)}
                 >
-                  {chip.label}
+                  {t(chip.labelKey)}
                 </button>
               ))}
             </div>
@@ -297,9 +300,9 @@ const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
                 <span className="material-symbols-outlined no-data-icon">
                   hotel
                 </span>
-                <h3>No Stays Found</h3>
+                <h3>{t("hotels.list.noStaysFound")}</h3>
                 <p>
-                  Try adjusting your search filters or destination criteria.
+                  {t("hotels.list.adjustFilters")}
                 </p>
               </div>
             ) : (
@@ -329,6 +332,11 @@ const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
                       onChange={handlePaginationChange}
                       shape="circular"
                       color="primary"
+                      getItemAriaLabel={(type, page, selected) =>
+                        type === "page"
+                          ? t(selected ? "common.pagination.currentPage" : "common.pagination.goToPage", { page })
+                          : t(`common.pagination.${type}`)
+                      }
                     />
                   </Stack>
                 )}
@@ -336,7 +344,7 @@ const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
                 {properties.length !== 0 && (
                   <Stack className="total-result" sx={{ mt: 2 }}>
                     <Typography variant="body2" color="text.secondary">
-                      Total {total} propert{total > 1 ? "ies" : "y"} available
+                      {t("hotels.list.totalAvailable", { count: total })}
                     </Typography>
                   </Stack>
                 )}

@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Destination } from '../../../types/destination/destination';
 import { DEFAULT_DESTINATION_IMAGE, getImageUrl } from '../../../config';
+import { useI18n } from '../../../i18n';
 
 interface DestinationCitiesProps {
 	destination: Destination;
@@ -9,13 +10,14 @@ interface DestinationCitiesProps {
 }
 
 const DestinationCities = ({ destination, cities }: DestinationCitiesProps) => {
+	const { t } = useI18n();
 	if (!cities || cities.length === 0) return null;
 
 	return (
 		<section className="destination-cities-section" id="cities">
 			<div className="cities-header-row">
-				<h2 className="cities-main-heading">Explore {destination.destinationCountry}</h2>
-				<p className="cities-subheading">Find your next favorite destination.</p>
+				<h2 className="cities-main-heading">{t('destinations.cities.explore', { destinationCountry: destination.destinationCountry })}</h2>
+				<p className="cities-subheading">{t('destinations.cities.subtitle')}</p>
 			</div>
 
 			<div className="cities-cards-grid">
@@ -42,10 +44,10 @@ const DestinationCities = ({ destination, cities }: DestinationCitiesProps) => {
 								<div className="city-info-body">
 									<p className="city-desc-text">
 										{city.destinationDesc ||
-											`Historic heritage seamlessly interwoven with breathtaking topography in ${city.destinationName}.`}
+											t('destinations.cities.fallbackDescription', { destinationName: city.destinationName })}
 									</p>
 									<div className="explore-cta-link">
-										<span>Explore {city.destinationName}</span>
+										<span>{t('destinations.cities.exploreDestination', { destinationName: city.destinationName })}</span>
 										<span className="material-symbols-outlined icon-arrow">arrow_forward</span>
 									</div>
 								</div>

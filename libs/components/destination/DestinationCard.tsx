@@ -2,6 +2,7 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import { Destination } from '../../types/destination/destination';
 import { DEFAULT_DESTINATION_IMAGE, getImageUrl } from '../../config';
+import { useI18n } from '../../i18n';
 
 interface DestinationCardProps {
 	destination: Destination;
@@ -38,6 +39,7 @@ const countryFlags: Record<string, string> = {
 };
 
 const DestinationCard = ({ destination, index = 0, onLike }: DestinationCardProps) => {
+	const { t } = useI18n();
 	const router = useRouter();
 
 	const imageSrc = getImageUrl(destination.destinationImages?.[0], DEFAULT_DESTINATION_IMAGE);
@@ -73,7 +75,7 @@ const DestinationCard = ({ destination, index = 0, onLike }: DestinationCardProp
 						type="button"
 						className={`card-fav-btn ${isLiked ? 'liked' : ''}`}
 						onClick={(e) => onLike(e, destination._id)}
-						aria-label="Save to favorites"
+						aria-label={t('destinations.card.saveToFavorites')}
 					>
 						<span
 							className="material-symbols-outlined"
@@ -94,19 +96,19 @@ const DestinationCard = ({ destination, index = 0, onLike }: DestinationCardProp
 				</div>
 				<p className="card-desc">
 					{destination.destinationDesc ||
-						`Experience the extraordinary natural landscapes and discreet architecture of ${destination.destinationName}.`}
+						t('destinations.card.fallbackDescription', { destinationName: destination.destinationName })}
 				</p>
 
 				{/* Stays and Tours count badge */}
 				<div className="card-meta-counts">
 					<span className="meta-count-item">
 						<span className="material-symbols-outlined">hotel</span>
-						<span>{destination.destinationProperties || 0} Stays</span>
+						<span>{t('destinations.card.stays', { destinationProperties: destination.destinationProperties || 0 })}</span>
 					</span>
 					<span className="meta-sep">•</span>
 					<span className="meta-count-item">
 						<span className="material-symbols-outlined">tour</span>
-						<span>{destination.destinationTours || 0} Tours</span>
+						<span>{t('destinations.card.tours', { destinationTours: destination.destinationTours || 0 })}</span>
 					</span>
 				</div>
 			</div>

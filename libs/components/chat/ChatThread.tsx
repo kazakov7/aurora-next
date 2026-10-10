@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { ChatConversation, ChatMessage, ChatMember } from "./chat.types";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
 import router from "next/router";
+import { useI18n } from "../../i18n";
 
 interface ChatThreadProps {
   conversation?: ChatConversation;
@@ -22,16 +23,6 @@ const getPeer = (
   conversation.memberOneId === currentMemberId
     ? conversation.memberTwoData
     : conversation.memberOneData;
-const formatTime = (value: string) =>
-  new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(
-    new Date(value),
-  );
-const formatDate = (value: string) =>
-  new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
 
 const ChatThread: React.FC<ChatThreadProps> = ({
   conversation,
@@ -44,6 +35,7 @@ const ChatThread: React.FC<ChatThreadProps> = ({
   onLoadOlder,
   onSendMessage,
 }) => {
+  const { t, formatDate } = useI18n();
   const [textInput, setTextInput] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState("");
@@ -75,11 +67,11 @@ const ChatThread: React.FC<ChatThreadProps> = ({
       else
         setSendError(
           socketStatus === "disconnected"
-            ? "Reconnecting to chat. Your message is still here."
-            : "Message could not be sent. Please try again.",
+            ? t("chat.thread.reconnectingNotice")
+            : t("chat.thread.sendFailed"),
         );
     } catch {
-      setSendError("Message could not be sent. Please try again.");
+      setSendError(t("chat.thread.sendFailed"));
     } finally {
       setSending(false);
     }
@@ -98,24 +90,24 @@ const ChatThread: React.FC<ChatThreadProps> = ({
     return (
       <main className="chat-thread-panel">
         <div className="no-conversations-empty">
-          <p>Select a conversation to start messaging.</p>
+          <p>{t("chat.thread.selectConversation")}</p>
         </div>
       </main>
     );
   const isGlobal = conversation.chatType === "GLOBAL";
   const peer = getPeer(conversation, currentMemberId);
   const name = isGlobal
-    ? "Global Chat"
-    : peer?.memberNick || peer?.memberFullName || "Unavailable member";
+    ? t("common.globalChat")
+    : peer?.memberNick || peer?.memberFullName || t("common.unavailableMember");
   const subtitle = isGlobal
-    ? "Community conversation"
+    ? t("chat.thread.communityConversation")
     : peer?.memberType === "AGENT"
-    ? "Travel partner"
-    : "Traveler";
+    ? t("chat.travelPartner")
+    : t("common.travelerLabel");
   let previousDate = "";
 
   return (
-    <main aria-label="Conversation Thread" className="chat-thread-panel">
+    <main aria-label={t("chat.thread.conversationThread")} className="chat-thread-panel">
       <header className="thread-header">
         <div className="header-info">
           <div className="avatar-wrapper">
@@ -134,16 +126,16 @@ const ChatThread: React.FC<ChatThreadProps> = ({
           <div className="name-details">
             <div className="title-row">
               <h1>{name}</h1>
-              {isGlobal ? <span className="role-badge">Community</span> : null}
+              {isGlobal ? <span className="role-badge">{t("navigation.community")}</span> : null}
             </div>
             <div className="meta-status-row">
               <span className="active-status">
                 <span className={`pulse-dot ${socketStatus}`} />
                 {socketStatus === "connected"
-                  ? "Connected"
+                  ? t("chat.thread.connected")
                   : socketStatus === "reconnecting"
-                  ? "Reconnecting"
-                  : "Offline"}
+                  ? t("chat.thread.reconnecting")
+                  : t("chat.thread.offline")}
               </span>
               <span className="bullet">·</span>
               <span className="sub-detail">{subtitle}</span>
@@ -158,12 +150,12 @@ const ChatThread: React.FC<ChatThreadProps> = ({
             className="load-older-btn"
             onClick={handleLoadOlder}
           >
-            Load older messages
+            {t("chat.thread.loadOlderMessages")}
           </button>
         ) : null}
         {loading && !messages.length ? (
           <div className="no-conversations-empty">
-            <p>Loading messages…</p>
+            <p>{t("chat.thread.loadingMessages")}</p>
           </div>
         ) : null}
         {error ? (
@@ -173,7 +165,7 @@ const ChatThread: React.FC<ChatThreadProps> = ({
         ) : null}
         {!loading && !error && !messages.length ? (
           <div className="no-conversations-empty">
-            <p>No messages yet. Say hello.</p>
+            <p>{t("chat.thread.empty")}</p>
           </div>
         ) : null}
         {messages.map((message) => {
@@ -184,7 +176,7 @@ const ChatThread: React.FC<ChatThreadProps> = ({
           const senderName =
             message.senderData?.memberNick ||
             message.senderData?.memberFullName ||
-            "Member";
+            t("common.member");
           return (
             <React.Fragment key={message._id}>
               {showDate ? (
@@ -224,7 +216,7 @@ const ChatThread: React.FC<ChatThreadProps> = ({
                   </div>
                   <div className="msg-meta-row">
                     <span className="msg-time">
-                      {formatTime(message.createdAt)}
+                      {formatDate(message.createdAt, "time")}
                     </span>
                   </div>
                 </div>
@@ -245,7 +237,7 @@ const ChatThread: React.FC<ChatThreadProps> = ({
                 void handleSend();
               }
             }}
-            placeholder="Type a message…"
+            placeholder={t("chat.thread.typeAMessage")}
             className="composer-input"
             maxLength={1000}
             disabled={sending || socketStatus === "disconnected"}
@@ -255,7 +247,7 @@ const ChatThread: React.FC<ChatThreadProps> = ({
               type="submit"
               id="btn-send-message"
               className="send-btn"
-              aria-label="Send message"
+              aria-label={t("chat.thread.sendMessage")}
               disabled={
                 !textInput.trim() || sending || socketStatus === "disconnected"
               }
@@ -268,10 +260,10 @@ const ChatThread: React.FC<ChatThreadProps> = ({
           <span>
             {sendError ||
               (socketStatus === "connected"
-                ? "Messages are delivered through AURORA."
-                : "Waiting for a secure chat connection…")}
+                ? t("chat.thread.deliveredNote")
+                : t("chat.thread.waitingConnection"))}
           </span>
-          <span className="shortcut-hint">Shift + Enter for new line</span>
+          <span className="shortcut-hint">{t("chat.thread.newLineHint")}</span>
         </div>
       </footer>
     </main>

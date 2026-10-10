@@ -16,8 +16,10 @@ import { LIKE_TARGET_PROPERTY } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
 import { sweetErrorAlert } from '../../libs/sweetAlert';
 import { Message } from '../../libs/enums/common.enum';
+import { useI18n } from '../../libs/i18n';
 
 const PropertyDetail: NextPage = () => {
+	const { t, tError } = useI18n();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const propertyId = router.isReady && typeof router.query.id === 'string' ? router.query.id : '';
@@ -41,14 +43,14 @@ const PropertyDetail: NextPage = () => {
 	/** HANDLERS **/
 	const likeHandler = async () => {
 		if (!user?._id) {
-			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
+			await sweetErrorAlert(t(Message.NOT_AUTHENTICATED));
 			return;
 		}
 		try {
 			await likeTargetProperty({ variables: { propertyId: property._id } });
 			await refetchProperty();
 		} catch (err: any) {
-			await sweetErrorAlert(err.message || 'Error occurred');
+			await sweetErrorAlert(tError(err, 'common.errorOccurred'));
 		}
 	};
 
@@ -77,7 +79,7 @@ const PropertyDetail: NextPage = () => {
 						>
 							sync
 						</span>
-						<span>Loading sanctuary details...</span>
+						<span>{t('hotels.detail.loading')}</span>
 					</div>
 				</div>
 			</div>
@@ -89,8 +91,8 @@ const PropertyDetail: NextPage = () => {
 			<div className="property-detail-page">
 				<div className="detail-container">
 					<div className="detail-empty-state">
-						<h1>Hotel unavailable</h1>
-						<p>This hotel could not be found or is no longer available.</p>
+						<h1>{t('hotels.detail.hotelUnavailable')}</h1>
+						<p>{t('hotels.detail.notFound')}</p>
 					</div>
 				</div>
 			</div>
@@ -100,10 +102,10 @@ const PropertyDetail: NextPage = () => {
 	return (
 		<>
 			<Head>
-				<title>{property.propertyName} | AURA Luxury Sanctuary</title>
+				<title>{t('hotels.detail.metaTitle', { propertyName: property.propertyName })}</title>
 				<meta
 					name="description"
-					content={property.propertyDesc || 'Curated luxury architectural sanctuary by AURA.'}
+					content={property.propertyDesc || t('hotels.detail.metaDescription')}
 				/>
 			</Head>
 

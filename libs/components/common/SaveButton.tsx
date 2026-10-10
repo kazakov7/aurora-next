@@ -1,4 +1,5 @@
 import React from 'react';
+import { useI18n } from '../../i18n';
 
 interface SaveButtonProps {
 	isSaved: boolean;
@@ -17,10 +18,11 @@ const SaveButton: React.FC<SaveButtonProps> = ({
 	className = '',
 	style
 }) => {
+	const { t, formatNumber } = useI18n();
 	return (
 		<button
 			type="button"
-			aria-label={isSaved ? "Unsave" : "Save"}
+			aria-label={isSaved ? t('common.unsave') : t('common.save')}
 			className={`btn-save-standard size-${size} ${isSaved ? 'saved' : ''} ${className}`}
 			onClick={(e) => {
 				e.stopPropagation();
@@ -31,7 +33,7 @@ const SaveButton: React.FC<SaveButtonProps> = ({
 			<span className="material-symbols-outlined">
 				{isSaved ? 'bookmark' : 'bookmark_border'}
 			</span>
-			{count !== undefined && <span className="save-count">{count.toLocaleString()}</span>}
+			{count !== undefined && <span className="save-count">{formatNumber(count)}</span>}
 		</button>
 	);
 };

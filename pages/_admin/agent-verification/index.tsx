@@ -25,8 +25,10 @@ import {
 } from "../../../libs/sweetAlert";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../../libs/config";
 import Pagination from "@mui/material/Pagination";
+import { useI18n } from "../../../libs/i18n";
 
 const AdminAgentVerificationPage: NextPage = () => {
+  const { t, tEnum, tError, formatDate } = useI18n();
   const [applications, setApplications] = useState<Agent[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
@@ -109,14 +111,14 @@ const AdminAgentVerificationPage: NextPage = () => {
     if (!agent) return;
 
     const result = await Swal.fire({
-      title: "Approve Verification?",
-      text: `Are you sure you want to approve "${agent.companyName}"? This grants active partner privileges and verified status.`,
+      title: t("admin.agentVerification.approveTitle"),
+      text: t("admin.agentVerification.approveText", { companyName: agent.companyName }),
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#006194",
       cancelButtonColor: "#94a3b8",
-      confirmButtonText: "Approve Verification",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t("admin.agentVerification.approveButton"),
+      cancelButtonText: t("common.cancel"),
       reverseButtons: true,
     });
 
@@ -124,11 +126,11 @@ const AdminAgentVerificationPage: NextPage = () => {
 
     try {
       await approveAgentApplication({ variables: { input: agent._id } });
-      await sweetTopSmallSuccessAlert("Agent approved successfully", 1200);
+      await sweetTopSmallSuccessAlert(t("admin.agentVerification.agentApprovedSuccessfully"), 1200);
       closeDrawer();
       refetch();
     } catch (err: any) {
-      sweetMixinErrorAlert(err.message);
+      sweetMixinErrorAlert(tError(err));
     }
   };
 
@@ -140,19 +142,19 @@ const AdminAgentVerificationPage: NextPage = () => {
     if (!agent) return;
 
     const result = await Swal.fire({
-      title: "Revoke / Reject Verification",
-      text: `Specify the reason for rejecting "${agent.companyName}":`,
+      title: t("admin.agentVerification.rejectTitle"),
+      text: t("admin.agentVerification.rejectText", { companyName: agent.companyName }),
       input: "textarea",
-      inputPlaceholder: "Enter verification feedback or rejection reason...",
+      inputPlaceholder: t("admin.agentVerification.rejectPlaceholder"),
       showCancelButton: true,
       confirmButtonColor: "#dc2626",
       cancelButtonColor: "#94a3b8",
-      confirmButtonText: "Revoke / Reject",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t("admin.agentVerification.revokeReject"),
+      cancelButtonText: t("common.cancel"),
       reverseButtons: true,
       inputValidator: (value) => {
         if (!value || !value.trim()) {
-          return "Please provide a reason for rejection.";
+          return t("admin.agentVerification.reasonRequired");
         }
       },
     });
@@ -165,11 +167,11 @@ const AdminAgentVerificationPage: NextPage = () => {
         rejectionReason: result.value.trim(),
       };
       await rejectAgentApplication({ variables: { input } });
-      await sweetTopSmallSuccessAlert("Agent application rejected", 1200);
+      await sweetTopSmallSuccessAlert(t("admin.agentVerification.agentApplicationRejected"), 1200);
       closeDrawer();
       refetch();
     } catch (err: any) {
-      sweetMixinErrorAlert(err.message);
+      sweetMixinErrorAlert(tError(err));
     }
   };
 
@@ -189,7 +191,7 @@ const AdminAgentVerificationPage: NextPage = () => {
         </div>
       `,
       icon: "info",
-      confirmButtonText: "Close Preview",
+      confirmButtonText: t("admin.agentVerification.closePreview"),
       confirmButtonColor: "#006194",
     });
   };
@@ -203,10 +205,9 @@ const AdminAgentVerificationPage: NextPage = () => {
       {/* TOP SECTION: HEADER */}
       <div className="overview-header">
         <div className="header-text">
-          <h1>Agent Verification</h1>
+          <h1>{t("admin.agentVerification.agentVerification")}</h1>
           <p>
-            Review and verify luxury hotel partners and verified tour expedition
-            operators.
+            {t("admin.agentVerification.intro")}
           </p>
         </div>
       </div>
@@ -216,8 +217,8 @@ const AdminAgentVerificationPage: NextPage = () => {
         {/* TABLE HEADER & FILTERS */}
         <div className="table-header">
           <div className="header-left">
-            <h2>Requests</h2>
-            <span className="table-badge">{total} Pending Reviews</span>
+            <h2>{t("admin.agentVerification.requests")}</h2>
+            <span className="table-badge">{t("admin.agentVerification.pendingReviews", { total })}</span>
           </div>
           <div
             className="header-right"
@@ -229,9 +230,9 @@ const AdminAgentVerificationPage: NextPage = () => {
                 value={searchFilter.search?.agentType || "ALL"}
                 onChange={(e) => handleTypeChange(e.target.value)}
               >
-                <option value="ALL">All Types</option>
-                <option value={AgentType.HOTEL}>HOTEL</option>
-                <option value={AgentType.TOUR}>TOUR</option>
+                <option value="ALL">{t("admin.agentVerification.allTypes")}</option>
+                <option value={AgentType.HOTEL}>{t("common.hotelBadge")}</option>
+                <option value={AgentType.TOUR}>{t("common.tourBadge")}</option>
               </select>
             </div>
 
@@ -241,13 +242,13 @@ const AdminAgentVerificationPage: NextPage = () => {
                 value={searchFilter.search?.verificationStatus || "ALL"}
                 onChange={(e) => handleStatusChange(e.target.value)}
               >
-                <option value="ALL">All Statuses</option>
-                <option value={AgentVerificationStatus.PENDING}>Pending</option>
+                <option value="ALL">{t("common.allStatuses")}</option>
+                <option value={AgentVerificationStatus.PENDING}>{t("common.pending")}</option>
                 <option value={AgentVerificationStatus.APPROVED}>
-                  Approved
+                  {t("admin.agentVerification.approved")}
                 </option>
                 <option value={AgentVerificationStatus.REJECTED}>
-                  Rejected
+                  {t("common.rejected")}
                 </option>
               </select>
             </div>
@@ -280,7 +281,7 @@ const AdminAgentVerificationPage: NextPage = () => {
               >
                 restart_alt
               </span>
-              Reset
+              {t("common.reset")}
             </button>
           </div>
         </div>
@@ -290,13 +291,13 @@ const AdminAgentVerificationPage: NextPage = () => {
           <table>
             <thead>
               <tr>
-                <th>Agent</th>
-                <th>Company Name</th>
-                <th>Type</th>
-                <th>Business Number</th>
-                <th>Status</th>
-                <th>Registered Date</th>
-                <th style={{ textAlign: "right" }}>Actions</th>
+                <th>{t("common.agent")}</th>
+                <th>{t("admin.agentVerification.companyName")}</th>
+                <th>{t("common.type")}</th>
+                <th>{t("admin.agentVerification.businessNumber")}</th>
+                <th>{t("common.status")}</th>
+                <th>{t("admin.agentVerification.registeredDate")}</th>
+                <th style={{ textAlign: "right" }}>{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -306,7 +307,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                     colSpan={7}
                     style={{ textAlign: "center", padding: "32px 0" }}
                   >
-                    Loading...
+                    {t("common.loading")}
                   </td>
                 </tr>
               ) : applications.length === 0 ? (
@@ -319,7 +320,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                       color: "var(--outline)",
                     }}
                   >
-                    No agent verification requests found
+                    {t("admin.agentVerification.empty")}
                   </td>
                 </tr>
               ) : (
@@ -367,7 +368,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                             <span className="user-name">
                               {member?.memberFullName ||
                                 member?.memberNick ||
-                                "Unknown"}
+                                t("common.unknown")}
                             </span>
                             <span className="user-email">
                               @{member?.memberNick || "unknown"}
@@ -393,7 +394,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                               : "sky"
                           }`}
                         >
-                          {agent.agentType}
+                          {tEnum("agentType", agent.agentType)}
                         </span>
                       </td>
                       <td>
@@ -413,12 +414,12 @@ const AdminAgentVerificationPage: NextPage = () => {
                               : "warning"
                           }`}
                         >
-                          {agent.verificationStatus}
+                          {tEnum("verificationStatus", agent.verificationStatus)}
                         </span>
                       </td>
                       <td>
                         <span style={{ color: "var(--on-surface-variant)" }}>
-                          {new Date(agent.createdAt).toLocaleDateString()}
+                          {formatDate(agent.createdAt)}
                         </span>
                       </td>
                       <td style={{ textAlign: "right", position: "relative" }}>
@@ -428,7 +429,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                             type="button"
                             onClick={() => openDrawer(agent)}
                           >
-                            Review
+                            {t("admin.agentVerification.review")}
                           </button>
                         </div>
 
@@ -470,7 +471,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                               >
                                 visibility
                               </span>
-                              View Details
+                              {t("common.viewDetails")}
                             </button>
                             {agent.verificationStatus ===
                               AgentVerificationStatus.PENDING && (
@@ -498,7 +499,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                                   >
                                     check_circle
                                   </span>
-                                  Approve
+                                  {t("admin.agentVerification.approve")}
                                 </button>
                                 <button
                                   type="button"
@@ -523,7 +524,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                                   >
                                     cancel
                                   </span>
-                                  Reject
+                                  {t("admin.agentVerification.reject")}
                                 </button>
                               </>
                             )}
@@ -566,7 +567,7 @@ const AdminAgentVerificationPage: NextPage = () => {
             {/* 1. Modal Header */}
             <div className="modal-header">
               <div className="header-left">
-                <h2 className="modal-title">Agent Verification</h2>
+                <h2 className="modal-title">{t("admin.agentVerification.agentVerification")}</h2>
                 <div
                   className={`status-pill ${
                     selectedAgent.verificationStatus ===
@@ -582,11 +583,11 @@ const AdminAgentVerificationPage: NextPage = () => {
                   <span>
                     {selectedAgent.verificationStatus ===
                     AgentVerificationStatus.APPROVED
-                      ? "Approved"
+                      ? t("admin.agentVerification.approved")
                       : selectedAgent.verificationStatus ===
                         AgentVerificationStatus.REJECTED
-                      ? "Rejected"
-                      : "Pending Review"}
+                      ? t("common.rejected")
+                      : t("admin.agentVerification.pendingReview")}
                   </span>
                 </div>
               </div>
@@ -594,7 +595,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                 className="modal-close-btn"
                 type="button"
                 onClick={closeDrawer}
-                aria-label="Close"
+                aria-label={t("common.close")}
               >
                 <span className="material-symbols-outlined">close</span>
               </button>
@@ -650,27 +651,28 @@ const AdminAgentVerificationPage: NextPage = () => {
               {/* Dual Info Row */}
               <div className="dual-info-row">
                 <div className="info-col-card">
-                  <span className="info-label">Entity Classification</span>
+                  <span className="info-label">{t("admin.agentVerification.entityClassification")}</span>
                   <span className="classification-badge">
-                    {selectedAgent.agentType?.replace(/_/g, " ") ||
-                      "TOUR OPERATOR"}
+                    {selectedAgent.agentType
+                      ? tEnum("agentType", selectedAgent.agentType)
+                      : t("admin.agentVerification.tourOperator")}
                   </span>
                 </div>
                 <div className="info-col-card">
-                  <span className="info-label">Registration Tax ID</span>
+                  <span className="info-label">{t("admin.agentVerification.registrationTaxId")}</span>
                   <span className="info-tax-id">
-                    {selectedAgent.businessNumber || "Not provided"}
+                    {selectedAgent.businessNumber || t("admin.agentVerification.notProvided")}
                   </span>
                 </div>
               </div>
 
               {/* Corporate Credentials */}
               <div className="section-group">
-                <h4 className="group-heading">Corporate Credentials</h4>
+                <h4 className="group-heading">{t("admin.agentVerification.corporateCredentials")}</h4>
                 <div className="credentials-card">
                   <div className="field-row">
                     <span className="field-label">
-                      Registered Business Name
+                      {t("admin.agentVerification.registeredBusinessName")}
                     </span>
                     <span className="field-value">
                       {selectedAgent.companyName ||
@@ -679,7 +681,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                   </div>
 
                   <div className="field-row">
-                    <span className="field-label">Registered Address</span>
+                    <span className="field-label">{t("admin.agentVerification.registeredAddress")}</span>
                     <span className="field-value address">
                       {selectedAgent.companyAddress ||
                         "Bahnhofstrasse 42, 3920 Zermatt, Valais, Switzerland"}
@@ -688,7 +690,7 @@ const AdminAgentVerificationPage: NextPage = () => {
 
                   <div className="dual-field-row">
                     <div className="field-row">
-                      <span className="field-label">Managing Director</span>
+                      <span className="field-label">{t("admin.agentVerification.managingDirector")}</span>
                       <span className="field-value">
                         {selectedAgent.memberData?.memberFullName ||
                           selectedAgent.memberData?.memberNick ||
@@ -696,12 +698,10 @@ const AdminAgentVerificationPage: NextPage = () => {
                       </span>
                     </div>
                     <div className="field-row">
-                      <span className="field-label">Submission Timestamp</span>
+                      <span className="field-label">{t("admin.agentVerification.submissionTimestamp")}</span>
                       <span className="field-value">
                         {selectedAgent.createdAt
-                          ? moment(selectedAgent.createdAt).format(
-                              "MMM DD, YYYY · hh:mm A",
-                            )
+                          ? formatDate(selectedAgent.createdAt, "dateTime")
                           : "Oct 24, 2025 · 09:15 AM"}
                       </span>
                     </div>
@@ -711,7 +711,7 @@ const AdminAgentVerificationPage: NextPage = () => {
 
               {/* Platform Operational Note */}
               <div className="section-group">
-                <h4 className="group-heading">Platform Operational Note</h4>
+                <h4 className="group-heading">{t("admin.agentVerification.platformOperationalNote")}</h4>
                 <div className="operational-note-card">
                   <p>
                     {selectedAgent.companyDesc ||
@@ -722,7 +722,7 @@ const AdminAgentVerificationPage: NextPage = () => {
 
               {/* Submitted Documents */}
               <div className="section-group">
-                <h4 className="group-heading">Submitted Documents (2)</h4>
+                <h4 className="group-heading">{t("admin.agentVerification.submittedDocuments2")}</h4>
                 <div className="documents-list">
                   <div className="document-item">
                     <div className="doc-left">
@@ -745,7 +745,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                     <button
                       className="doc-view-btn"
                       type="button"
-                      title="View Document"
+                      title={t("admin.agentVerification.viewDocument")}
                       onClick={() =>
                         handleViewDocument(
                           `Trade_Register_Excerpt_${
@@ -782,7 +782,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                     <button
                       className="doc-view-btn"
                       type="button"
-                      title="View Document"
+                      title={t("admin.agentVerification.viewDocument")}
                       onClick={() =>
                         handleViewDocument(
                           "Commercial_Liability_Insurance_2025.pdf",
@@ -808,7 +808,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                   onClick={() => handleReject(selectedAgent)}
                 >
                   <span className="material-symbols-outlined">cancel</span>
-                  <span>Revoke / Reject</span>
+                  <span>{t("admin.agentVerification.revokeReject")}</span>
                 </button>
                 <button
                   type="button"
@@ -818,11 +818,11 @@ const AdminAgentVerificationPage: NextPage = () => {
                   <span className="material-symbols-outlined">
                     check_circle
                   </span>
-                  <span>Approve Verification</span>
+                  <span>{t("admin.agentVerification.approveButton")}</span>
                 </button>
               </div>
               <p className="footer-note">
-                Confirmation dialog will prompt before state change.
+                {t("admin.agentVerification.confirmNote")}
               </p>
             </div>
           </div>

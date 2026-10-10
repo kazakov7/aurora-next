@@ -16,8 +16,10 @@ import {
   sweetMixinErrorAlert,
   sweetConfirmAlert,
 } from "../../../libs/sweetAlert";
+import { useI18n } from "../../../libs/i18n";
 
 const AdminDestinationsPage: NextPage = () => {
+  const { t, tEnum, tError, formatDate } = useI18n();
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [selectedDestination, setSelectedDestination] =
@@ -104,44 +106,44 @@ const AdminDestinationsPage: NextPage = () => {
             },
           },
         });
-        sweetTopSmallSuccessAlert("Destination status updated!", 800);
+        sweetTopSmallSuccessAlert(t("admin.destinations.destinationStatusUpdated"), 800);
       }
       closeDrawer();
       refetch();
     } catch (err: any) {
-      sweetMixinErrorAlert(err.message);
+      sweetMixinErrorAlert(tError(err));
     }
   };
 
   const handleDelete = async (id: string) => {
     if (
       await sweetConfirmAlert(
-        "Are you sure you want to delete this destination?",
+        t("admin.destinations.deleteConfirm"),
       )
     ) {
       try {
         await removeDestinationByAdmin({ variables: { destinationId: id } });
-        sweetTopSmallSuccessAlert("Destination deleted!", 800);
+        sweetTopSmallSuccessAlert(t("admin.destinations.destinationDeleted"), 800);
         refetch();
       } catch (err: any) {
-        sweetMixinErrorAlert(err.message);
+        sweetMixinErrorAlert(tError(err));
       }
     }
   };
 
   const exportCSV = () => {
     if (!destinations || destinations.length === 0) {
-      sweetMixinErrorAlert("No data to export");
+      sweetMixinErrorAlert(t("common.noDataToExport"));
       return;
     }
     const headers = [
       "ID",
-      "Name",
-      "Country",
-      "Properties",
-      "Tours",
-      "Status",
-      "Created Date",
+      t("common.name"),
+      t("admin.destinations.country"),
+      t("common.properties"),
+      t("navigation.tours"),
+      t("common.status"),
+      t("common.createdDate"),
     ];
     const rows = destinations.map((d) => [
       d._id,
@@ -150,7 +152,7 @@ const AdminDestinationsPage: NextPage = () => {
       d.destinationProperties,
       d.destinationTours,
       d.destinationStatus,
-      new Date(d.createdAt).toLocaleDateString(),
+      formatDate(d.createdAt),
     ]);
 
     const csvContent =
@@ -174,23 +176,23 @@ const AdminDestinationsPage: NextPage = () => {
     <div className="admin-overview dashboard-container">
       <div className="overview-header">
         <div className="header-text">
-          <h1>Destinations Management</h1>
-          <p>Manage travel hubs, cities, and associated analytics.</p>
+          <h1>{t("admin.destinations.destinationsManagement")}</h1>
+          <p>{t("admin.destinations.intro")}</p>
         </div>
       </div>
 
       <section className="admin-table-section">
         <div className="table-header">
           <div className="header-left">
-            <h2>Directory</h2>
-            <span className="table-badge">{total} Destinations</span>
+            <h2>{t("common.directory")}</h2>
+            <span className="table-badge">{t("admin.destinations.destinations", { total })}</span>
           </div>
           <div className="header-right">
             <div className="search-box">
               <span className="material-symbols-outlined">search</span>
               <input
                 type="text"
-                placeholder="Search name, country..."
+                placeholder={t("admin.destinations.searchNameCountry")}
                 onChange={(e) => handleSearchChange(e.target.value)}
               />
             </div>
@@ -199,9 +201,9 @@ const AdminDestinationsPage: NextPage = () => {
                 className="filter-select"
                 onChange={(e) => handleStatusChange(e.target.value)}
               >
-                <option value="all">All Statuses</option>
-                <option value={DestinationStatus.ACTIVE}>Active</option>
-                <option value={DestinationStatus.INACTIVE}>Inactive</option>
+                <option value="all">{t("common.allStatuses")}</option>
+                <option value={DestinationStatus.ACTIVE}>{t("common.active")}</option>
+                <option value={DestinationStatus.INACTIVE}>{t("common.inactive")}</option>
               </select>
               <button
                 className="reset-filter-btn"
@@ -211,7 +213,7 @@ const AdminDestinationsPage: NextPage = () => {
                 <span className="material-symbols-outlined">
                   filter_alt_off
                 </span>
-                Reset
+                {t("common.reset")}
               </button>
             </div>
           </div>
@@ -221,12 +223,12 @@ const AdminDestinationsPage: NextPage = () => {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Destination Name</th>
-                <th>Country</th>
-                <th>Items Connected</th>
-                <th>Metrics</th>
-                <th>Status</th>
-                <th style={{ width: 120, textAlign: "right" }}>Actions</th>
+                <th>{t("admin.destinations.destinationName")}</th>
+                <th>{t("admin.destinations.country")}</th>
+                <th>{t("admin.destinations.itemsConnected")}</th>
+                <th>{t("common.metrics")}</th>
+                <th>{t("common.status")}</th>
+                <th style={{ width: 120, textAlign: "right" }}>{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -236,7 +238,7 @@ const AdminDestinationsPage: NextPage = () => {
                     colSpan={6}
                     style={{ textAlign: "center", padding: "40px" }}
                   >
-                    Loading...
+                    {t("common.loading")}
                   </td>
                 </tr>
               ) : destinations.length === 0 ? (
@@ -245,7 +247,7 @@ const AdminDestinationsPage: NextPage = () => {
                     colSpan={6}
                     style={{ textAlign: "center", padding: "40px" }}
                   >
-                    No destinations found.
+                    {t("admin.destinations.noDestinationsFound")}
                   </td>
                 </tr>
               ) : (
@@ -270,10 +272,10 @@ const AdminDestinationsPage: NextPage = () => {
                         }}
                       >
                         <span style={{ fontSize: 13, color: "#707881" }}>
-                          Hotels: {destination.destinationProperties}
+                          {t("admin.destinations.hotels", { destinationProperties: destination.destinationProperties })}
                         </span>
                         <span style={{ fontSize: 13, color: "#707881" }}>
-                          Tours: {destination.destinationTours}
+                          {t("admin.destinations.tours", { destinationTours: destination.destinationTours })}
                         </span>
                       </div>
                     </td>
@@ -328,7 +330,7 @@ const AdminDestinationsPage: NextPage = () => {
                         }`}
                       >
                         <span className="dot"></span>
-                        {destination.destinationStatus}
+                        {tEnum("destinationStatus", destination.destinationStatus)}
                       </span>
                     </td>
                     <td style={{ textAlign: "right" }}>
@@ -382,7 +384,7 @@ const AdminDestinationsPage: NextPage = () => {
 
         <div className="table-footer">
           <span>
-            Showing {startItem}–{endItem} of {total} records
+            {t("admin.showingRecords", { startItem, endItem, total })}
           </span>
           <div className="pagination">
             <button
@@ -430,7 +432,7 @@ const AdminDestinationsPage: NextPage = () => {
             <div className="drawer-header">
               <div className="header-title">
                 <span className="material-symbols-outlined">edit_document</span>
-                <span>Moderate Destination</span>
+                <span>{t("admin.destinations.moderateTitle")}</span>
               </div>
               <button className="close-btn" type="button" onClick={closeDrawer}>
                 <span className="material-symbols-outlined">close</span>
@@ -439,7 +441,7 @@ const AdminDestinationsPage: NextPage = () => {
 
             <div className="drawer-body">
               <div className="admin-form-group">
-                <label>Destination Name</label>
+                <label>{t("admin.destinations.destinationName")}</label>
                 <div
                   className="admin-form-control"
                   style={{ background: "#f1f3ff", border: "none" }}
@@ -449,7 +451,7 @@ const AdminDestinationsPage: NextPage = () => {
               </div>
 
               <div className="admin-form-group">
-                <label>Description</label>
+                <label>{t("common.description")}</label>
                 <div
                   className="admin-form-control"
                   style={{
@@ -465,7 +467,7 @@ const AdminDestinationsPage: NextPage = () => {
 
               <div className="admin-form-group">
                 <label>
-                  Status <span className="required">*</span>
+                  {t("common.status")} <span className="required">*</span>
                 </label>
                 <select
                   className="admin-form-control select"
@@ -474,8 +476,8 @@ const AdminDestinationsPage: NextPage = () => {
                     setFormStatus(e.target.value as DestinationStatus)
                   }
                 >
-                  <option value={DestinationStatus.ACTIVE}>Active</option>
-                  <option value={DestinationStatus.INACTIVE}>Inactive</option>
+                  <option value={DestinationStatus.ACTIVE}>{t("common.active")}</option>
+                  <option value={DestinationStatus.INACTIVE}>{t("common.inactive")}</option>
                 </select>
               </div>
             </div>
@@ -486,14 +488,14 @@ const AdminDestinationsPage: NextPage = () => {
                 type="button"
                 onClick={closeDrawer}
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               <button
                 className="btn primary"
                 type="button"
                 onClick={handleSave}
               >
-                Save Changes
+                {t("common.saveChanges")}
               </button>
             </div>
           </aside>

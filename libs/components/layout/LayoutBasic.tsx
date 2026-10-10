@@ -4,18 +4,20 @@ import Top from '../Top';
 import Footer from '../Footer';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import useAuthSession from '../../hooks/useAuthSession';
+import { useI18n } from '../../i18n';
 
 const withLayoutBasic = (Component: any) => {
 	return (props: any) => {
 		const device = useDeviceDetect();
+		const { t } = useI18n();
 		useAuthSession();
 
 		if (device === 'mobile') {
 			return (
 				<>
 					<Head>
-						<title>AURA Hotels &amp; Sanctuaries</title>
-						<meta name="title" content="AURA Hotels" />
+						<title>{t('meta.defaultTitle')}</title>
+						<meta name="title" content={t('meta.defaultMetaTitle')} />
 					</Head>
 					<div id="mobile-wrap">
 						<Top />
@@ -30,8 +32,8 @@ const withLayoutBasic = (Component: any) => {
 			return (
 				<>
 					<Head>
-						<title>AURA Hotels &amp; Sanctuaries</title>
-						<meta name="title" content="AURA Hotels" />
+						<title>{t('meta.defaultTitle')}</title>
+						<meta name="title" content={t('meta.defaultMetaTitle')} />
 					</Head>
 					<div id="pc-wrap">
 						<Top />

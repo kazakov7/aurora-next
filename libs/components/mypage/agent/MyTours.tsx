@@ -9,8 +9,10 @@ import { Tour } from "../../../types/tour/tour";
 import AgentTourForm from "./AgentTourForm";
 import moment from "moment";
 import { sweetErrorHandling } from "../../../../libs/sweetAlert";
+import { useI18n } from "../../../i18n";
 
 const MyTours = () => {
+  const { tEnum, t, formatDate, tx } = useI18n();
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -50,14 +52,14 @@ const MyTours = () => {
         <div className="header-top">
           <div className="title-box">
             <div className="title-row">
-              <h2>My Tours</h2>
-              <span className="count-badge">{total} Packages</span>
+              <h2>{t("agent.myTours.myTours")}</h2>
+              <span className="count-badge">{t("agent.myTours.packages", { total })}</span>
             </div>
-            <p>Create, update, and manage your curated expedition packages, itineraries, and seat capacity.</p>
+            <p>{t("agent.myTours.intro")}</p>
           </div>
           <button onClick={handleAddTour} className="add-btn">
             <span className="material-symbols-outlined">add</span>
-            Add Tour
+            {t("agent.addTour")}
           </button>
         </div>
 
@@ -67,10 +69,10 @@ const MyTours = () => {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search tour packages by title or location..."
+              placeholder={t("agent.myTours.searchPlaceholder")}
               type="text"
               disabled
-              title="Text search not supported by backend yet"
+              title={t("agent.textSearchUnsupported")}
             />
           </div>
           <div className="select-box">
@@ -78,9 +80,9 @@ const MyTours = () => {
               value={tourStatus}
               onChange={(e) => setTourStatus(e.target.value as TourStatus)}
             >
-              <option value="">All Statuses</option>
+              <option value="">{t("common.allStatuses")}</option>
               {Object.values(TourStatus).map(ts => (
-                <option key={ts} value={ts}>{ts}</option>
+                <option key={ts} value={ts}>{tEnum("tourStatus", ts)}</option>
               ))}
             </select>
             <span className="material-symbols-outlined">expand_more</span>
@@ -93,22 +95,22 @@ const MyTours = () => {
           <table>
             <thead>
               <tr>
-                <th>Tour Package</th>
-                <th>Dates</th>
-                <th>Capacity</th>
-                <th>Price / Person</th>
-                <th>Status</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <th>{t("agent.myTours.tourPackage")}</th>
+                <th>{t("agent.myTours.dates")}</th>
+                <th>{t("common.capacity")}</th>
+                <th>{t("agent.myTours.pricePerson")}</th>
+                <th>{t("common.status")}</th>
+                <th style={{ textAlign: 'right' }}>{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: '#707881' }}>Loading tours...</td>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: '#707881' }}>{t("agent.myTours.loadingTours")}</td>
                 </tr>
               ) : tours.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: '#707881' }}>No tours found.</td>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: '#707881' }}>{t("agent.myTours.noToursFound")}</td>
                 </tr>
               ) : (
                 tours.map((tour: any) => (
@@ -124,7 +126,7 @@ const MyTours = () => {
                             {tour.tourName}
                           </span>
                           <span className="item-loc" style={{ marginTop: '4px' }}>
-                            {[tour.tourDestinationCity, tour.tourDepartureCountry].filter(Boolean).join(' · ') || 'Location not provided'}
+                            {[tour.tourDestinationCity, tour.tourDepartureCountry].filter(Boolean).join(' · ') || t("common.locationNotProvided")}
                           </span>
                         </div>
                       </div>
@@ -132,36 +134,36 @@ const MyTours = () => {
                     <td>
                       <div className="price-cell">
                         <span className="price" style={{ fontSize: '14px', fontWeight: 500 }}>
-                          {moment(tour.tourStartDate).format('MMM DD')} – {moment(tour.tourEndDate).format('MMM DD, YYYY')}
+                          {formatDate(tour.tourStartDate, "short")} – {formatDate(tour.tourEndDate, "medium")}
                         </span>
                       </div>
                     </td>
                     <td>
                       <div className="price-cell">
                         <span className="price" style={{ fontSize: '14px' }}>
-                          {tour.tourReservedSeats || 0} / {tour.tourCapacity} Booked
+                          {t("agent.myTours.booked", { tourReservedSeats: tour.tourReservedSeats || 0, tourCapacity: tour.tourCapacity })}
                         </span>
                         <span className="unit" style={{ color: tour.tourReservedSeats >= tour.tourCapacity ? '#ba1a1a' : '#006194', fontWeight: 600 }}>
-                          {Math.max(0, tour.tourCapacity - (tour.tourReservedSeats || 0))} Seats Left
+                          {t("agent.myTours.seatsLeft", { math: Math.max(0, tour.tourCapacity - (tour.tourReservedSeats || 0)) })}
                         </span>
                       </div>
                     </td>
                     <td>
                       <div className="price-cell">
-                        <span className="price">${Number(tour.tourPrice || 0).toLocaleString()}</span>
+                        <span className="price">${Number(tour.tourPrice || 0).toLocaleString("en-US")}</span>
                         <span className="unit">{tour.tourCurrency}</span>
                       </div>
                     </td>
                     <td>
                       <span className={`status-badge ${tour.tourStatus === TourStatus.ACTIVE ? 'active' : 'pending'}`}>
                         <span className="dot"></span>
-                        {tour.tourStatus}
+                        {tEnum("tourStatus", tour.tourStatus)}
                       </span>
                     </td>
                     <td>
                       <div className="actions-cell">
                         <button onClick={() => setFormTarget(tour)}>
-                          Edit
+                          {t("common.edit")}
                         </button>
                       </div>
                     </td>
@@ -175,7 +177,7 @@ const MyTours = () => {
         {total > 0 && (
           <div className="pagination-footer">
             <span className="page-info">
-              Showing <strong>{(page - 1) * 10 + 1}–{Math.min(page * 10, total)}</strong> of <strong>{total}</strong> tours
+              {tx("agent.myTours.showingRange", { range: <strong>{(page - 1) * 10 + 1}–{Math.min(page * 10, total)}</strong>, total: <strong>{total}</strong> })}
             </span>
             <div className="page-controls">
               <button disabled={page === 1} onClick={() => setPage(page - 1)}>

@@ -11,6 +11,7 @@ import { DEFAULT_USER_AVATAR, getImageUrl } from "../../../config";
 import {
   sweetErrorAlert,
 } from "../../../sweetAlert";
+import { useI18n } from "../../../i18n";
 
 interface TourCommentsProps {
   tour: Tour;
@@ -20,6 +21,7 @@ interface TourCommentsProps {
 const defaultAvatar = DEFAULT_USER_AVATAR;
 
 const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
+  const { t, tError, formatDate } = useI18n();
   const user = useReactiveVar(userVar);
   const [commentText, setCommentText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,15 +60,15 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
   /** HANDLERS **/
   const handlePostComment = async () => {
     if (!user?._id) {
-      await sweetErrorAlert(Message.NOT_AUTHENTICATED);
+      await sweetErrorAlert(t(Message.NOT_AUTHENTICATED));
       return;
     }
     if (!commentText.trim()) {
-      await sweetErrorAlert("Please enter your evaluation before submitting.");
+      await sweetErrorAlert(t("tours.comments.emptyComment"));
       return;
     }
     if (commentText.length > 500) {
-      await sweetErrorAlert("Comment must not exceed 500 characters.");
+      await sweetErrorAlert(t("tours.comments.commentTooLong"));
       return;
     }
 
@@ -87,7 +89,7 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
       else await refetchComments();
       if (refetchTour) await refetchTour();
     } catch (err: any) {
-      await sweetErrorAlert(err.message || "Failed to post comment.");
+      await sweetErrorAlert(tError(err, "tours.comments.failedToPostComment"));
     }
   };
 
@@ -101,25 +103,24 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
       <div className="comments-header-row">
         <div className="comments-title-group">
           <div className="comments-heading-wrap">
-            <h2 className="comments-main-heading">Traveler Comments</h2>
+            <h2 className="comments-main-heading">{t("tours.comments.travelerComments")}</h2>
           </div>
           <p className="comments-subtext">
-            {displayTotal} evaluation{displayTotal === 1 ? "" : "s"} for{" "}
-            {tour.tourName}
+            {t("tours.comments.evaluationsFor", { count: displayTotal, name: tour.tourName })}
           </p>
         </div>
 
         {/* Sort Dropdown */}
         <div className="sort-control">
-          <span className="sort-label">Sort by:</span>
+          <span className="sort-label">{t("common.sortBy")}</span>
           <div className="select-wrapper">
             <select
               className="sort-select"
               value={sortType}
               onChange={(e) => setSortType(e.target.value)}
             >
-              <option value="newest">Most Recent</option>
-              <option value="detailed">Detailed Feedback</option>
+              <option value="newest">{t("tours.comments.mostRecent")}</option>
+              <option value="detailed">{t("tours.comments.detailedFeedback")}</option>
             </select>
             <span className="material-symbols-outlined select-arrow">
               expand_more
@@ -133,21 +134,19 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
         {loading ? (
           <div className="comments-loading">
             <span className="material-symbols-outlined animate-spin">sync</span>
-            <p>Loading evaluations...</p>
+            <p>{t("tours.comments.loadingEvaluations")}</p>
           </div>
         ) : commentsList.length > 0 ? (
           commentsList.map((comment: Comment, idx: number) => {
             const authorName =
               comment.memberData?.memberNick ||
               comment.memberData?.memberFullName ||
-              "Traveler";
+              t("common.travelerLabel");
             const authorImg = getImageUrl(
               comment.memberData?.memberImage,
               defaultAvatar,
             );
-            const formattedDate = new Date(
-              comment.createdAt,
-            ).toLocaleDateString("en-US", {
+            const formattedDate = formatDate(comment.createdAt, {
               month: "short",
               year: "numeric",
             });
@@ -163,7 +162,7 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
                     />
                     <div className="author-meta">
                       <h3 className="author-name">{authorName}</h3>
-                      <p className="stay-date">Posted {formattedDate}</p>
+                      <p className="stay-date">{t("tours.comments.posted", { formattedDate })}</p>
                     </div>
                   </div>
                   <div className="stars-row">
@@ -187,9 +186,9 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
             <span className="material-symbols-outlined empty-icon">
               rate_review
             </span>
-            <p className="empty-title">No evaluations posted yet</p>
+            <p className="empty-title">{t("tours.comments.noEvaluationsPostedYet")}</p>
             <p className="empty-desc">
-              Be the first to share your experience with {tour.tourName}.
+              {t("tours.comments.beTheFirst", { tourName: tour.tourName })}
             </p>
           </div>
         )}
@@ -231,9 +230,9 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
             rate_review
           </span>
           <div>
-            <h3 className="form-title">Leave a Comment</h3>
+            <h3 className="form-title">{t("tours.comments.leaveAComment")}</h3>
             <p className="form-desc">
-              Share your verified sanctuary experience with future voyagers
+              {t("tours.comments.formIntro")}
             </p>
           </div>
         </div>
@@ -241,20 +240,20 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
         <div className="comment-form-body">
           <img
             src={getImageUrl(user?.memberImage, defaultAvatar)}
-            alt="Current user"
+            alt={t("tours.comments.currentUser")}
             className="user-comment-avatar"
           />
           <div className="textarea-wrapper">
             <textarea
               rows={3}
               className="comment-textarea"
-              placeholder="Share your experience (e.g. scenic views, check-in, breakfast quality, spa temperatures)..."
+              placeholder={t("tours.comments.placeholder")}
               value={commentText}
               onChange={(e) => setCommentText(e.target.value.slice(0, 500))}
             ></textarea>
             <div className="form-actions-row">
               <span className="char-count">
-                {commentText.length} / 500 characters
+                {t("tours.comments.characterCount", { count: commentText.length })}
               </span>
               <div className="buttons-group">
                 <button
@@ -263,7 +262,7 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
                   disabled={commentLoading || !commentText.trim()}
                   onClick={handlePostComment}
                 >
-                  {commentLoading ? "Posting..." : "Post Comment"}
+                  {commentLoading ? t("common.posting") : t("common.postComment")}
                 </button>
               </div>
             </div>

@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { NextPage } from "next";
+import Head from "next/head";
 import useDeviceDetect from "../../libs/hooks/useDeviceDetect";
 import withLayoutBasic from "../../libs/components/layout/LayoutBasic";
 import CsContactForm from "../../libs/components/cs/CsContactForm";
+import { useI18n } from "../../libs/i18n";
 
 const CS: NextPage = () => {
+  const { t, tx } = useI18n();
   const device = useDeviceDetect();
   const [searchQuery, setSearchQuery] = useState<string>("");
 
@@ -17,11 +20,8 @@ const CS: NextPage = () => {
     }
   };
 
-  if (device === "mobile") {
-    return <h1>CS PAGE MOBILE</h1>;
-  } else {
-    return (
-      <div id="pc-wrap">
+  /** One tree for every device: scss/pc/cs/cs.scss styles .cs-page under both #pc-wrap and #mobile-wrap **/
+  const page = (
         <div className="cs-page">
           {/* HERO SECTION */}
           <section className="hero-section">
@@ -33,12 +33,11 @@ const CS: NextPage = () => {
             <div className="hero-content">
               <div className="concierge-badge">
                 <span className="pulse-dot"></span>
-                <span className="badge-text">AURA Concierge & Support</span>
+                <span className="badge-text">{t("support.page.eyebrow")}</span>
               </div>
-              <h1 className="hero-title">How can we help you?</h1>
+              <h1 className="hero-title">{t("support.page.howCanWeHelpYou")}</h1>
               <p className="hero-subtitle">
-                Find answers, manage bespoke itineraries, and return to seamless
-                exploration.
+                {t("support.page.heroText")}
               </p>
 
               <div className="search-container">
@@ -48,7 +47,7 @@ const CS: NextPage = () => {
                   </span>
                   <input
                     type="text"
-                    placeholder="Search for help, bookings, cancellations, vouchers..."
+                    placeholder={t("support.page.searchPlaceholder")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) =>
@@ -60,34 +59,34 @@ const CS: NextPage = () => {
                     onClick={handleSearchTrigger}
                     type="button"
                   >
-                    Find Answers
+                    {t("support.page.findAnswers")}
                   </button>
                 </div>
                 <div className="quick-prompts">
-                  <span className="prompt-label">Quick prompts:</span>
+                  <span className="prompt-label">{t("support.page.quickPrompts")}</span>
                   <button
-                    onClick={() => setSearchQuery("Cancellation policy")}
+                    onClick={() => setSearchQuery(t("support.page.cancellationPolicy"))}
                     type="button"
                   >
-                    Cancellation policy
+                    {t("support.page.cancellationPolicy")}
                   </button>
                   <button
-                    onClick={() => setSearchQuery("Refund timeline")}
+                    onClick={() => setSearchQuery(t("support.page.refundTimeline"))}
                     type="button"
                   >
-                    Refund timeline
+                    {t("support.page.refundTimeline")}
                   </button>
                   <button
-                    onClick={() => setSearchQuery("Modify dates")}
+                    onClick={() => setSearchQuery(t("support.page.modifyDates"))}
                     type="button"
                   >
-                    Modify dates
+                    {t("support.page.modifyDates")}
                   </button>
                   <button
-                    onClick={() => setSearchQuery("Bespoke charter inquiry")}
+                    onClick={() => setSearchQuery(t("support.page.bespokeCharterInquiry"))}
                     type="button"
                   >
-                    Bespoke charter inquiry
+                    {t("support.page.bespokeCharterInquiry")}
                   </button>
                 </div>
               </div>
@@ -99,16 +98,15 @@ const CS: NextPage = () => {
             <section className="topics-section">
               <div className="section-header">
                 <div className="header-left">
-                  <span className="section-eyebrow">Knowledge Repository</span>
-                  <h2 className="section-title">Browse by Topic</h2>
+                  <span className="section-eyebrow">{t("support.page.knowledgeRepository")}</span>
+                  <h2 className="section-title">{t("support.page.browseByTopic")}</h2>
                   <p className="section-desc">
-                    Select an area to explore detailed operational guides,
-                    charter standards, and self-service tools.
+                    {t("support.page.topicsIntro")}
                   </p>
                 </div>
                 <div className="header-right">
                   <span className="dot"></span>
-                  <span>Updated across all territories</span>
+                  <span>{t("support.page.updatedAcrossAllTerritories")}</span>
                 </div>
               </div>
 
@@ -121,14 +119,13 @@ const CS: NextPage = () => {
                         calendar_month
                       </span>
                     </div>
-                    <h3>Bookings & Reservations</h3>
+                    <h3>{t("support.page.bookingsReservations")}</h3>
                     <p>
-                      Manage active itineraries, date changes, guest
-                      assignments, and instant confirmation vouchers.
+                      {t("support.page.topicBookingsText")}
                     </p>
                   </div>
                   <div className="card-footer">
-                    <span>Explore 14 guides</span>
+                    <span>{t("support.page.explore14Guides")}</span>
                     <span className="material-symbols-outlined">
                       arrow_forward
                     </span>
@@ -143,14 +140,13 @@ const CS: NextPage = () => {
                         apartment
                       </span>
                     </div>
-                    <h3>Hotels & Stays</h3>
+                    <h3>{t("support.page.hotelsStays")}</h3>
                     <p>
-                      Check-in protocols, sanctuary amenities, discrete host
-                      correspondence, and private key handoffs.
+                      {t("support.page.topicHotelsText")}
                     </p>
                   </div>
                   <div className="card-footer">
-                    <span>Explore 19 guides</span>
+                    <span>{t("support.page.explore19Guides")}</span>
                     <span className="material-symbols-outlined">
                       arrow_forward
                     </span>
@@ -163,14 +159,13 @@ const CS: NextPage = () => {
                     <div className="icon-box">
                       <span className="material-symbols-outlined">explore</span>
                     </div>
-                    <h3>Tours & Experiences</h3>
+                    <h3>{t("support.page.toursExperiences")}</h3>
                     <p>
-                      Expedition briefings, private guides, specialized
-                      mountaineering gear requirements, and weather alerts.
+                      {t("support.page.topicToursText")}
                     </p>
                   </div>
                   <div className="card-footer">
-                    <span>Explore 12 guides</span>
+                    <span>{t("support.page.explore12Guides")}</span>
                     <span className="material-symbols-outlined">
                       arrow_forward
                     </span>
@@ -185,14 +180,13 @@ const CS: NextPage = () => {
                         account_balance_wallet
                       </span>
                     </div>
-                    <h3>Payments & Refunds</h3>
+                    <h3>{t("support.page.paymentsRefunds")}</h3>
                     <p>
-                      Discreet billing, multi-currency escrow security, and
-                      transparent real-time settlement timelines.
+                      {t("support.page.topicPaymentsText")}
                     </p>
                   </div>
                   <div className="card-footer">
-                    <span>Explore 16 guides</span>
+                    <span>{t("support.page.explore16Guides")}</span>
                     <span className="material-symbols-outlined">
                       arrow_forward
                     </span>
@@ -205,14 +199,13 @@ const CS: NextPage = () => {
                     <div className="icon-box">
                       <span className="material-symbols-outlined">shield</span>
                     </div>
-                    <h3>Account & Security</h3>
+                    <h3>{t("support.page.accountSecurity")}</h3>
                     <p>
-                      Two-factor hardware authentication, privacy directives,
-                      and encrypted passport credential storage.
+                      {t("support.page.topicAccountText")}
                     </p>
                   </div>
                   <div className="card-footer">
-                    <span>Explore 9 guides</span>
+                    <span>{t("support.page.explore9Guides")}</span>
                     <span className="material-symbols-outlined">
                       arrow_forward
                     </span>
@@ -227,14 +220,13 @@ const CS: NextPage = () => {
                         support_agent
                       </span>
                     </div>
-                    <h3>Safety & Support</h3>
+                    <h3>{t("support.page.safetySupport")}</h3>
                     <p>
-                      Emergency airside assistance, high-altitude medical
-                      directives, evacuation protocols, and charter insurance.
+                      {t("support.page.topicSafetyText")}
                     </p>
                   </div>
                   <div className="card-footer">
-                    <span>Explore 11 guides</span>
+                    <span>{t("support.page.explore11Guides")}</span>
                     <span className="material-symbols-outlined">
                       arrow_forward
                     </span>
@@ -246,150 +238,110 @@ const CS: NextPage = () => {
             {/* FAQ SECTION */}
             <section id="faq" className="faq-section">
               <div className="section-header-simple">
-                <span className="section-eyebrow">Instant Knowledge</span>
-                <h2 className="section-title">Frequently Asked Questions</h2>
+                <span className="section-eyebrow">{t("support.page.instantKnowledge")}</span>
+                <h2 className="section-title">{t("support.page.frequentlyAskedQuestions")}</h2>
                 <p className="section-desc">
-                  Instant resolutions to our travelers’ most common operational
-                  inquiries.
+                  {t("support.page.faqIntro")}
                 </p>
               </div>
 
               <div className="faq-container">
                 <details className="faq-item" open>
                   <summary>
-                    <span>How do I make a hotel reservation?</span>
+                    <span>{t("support.page.faq1Question")}</span>
                     <span className="material-symbols-outlined">
                       expand_more
                     </span>
                   </summary>
                   <div className="faq-content">
-                    Navigate to the <a href="#">Hotels & Sanctuaries</a>{" "}
-                    section, select your destination and travel dates, and
-                    browse our verified architectural portfolio. Each property
-                    features suite configurations, exact floor plans, and
-                    amenities. You can book instantly with our encrypted
-                    one-click escrow or request bespoke concierge arrangements
-                    for customized host requirements.
+                    {tx("support.page.faq1Answer", { link: <a href="#">{t("support.page.faq1Link")}</a> })}
                   </div>
                 </details>
                 <details className="faq-item">
                   <summary>
-                    <span>How can I cancel my booking?</span>
+                    <span>{t("support.page.faq2Question")}</span>
                     <span className="material-symbols-outlined">
                       expand_more
                     </span>
                   </summary>
                   <div className="faq-content">
-                    Cancellations are executed in seconds via{" "}
-                    <strong>My Page &gt; Bookings</strong>. Select your active
-                    stay or tour and click "Initiate Cancellation." Under our
-                    Flexible Sanctuary Tier, full escrow refunds are credited
-                    automatically if cancelled at least 48 hours prior to local
-                    check-in time. Any applicable refund is returned instantly
-                    to your primary payment method.
+                    {tx("support.page.faq2Answer", { link: <strong>{t("support.page.myPageBookings")}</strong> })}
                   </div>
                 </details>
                 <details className="faq-item">
                   <summary>
-                    <span>Can I change my travel dates?</span>
+                    <span>{t("support.page.faq3Question")}</span>
                     <span className="material-symbols-outlined">
                       expand_more
                     </span>
                   </summary>
                   <div className="faq-content">
-                    Yes. Date adjustments can be submitted seamlessly up to 72
-                    hours before arrival, subject to partner availability. From
-                    your itinerary dashboard, select "Modify Dates." If there is
-                    a rate difference due to seasonal shifts, you will be
-                    prompted to approve the adjustment prior to cryptographic
-                    confirmation.
+                    {t("support.page.faq3Answer")}
                   </div>
                 </details>
                 <details className="faq-item">
                   <summary>
                     <span>
-                      How do I contact a hotel owner or expedition lead?
+                      {t("support.page.faq4Question")}
                     </span>
                     <span className="material-symbols-outlined">
                       expand_more
                     </span>
                   </summary>
                   <div className="faq-content">
-                    Once a booking is confirmed, direct end-to-end encrypted
-                    messaging unlocks via <a href="#">AURA Airside Chat</a>. You
-                    can correspond directly with property managers, villa
-                    concierges, or lead mountaineers for ground transfers,
-                    private chefs, and custom equipment sizing.
+                    {tx("support.page.faq4Answer", { link: <a href="#">{t("support.page.faq4Link")}</a> })}
                   </div>
                 </details>
                 <details className="faq-item">
                   <summary>
                     <span>
-                      How do I book a bespoke tour or private charter?
+                      {t("support.page.faq5Question")}
                     </span>
                     <span className="material-symbols-outlined">
                       expand_more
                     </span>
                   </summary>
                   <div className="faq-content">
-                    Access our <a href="#">Curated Expeditions</a> portfolio and
-                    choose the "Private Departure" toggle, or send custom
-                    coordinates directly to the Concierge Desk using the contact
-                    form below. Our alpine logistics team prepares complete
-                    flight, guide, and security schedules within 4 hours.
+                    {tx("support.page.faq5Answer", { link: <a href="#">{t("support.page.faq5Link")}</a> })}
                   </div>
                 </details>
                 <details className="faq-item">
                   <summary>
                     <span>
-                      Where can I find my booking details and receipts?
+                      {t("support.page.faq6Question")}
                     </span>
                     <span className="material-symbols-outlined">
                       expand_more
                     </span>
                   </summary>
                   <div className="faq-content">
-                    All itinerary documents, tax invoices, and cryptographic
-                    boarding cards are stored indefinitely in{" "}
-                    <a href="#">My Page &gt; Bookings</a>. You can export
-                    authenticated PDF vouchers or generate Apple Wallet passes
-                    for off-grid access.
+                    {tx("support.page.faq6Answer", { link: <a href="#">{t("support.page.myPageBookings")}</a> })}
                   </div>
                 </details>
                 <details className="faq-item">
                   <summary>
                     <span>
-                      How do I reset my password or update security credentials?
+                      {t("support.page.faq7Question")}
                     </span>
                     <span className="material-symbols-outlined">
                       expand_more
                     </span>
                   </summary>
                   <div className="faq-content">
-                    Visit{" "}
-                    <strong>
-                      My Page &gt; Settings &gt; Security Controls
-                    </strong>
-                    . Here, you can configure WebAuthn biometric passkeys,
-                    change master passwords, revoke concurrent session tokens,
-                    or adjust your public voyager display privacy.
+                    {tx("support.page.faq7Answer", { link: <strong>{t("support.page.faq7Path")}</strong> })}
                   </div>
                 </details>
                 <details className="faq-item">
                   <summary>
                     <span>
-                      How can I report a problem during an active journey?
+                      {t("support.page.faq8Question")}
                     </span>
                     <span className="material-symbols-outlined">
                       expand_more
                     </span>
                   </summary>
                   <div className="faq-content">
-                    Active travelers have top-priority access. Tap the urgent
-                    "Airside Dispatch" icon in the navigation header, call our
-                    24/7 dedicated line printed on your itinerary, or submit an
-                    urgent support ticket below. Ground liaison teams will
-                    intervene immediately.
+                    {t("support.page.faq8Answer")}
                   </div>
                 </details>
               </div>
@@ -398,11 +350,10 @@ const CS: NextPage = () => {
             {/* CONTACT SUPPORT SECTION */}
             <section id="contact-form-section" className="contact-section">
               <div className="section-header-simple">
-                <span className="section-eyebrow">Direct Assistance</span>
-                <h2 className="section-title">Contact Support</h2>
+                <span className="section-eyebrow">{t("support.page.directAssistance")}</span>
+                <h2 className="section-title">{t("support.page.contactSupport")}</h2>
                 <p className="section-desc">
-                  Can't find what you're looking for? Send a dispatch directly
-                  to our concierge team.
+                  {t("support.page.contactIntro")}
                 </p>
               </div>
 
@@ -413,13 +364,11 @@ const CS: NextPage = () => {
                     <div className="card-glow"></div>
                     <div className="badge">
                       <span className="pulse-dot"></span>
-                      <span className="badge-text">Direct Support Desk</span>
+                      <span className="badge-text">{t("support.page.directSupportDesk")}</span>
                     </div>
-                    <h3>Global Concierge Operations</h3>
+                    <h3>{t("support.page.globalConciergeOperations")}</h3>
                     <p className="desc">
-                      Our dedicated travel concierges, dispatchers, and
-                      technical support specialists are stationed across Geneva,
-                      Tokyo, and New York.
+                      {t("support.page.operationsText")}
                     </p>
 
                     <div className="response-time">
@@ -427,10 +376,9 @@ const CS: NextPage = () => {
                         schedule
                       </span>
                       <div className="text-box">
-                        <p className="title">Typical response time</p>
+                        <p className="title">{t("support.page.typicalResponseTime")}</p>
                         <p className="subtitle">
-                          Under 15 minutes for verified members (24/7 worldwide
-                          airside coverage).
+                          {t("support.page.responseTimeText")}
                         </p>
                       </div>
                     </div>
@@ -440,20 +388,20 @@ const CS: NextPage = () => {
                         <span className="material-symbols-outlined">
                           enhanced_encryption
                         </span>
-                        <span>End-to-end encrypted ticketing</span>
+                        <span>{t("support.page.endToEndEncryptedTicketing")}</span>
                       </div>
                       <div className="highlight">
                         <span className="material-symbols-outlined">
                           local_police
                         </span>
-                        <span>Direct partner & host escalation</span>
+                        <span>{t("support.page.directPartnerHostEscalation")}</span>
                       </div>
                       <div className="highlight">
                         <span className="material-symbols-outlined">
                           translate
                         </span>
                         <span>
-                          Multilingual concierge team (DE, EN, FR, JP)
+                          {t("support.page.multilingualTeam")}
                         </span>
                       </div>
                     </div>
@@ -468,9 +416,9 @@ const CS: NextPage = () => {
                     ></div>
                     <div className="overlay"></div>
                     <div className="inset-content">
-                      <div className="eyebrow">Geneva Base Dispatch</div>
+                      <div className="eyebrow">{t("support.page.genevaBaseDispatch")}</div>
                       <div className="title">
-                        Alpine Emergency Coordinates Active
+                        {t("support.page.alpineEmergencyCoordinatesActive")}
                       </div>
                     </div>
                   </div>
@@ -484,27 +432,33 @@ const CS: NextPage = () => {
             {/* STILL NEED HELP CALLOUT */}
             <section className="help-callout">
               <div className="callout-text">
-                <h3>Still need help?</h3>
+                <h3>{t("support.page.stillNeedHelp")}</h3>
                 <p>
-                  Our global support collective is on standby around the clock
-                  to ensure flawless travel execution.
+                  {t("support.page.closingText")}
                 </p>
               </div>
               <div className="callout-actions">
                 <a href="#contact-form-section" className="action-btn primary">
-                  <span>Submit a Request</span>
+                  <span>{t("support.page.submitARequest")}</span>
                   <span className="material-symbols-outlined">north_east</span>
                 </a>
                 <a href="#faq" className="action-btn secondary">
-                  View FAQs
+                  {t("support.page.viewFAQs")}
                 </a>
               </div>
             </section>
           </div>
         </div>
-      </div>
-    );
-  }
+  );
+
+  return (
+    <>
+      <Head>
+        <title>{t("support.page.metaTitle")}</title>
+      </Head>
+      {device === "mobile" ? page : <div id="pc-wrap">{page}</div>}
+    </>
+  );
 };
 
 export default withLayoutBasic(CS);

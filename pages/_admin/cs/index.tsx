@@ -22,8 +22,10 @@ import {
   sweetMixinErrorAlert,
   sweetConfirmAlert,
 } from "../../../libs/sweetAlert";
+import { useI18n } from "../../../libs/i18n";
 
 const AdminNoticesPage: NextPage = () => {
+  const { t, tEnum, tError, formatDate } = useI18n();
   const [notices, setNotices] = useState<Notice[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null);
@@ -135,7 +137,7 @@ const AdminNoticesPage: NextPage = () => {
   const handleSave = async () => {
     try {
       if (!formData.noticeTitle || !formData.noticeContent) {
-        sweetMixinErrorAlert("Please fill in all required fields.");
+        sweetMixinErrorAlert(t("common.fillRequiredFields"));
         return;
       }
 
@@ -143,7 +145,7 @@ const AdminNoticesPage: NextPage = () => {
         await createNotice({
           variables: { input: formData },
         });
-        sweetTopSmallSuccessAlert("Notice created successfully!", 800);
+        sweetTopSmallSuccessAlert(t("admin.cs.noticeCreatedSuccessfully"), 800);
       } else if (drawerMode === "EDIT" && selectedNotice) {
         const updateInput: NoticeUpdate = {
           _id: selectedNotice._id,
@@ -155,41 +157,41 @@ const AdminNoticesPage: NextPage = () => {
         await updateNoticeByAdmin({
           variables: { input: updateInput },
         });
-        sweetTopSmallSuccessAlert("Notice updated successfully!", 800);
+        sweetTopSmallSuccessAlert(t("admin.cs.noticeUpdatedSuccessfully"), 800);
       }
       closeDrawer();
       refetch();
     } catch (err: any) {
-      sweetMixinErrorAlert(err.message);
+      sweetMixinErrorAlert(tError(err));
     }
   };
 
   const handleDelete = async (id: string) => {
     if (
-      await sweetConfirmAlert("Are you sure you want to delete this notice?")
+      await sweetConfirmAlert(t("admin.cs.deleteConfirm"))
     ) {
       try {
         await removeNoticeByAdmin({ variables: { noticeId: id } });
-        sweetTopSmallSuccessAlert("Notice deleted!", 800);
+        sweetTopSmallSuccessAlert(t("admin.cs.noticeDeleted"), 800);
         refetch();
       } catch (err: any) {
-        sweetMixinErrorAlert(err.message);
+        sweetMixinErrorAlert(tError(err));
       }
     }
   };
 
   const exportCSV = () => {
     if (!notices || notices.length === 0) {
-      sweetMixinErrorAlert("No notices to export");
+      sweetMixinErrorAlert(t("admin.cs.noNoticesToExport"));
       return;
     }
-    const headers = ["ID", "Title", "Category", "Status", "Created Date"];
+    const headers = ["ID", t("admin.title"), t("common.category"), t("common.status"), t("common.createdDate")];
     const rows = notices.map((n) => [
       n._id,
       `"${n.noticeTitle.replace(/"/g, '""')}"`,
       n.noticeCategory,
       n.noticeStatus,
-      new Date(n.createdAt).toLocaleDateString(),
+      formatDate(n.createdAt),
     ]);
 
     const csvContent =
@@ -214,8 +216,8 @@ const AdminNoticesPage: NextPage = () => {
       {/* TOP SECTION: HEADER */}
       <div className="overview-header">
         <div className="header-text">
-          <h1>Notices Management</h1>
-          <p>Manage system announcements, policies, and inquiries.</p>
+          <h1>{t("admin.cs.noticesManagement")}</h1>
+          <p>{t("admin.cs.intro")}</p>
         </div>
         <div className="header-actions">
           <button
@@ -234,7 +236,7 @@ const AdminNoticesPage: NextPage = () => {
             >
               add
             </span>
-            Create Notice
+            {t("admin.cs.createNotice")}
           </button>
         </div>
       </div>
@@ -244,15 +246,15 @@ const AdminNoticesPage: NextPage = () => {
         {/* TABLE HEADER & FILTERS */}
         <div className="table-header">
           <div className="header-left">
-            <h2>Directory</h2>
-            <span className="table-badge">{total} Notices</span>
+            <h2>{t("common.directory")}</h2>
+            <span className="table-badge">{t("admin.cs.notices", { total })}</span>
           </div>
           <div className="header-right">
             <div className="search-box">
               <span className="material-symbols-outlined">search</span>
               <input
                 type="text"
-                placeholder="Search notices..."
+                placeholder={t("admin.cs.searchNotices")}
                 onChange={(e) => handleSearchChange(e.target.value)}
               />
             </div>
@@ -261,19 +263,19 @@ const AdminNoticesPage: NextPage = () => {
                 className="filter-select"
                 onChange={(e) => handleCategoryChange(e.target.value)}
               >
-                <option value="all">All Categories</option>
+                <option value="all">{t("common.allCategories")}</option>
                 <option value={NoticeCategory.FAQ}>FAQ</option>
-                <option value={NoticeCategory.TERMS}>Terms</option>
-                <option value={NoticeCategory.INQUIRY}>Inquiry</option>
+                <option value={NoticeCategory.TERMS}>{t("admin.cs.terms")}</option>
+                <option value={NoticeCategory.INQUIRY}>{t("admin.cs.inquiry")}</option>
               </select>
               <select
                 className="filter-select"
                 onChange={(e) => handleStatusChange(e.target.value)}
               >
-                <option value="all">All Statuses</option>
-                <option value={NoticeStatus.ACTIVE}>Active</option>
-                <option value={NoticeStatus.HOLD}>Hold</option>
-                <option value={NoticeStatus.DELETED}>Deleted</option>
+                <option value="all">{t("common.allStatuses")}</option>
+                <option value={NoticeStatus.ACTIVE}>{t("common.active")}</option>
+                <option value={NoticeStatus.HOLD}>{t("admin.cs.hold")}</option>
+                <option value={NoticeStatus.DELETED}>{t("admin.deleted")}</option>
               </select>
               <button
                 className="reset-filter-btn"
@@ -283,7 +285,7 @@ const AdminNoticesPage: NextPage = () => {
                 <span className="material-symbols-outlined">
                   filter_alt_off
                 </span>
-                Reset
+                {t("common.reset")}
               </button>
             </div>
           </div>
@@ -294,11 +296,11 @@ const AdminNoticesPage: NextPage = () => {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Notice Title</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Created Date</th>
-                <th style={{ width: 120, textAlign: "right" }}>Actions</th>
+                <th>{t("admin.cs.noticeTitle")}</th>
+                <th>{t("common.category")}</th>
+                <th>{t("common.status")}</th>
+                <th>{t("common.createdDate")}</th>
+                <th style={{ width: 120, textAlign: "right" }}>{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -308,7 +310,7 @@ const AdminNoticesPage: NextPage = () => {
                     colSpan={5}
                     style={{ textAlign: "center", padding: "40px" }}
                   >
-                    Loading...
+                    {t("common.loading")}
                   </td>
                 </tr>
               ) : notices.length === 0 ? (
@@ -317,7 +319,7 @@ const AdminNoticesPage: NextPage = () => {
                     colSpan={5}
                     style={{ textAlign: "center", padding: "40px" }}
                   >
-                    No notices found.
+                    {t("admin.cs.noNoticesFound")}
                   </td>
                 </tr>
               ) : (
@@ -338,7 +340,7 @@ const AdminNoticesPage: NextPage = () => {
                             : "neutral"
                         }`}
                       >
-                        {notice.noticeCategory}
+                        {tEnum("noticeCategory", notice.noticeCategory)}
                       </span>
                     </td>
                     <td>
@@ -350,12 +352,12 @@ const AdminNoticesPage: NextPage = () => {
                         }`}
                       >
                         <span className="dot"></span>
-                        {notice.noticeStatus}
+                        {tEnum("noticeStatus", notice.noticeStatus)}
                       </span>
                     </td>
                     <td>
                       <span style={{ fontSize: 13, color: "#707881" }}>
-                        {new Date(notice.createdAt).toLocaleDateString()}
+                        {formatDate(notice.createdAt)}
                       </span>
                     </td>
                     <td style={{ textAlign: "right" }}>
@@ -410,7 +412,7 @@ const AdminNoticesPage: NextPage = () => {
         {/* TABLE PAGINATION FOOTER */}
         <div className="table-footer">
           <span>
-            Showing {startItem}–{endItem} of {total} records
+            {t("admin.showingRecords", { startItem, endItem, total })}
           </span>
           <div className="pagination">
             <button
@@ -460,7 +462,7 @@ const AdminNoticesPage: NextPage = () => {
               <div className="header-title">
                 <span className="material-symbols-outlined">edit_document</span>
                 <span>
-                  {drawerMode === "CREATE" ? "Create Notice" : "Edit Notice"}
+                  {drawerMode === "CREATE" ? t("admin.cs.createNotice") : t("admin.cs.editNotice")}
                 </span>
               </div>
               <button className="close-btn" type="button" onClick={closeDrawer}>
@@ -471,12 +473,12 @@ const AdminNoticesPage: NextPage = () => {
             <div className="drawer-body">
               <div className="admin-form-group">
                 <label>
-                  Notice Title <span className="required">*</span>
+                  {t("admin.cs.noticeTitle")} <span className="required">*</span>
                 </label>
                 <input
                   type="text"
                   className="admin-form-control"
-                  placeholder="Enter notice title"
+                  placeholder={t("admin.cs.enterNoticeTitle")}
                   value={formData.noticeTitle}
                   onChange={(e) =>
                     setFormData({ ...formData, noticeTitle: e.target.value })
@@ -487,7 +489,7 @@ const AdminNoticesPage: NextPage = () => {
               <div className="grid-2-col">
                 <div className="admin-form-group">
                   <label>
-                    Category <span className="required">*</span>
+                    {t("common.category")} <span className="required">*</span>
                   </label>
                   <select
                     className="admin-form-control select"
@@ -500,15 +502,15 @@ const AdminNoticesPage: NextPage = () => {
                     }
                   >
                     <option value={NoticeCategory.FAQ}>FAQ</option>
-                    <option value={NoticeCategory.TERMS}>Terms</option>
-                    <option value={NoticeCategory.INQUIRY}>Inquiry</option>
+                    <option value={NoticeCategory.TERMS}>{t("admin.cs.terms")}</option>
+                    <option value={NoticeCategory.INQUIRY}>{t("admin.cs.inquiry")}</option>
                   </select>
                 </div>
 
                 {drawerMode === "EDIT" && (
                   <div className="admin-form-group">
                     <label>
-                      Status <span className="required">*</span>
+                      {t("common.status")} <span className="required">*</span>
                     </label>
                     <select
                       className="admin-form-control select"
@@ -517,9 +519,9 @@ const AdminNoticesPage: NextPage = () => {
                         setFormStatus(e.target.value as NoticeStatus)
                       }
                     >
-                      <option value={NoticeStatus.ACTIVE}>Active</option>
-                      <option value={NoticeStatus.HOLD}>Hold</option>
-                      <option value={NoticeStatus.DELETED}>Deleted</option>
+                      <option value={NoticeStatus.ACTIVE}>{t("common.active")}</option>
+                      <option value={NoticeStatus.HOLD}>{t("admin.cs.hold")}</option>
+                      <option value={NoticeStatus.DELETED}>{t("admin.deleted")}</option>
                     </select>
                   </div>
                 )}
@@ -527,11 +529,11 @@ const AdminNoticesPage: NextPage = () => {
 
               <div className="admin-form-group">
                 <label>
-                  Content <span className="required">*</span>
+                  {t("common.content")} <span className="required">*</span>
                 </label>
                 <textarea
                   className="admin-form-control textarea"
-                  placeholder="Write notice content here..."
+                  placeholder={t("admin.cs.writeNoticeContentHere")}
                   value={formData.noticeContent}
                   onChange={(e) =>
                     setFormData({ ...formData, noticeContent: e.target.value })
@@ -546,14 +548,14 @@ const AdminNoticesPage: NextPage = () => {
                 type="button"
                 onClick={closeDrawer}
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               <button
                 className="btn primary"
                 type="button"
                 onClick={handleSave}
               >
-                {drawerMode === "CREATE" ? "Create" : "Save Changes"}
+                {drawerMode === "CREATE" ? t("admin.cs.create") : t("common.saveChanges")}
               </button>
             </div>
           </aside>

@@ -6,6 +6,7 @@ import { PRICE_FILTER_MAX, PRICE_FILTER_MIN, PRICE_FILTER_STEP, PROPERTY_AMENITY
 import { Property } from '../../types/property/property';
 import { PropertiesInquiry } from '../../types/property/property.input';
 import { PropertyType } from '../../enums/property.enum';
+import { useI18n } from '../../i18n';
 
 interface FilterProps {
 	searchFilter: PropertiesInquiry;
@@ -13,27 +14,24 @@ interface FilterProps {
 	initialInput: PropertiesInquiry;
 }
 
+/** Labels come from the dictionary: enums.propertyType.*, common.guestsPlus, amenities.* **/
 const propertyTypes = [
-	{ label: 'Hotel', value: PropertyType.HOTEL },
-	{ label: 'Resort', value: PropertyType.RESORT },
-	{ label: 'Villa', value: PropertyType.VILLA },
-	{ label: 'Apartment', value: PropertyType.APARTMENT },
-	{ label: 'Guesthouse', value: PropertyType.GUESTHOUSE },
-	{ label: 'Motel', value: PropertyType.MOTEL },
-	{ label: 'Hostel', value: PropertyType.HOSTEL },
-	{ label: 'Other', value: PropertyType.OTHER },
+	{ value: PropertyType.HOTEL },
+	{ value: PropertyType.RESORT },
+	{ value: PropertyType.VILLA },
+	{ value: PropertyType.APARTMENT },
+	{ value: PropertyType.GUESTHOUSE },
+	{ value: PropertyType.MOTEL },
+	{ value: PropertyType.HOSTEL },
+	{ value: PropertyType.OTHER },
 ];
 
-const guestOptions = [
-	{ label: '1+ Guests', value: 1 },
-	{ label: '2+ Guests', value: 2 },
-	{ label: '4+ Guests', value: 4 },
-	{ label: '5+ Guests', value: 5 },
-];
+const guestOptions = [{ value: 1 }, { value: 2 }, { value: 4 }, { value: 5 }];
 
-const amenitiesList = PROPERTY_AMENITY_OPTIONS.map((value) => ({ label: value, value }));
+const amenitiesList = PROPERTY_AMENITY_OPTIONS.map((value) => ({ value }));
 
 const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) => {
+	const { t, tEnum, tValue } = useI18n();
 	const router = useRouter();
 	const [searchText, setSearchText] = useState(searchFilter?.search?.text || '');
 	const [selectedCity, setSelectedCity] = useState<string>(
@@ -198,22 +196,22 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 			<div className="filter-header">
 				<div className="filter-title-box">
 					<span className="material-symbols-outlined filter-icon">tune</span>
-					<span className="filter-title">Filters</span>
+					<span className="filter-title">{t('hotels.filter.filters')}</span>
 				</div>
 				<button className="clear-all-btn" type="button" onClick={clearAllHandler}>
-					Clear All
+					{t('hotels.filter.clearAll')}
 				</button>
 			</div>
 
 			{/* Destination Filter */}
 			<div className="filter-section">
-				<label className="section-label">Destination</label>
+				<label className="section-label">{t('common.destination')}</label>
 				<div className="destination-search-box">
 					<span className="material-symbols-outlined search-icon">search</span>
 					<input
 						type="text"
 						value={searchText}
-						placeholder="Search country or city..."
+						placeholder={t('hotels.filter.searchCountryOrCity')}
 						className="search-input"
 						onChange={(e) => searchInputChangeHandler(e.target.value)}
 					/>
@@ -235,7 +233,7 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 			{/* Price Range */}
 			<div className="filter-section">
 				<div className="price-label-row">
-					<label className="section-label">Price per night</label>
+					<label className="section-label">{t('hotels.filter.pricePerNight')}</label>
 					<span className="currency-label">USD ($)</span>
 				</div>
 				<div className="price-slider-box">
@@ -251,16 +249,16 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 				</div>
 				<div className="price-display-row">
 					<div className="price-box-col">
-						<span className="box-tag">Min</span>
-						<span className="box-val">${PRICE_FILTER_MIN.toLocaleString()}</span>
+						<span className="box-tag">{t('hotels.filter.min')}</span>
+						<span className="box-val">${PRICE_FILTER_MIN.toLocaleString('en-US')}</span>
 					</div>
 					<span className="price-dash">—</span>
 					<div className="price-box-col">
-						<span className="box-tag">Max</span>
+						<span className="box-tag">{t('hotels.filter.max')}</span>
 						<span className="box-val">
 							{maxPrice >= PRICE_FILTER_MAX
-								? `$${PRICE_FILTER_MAX.toLocaleString()}+`
-								: `$${maxPrice.toLocaleString()}`}
+								? `$${PRICE_FILTER_MAX.toLocaleString('en-US')}+`
+								: `$${maxPrice.toLocaleString('en-US')}`}
 						</span>
 					</div>
 				</div>
@@ -268,7 +266,7 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 
 			{/* Property Type */}
 			<div className="filter-section">
-				<label className="section-label">Property Type</label>
+				<label className="section-label">{t('common.propertyType')}</label>
 				<div className="checkbox-list">
 					{propertyTypes.map((item) => (
 						<label key={item.value} className="checkbox-item">
@@ -279,7 +277,7 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 									onChange={() => typeToggleHandler(item.value)}
 									className="checkbox-input"
 								/>
-								<span className="checkbox-text">{item.label}</span>
+								<span className="checkbox-text">{tEnum('propertyType', item.value)}</span>
 							</div>
 						</label>
 					))}
@@ -288,7 +286,7 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 
 			{/* Amenities */}
 			<div className="filter-section">
-				<label className="section-label">Amenities</label>
+				<label className="section-label">{t('common.amenities')}</label>
 				<div className="checkbox-list">
 					{amenitiesList.map((item) => (
 						<label key={item.value} className="checkbox-item">
@@ -299,7 +297,7 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 									onChange={() => amenityToggleHandler(item.value)}
 									className="checkbox-input"
 								/>
-								<span className="checkbox-text">{item.label}</span>
+								<span className="checkbox-text">{tValue('amenities', item.value)}</span>
 							</div>
 						</label>
 					))}
@@ -308,16 +306,16 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 
 			{/* Guest Capacity */}
 			<div className="filter-section">
-				<label className="section-label">Guest Capacity</label>
+				<label className="section-label">{t('hotels.filter.guestCapacity')}</label>
 				<div className="guest-grid">
 					{guestOptions.map((opt) => (
 						<button
-							key={opt.label}
+							key={opt.value}
 							type="button"
 							className={`guest-btn ${selectedGuests === opt.value ? 'active' : ''}`}
 							onClick={() => guestsSelectHandler(opt.value)}
 						>
-							{opt.label}
+							{t('common.guestsPlus', { count: opt.value })}
 						</button>
 					))}
 				</div>

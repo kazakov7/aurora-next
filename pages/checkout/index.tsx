@@ -11,9 +11,12 @@ import { loadStripe } from "@stripe/stripe-js";
 import { sweetErrorAlert, sweetTopSmallSuccessAlert } from "../../libs/sweetAlert";
 import { DEFAULT_PROPERTY_IMAGE, DEFAULT_TOUR_IMAGE, getImageUrl } from "../../libs/config";
 import useAuthSession from "../../libs/hooks/useAuthSession";
+import { AppLocale, useI18n } from "../../libs/i18n";
 
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
+/** Stripe Elements has no Uzbek translation, so `uz` lets Stripe pick from the browser language **/
+const STRIPE_LOCALES: Record<AppLocale, "en" | "ko" | "auto"> = { en: "en", ko: "ko", uz: "auto" };
 
 const generateUUID = () => {
   if (typeof window !== 'undefined' && window.crypto?.randomUUID) {
@@ -34,6 +37,7 @@ interface CheckoutFormProps {
 }
 
 const CheckoutForm = ({ onPaymentSubmitted, paymentAmount, currency }: CheckoutFormProps) => {
+  const { t, tError, locale } = useI18n();
   const stripe = useStripe();
   const elements = useElements();
   const [submitting, setSubmitting] = useState(false);
@@ -48,13 +52,13 @@ const CheckoutForm = ({ onPaymentSubmitted, paymentAmount, currency }: CheckoutF
         elements,
         redirect: 'if_required',
       });
-      if (error) throw new Error(error.message || 'Payment could not be completed.');
+      if (error) throw new Error(tError(error, "checkout.paymentNotCompleted"));
       if (paymentIntent?.status !== 'succeeded') {
-        throw new Error('Payment is still processing.');
+        throw new Error(t("checkout.stillProcessing"));
       }
       await onPaymentSubmitted();
     } catch (err: any) {
-      sweetErrorAlert(err.message || 'Payment failed');
+      sweetErrorAlert(tError(err, "checkout.paymentFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -79,13 +83,14 @@ const CheckoutForm = ({ onPaymentSubmitted, paymentAmount, currency }: CheckoutF
           cursor: submitting ? 'not-allowed' : 'pointer'
         }}
       >
-        {submitting ? 'Processing...' : `Pay $${paymentAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+        {submitting ? t("payment.processing") : t("payment.payAmount", { paymentAmount: paymentAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) })}
       </button>
     </form>
   );
 };
 
 const CheckoutPage = () => {
+  const { t, tError, locale } = useI18n();
   const router = useRouter();
   const user = useReactiveVar(userVar);
   const authChecked = useAuthSession();
@@ -155,7 +160,7 @@ const CheckoutPage = () => {
             if (payment?.paymentAmount) setServerCharge({ amount: payment.paymentAmount, currency: payment.paymentCurrency });
             setClientSecret(data.startPropertyPayment.clientSecret);
 					} else {
-						setInitializationError('Secure payment could not be initialized. Please try again.');
+						setInitializationError(t("checkout.initFailedRetry"));
           }
         } else if (isTour) {
           const { data } = await startTourPayment({
@@ -172,11 +177,11 @@ const CheckoutPage = () => {
             if (payment?.paymentAmount) setServerCharge({ amount: payment.paymentAmount, currency: payment.paymentCurrency });
             setClientSecret(data.startTourPayment.clientSecret);
 					} else {
-						setInitializationError('Secure payment could not be initialized. Please try again.');
+						setInitializationError(t("checkout.initFailedRetry"));
           }
         }
       } catch (err: any) {
-				const message = err.message || 'Failed to initialize payment';
+				const message = tError(err, "checkout.initFailed");
 				setInitializationError(message);
         sweetErrorAlert(message);
       } finally {
@@ -193,11 +198,11 @@ const CheckoutPage = () => {
 	};
 
   if (!router.isReady || loading) {
-    return <div className="checkout-page-root"><Top /><main style={{paddingTop: 100, textAlign: 'center'}}>Loading...</main></div>;
+    return <div className="checkout-page-root"><Top /><main style={{paddingTop: 100, textAlign: 'center'}}>{t("common.loading")}</main></div>;
   }
 
   if (!item) {
-    return <div className="checkout-page-root"><Top /><main style={{paddingTop: 100, textAlign: 'center'}}>Item not found or invalid link.</main></div>;
+    return <div className="checkout-page-root"><Top /><main style={{paddingTop: 100, textAlign: 'center'}}>{t("checkout.itemNotFound")}</main></div>;
   }
 
   const getNights = () => {
@@ -216,13 +221,13 @@ const CheckoutPage = () => {
   const handlePaymentSubmitted = async () => {
     // Stripe's client response is not the booking authority. The webhook confirms it server-side.
     setPaymentSubmitted(true);
-    await sweetTopSmallSuccessAlert('Payment received. Finalizing your booking…', 2000);
+    await sweetTopSmallSuccessAlert(t("checkout.paymentReceivedToast"), 2000);
   };
 
   return (
     <div id="pc-wrap" className="checkout-page-root">
       <Head>
-        <title>AURA Travel — Secure Checkout</title>
+        <title>{t("checkout.metaTitle")}</title>
       </Head>
 
       <Top />
@@ -233,21 +238,21 @@ const CheckoutPage = () => {
           {paymentSubmitted ? (
             <div style={{ textAlign: 'center', padding: '60px 20px', backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '64px', color: '#006194', marginBottom: '16px' }}>check_circle</span>
-              <h1 style={{ marginBottom: '8px', fontSize: '28px' }}>Payment Received</h1>
-              <p style={{ color: '#545c72', marginBottom: '32px' }}>We are confirming your booking securely. It will appear in My Bookings once the payment webhook is processed.</p>
+              <h1 style={{ marginBottom: '8px', fontSize: '28px' }}>{t("checkout.paymentReceived")}</h1>
+              <p style={{ color: '#545c72', marginBottom: '32px' }}>{t("checkout.confirmingText")}</p>
               <button 
                 onClick={() => router.push('/mypage?category=bookings')}
                 style={{ padding: '12px 24px', backgroundColor: '#006194', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
               >
-                View My Bookings
+                {t("checkout.viewMyBookings")}
               </button>
             </div>
           ) : (
             <>
               <div className="checkout-top-context">
                 <div className="context-text">
-                  <h1>Complete Your Booking</h1>
-                  <p>Review your reservation before securely completing your payment.</p>
+                  <h1>{t("checkout.completeYourBooking")}</h1>
+                  <p>{t("checkout.reviewText")}</p>
                 </div>
               </div>
 
@@ -258,7 +263,7 @@ const CheckoutPage = () => {
                   <section className="booking-section">
                     <div className="section-header">
                       <span className="material-symbols-outlined icon">badge</span>
-                      <h2>Guest Information</h2>
+                      <h2>{t("checkout.guestInformation")}</h2>
                     </div>
                     <div className="guest-profile">
                       <div className="guest-info">
@@ -274,30 +279,30 @@ const CheckoutPage = () => {
                   <section className="booking-section">
                     <div className="section-header">
                       <span className="material-symbols-outlined icon">lock</span>
-                      <h2>Secure Payment</h2>
+                      <h2>{t("payment.securePayment")}</h2>
                     </div>
-                    <p style={{ fontSize: '13px', color: '#545c72' }}>All transactions are secure and encrypted. Stripe is in TEST MODE.</p>
+                    <p style={{ fontSize: '13px', color: '#545c72' }}>{t("checkout.secureNotice")}</p>
                     
                     {!stripePromise ? (
-                      <p style={{ color: 'red' }}>Stripe is not configured in this environment.</p>
+                      <p style={{ color: 'red' }}>{t("checkout.stripeNotConfigured")}</p>
 									) : !hasValidStayDates ? (
 										<div>
-											<p style={{ color: '#b42318' }}>Select valid check-in and check-out dates before paying.</p>
+											<p style={{ color: '#b42318' }}>{t("checkout.selectValidDates")}</p>
 											<button type="button" onClick={() => router.push({ pathname: '/property/detail', query: { id } })} style={{ padding: '10px 16px', backgroundColor: '#006194', color: '#fff', border: 0, borderRadius: '8px', cursor: 'pointer' }}>
-												Back to property
+												{t("checkout.backToProperty")}
 											</button>
 										</div>
 									) : initializationError ? (
 										<div>
 											<p style={{ color: '#b42318' }}>{initializationError}</p>
 											<button type="button" onClick={handlePaymentRetry} style={{ padding: '10px 16px', backgroundColor: '#006194', color: '#fff', border: 0, borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
-												Try again
+												{t("common.retry")}
 											</button>
 										</div>
                     ) : !clientSecret ? (
-                      <p>Initializing secure payment...</p>
+                      <p>{t("checkout.initializingSecurePayment")}</p>
                     ) : (
-                      <Elements stripe={stripePromise} options={{ clientSecret }}>
+                      <Elements stripe={stripePromise} options={{ clientSecret, locale: STRIPE_LOCALES[locale] }}>
                         <CheckoutForm 
                           onPaymentSubmitted={handlePaymentSubmitted} 
                           paymentAmount={totalAmount}
@@ -312,27 +317,27 @@ const CheckoutPage = () => {
                 <div className="right-column" style={{ flex: '1 1 350px' }}>
                   <aside className="summary-card" style={{ position: 'sticky', top: '90px' }}>
                     <div className="summary-header">
-                      <h2>Price Summary</h2>
+                      <h2>{t("payment.priceSummary")}</h2>
                       <span>{currency}</span>
                     </div>
                     <div className="prop-micro">
                       <img
                         src={getImageUrl(isProperty ? item.propertyImages?.[0] : item.tourImages?.[0], isProperty ? DEFAULT_PROPERTY_IMAGE : DEFAULT_TOUR_IMAGE)}
-                        alt="Thumbnail"
+                        alt={t("checkout.thumbnail")}
                       />
                       <div className="micro-info">
                         <p className="title">{isProperty ? item.propertyName : item.tourName}</p>
-                        <p className="desc">{isProperty ? `${nights} nights` : 'Tour'} • {guests} {Number(guests) === 1 ? 'guest' : 'guests'}</p>
+                        <p className="desc">{isProperty ? t("common.nightsCount", { count: nights }) : t("common.tour")} • {t("common.guestCountLower", { count: Number(guests) })}</p>
                       </div>
                     </div>
                     <div className="calc-row">
-                      <span>${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} × {isProperty ? `${nights} nights` : `${guests} travelers`}</span>
-                      <strong>${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                      <span>${price.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} × {isProperty ? t("common.nightsCount", { count: nights }) : t("common.travelerCountLower", { count: Number(guests) })}</span>
+                      <strong>${totalAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
                     </div>
                     <div className="total-module">
                       <div className="total-header">
-                        <span>Total Due</span>
-                        <strong>${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                        <span>{t("payment.totalDue")}</span>
+                        <strong>${totalAmount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
                       </div>
                     </div>
                   </aside>
@@ -345,7 +350,7 @@ const CheckoutPage = () => {
       
       <footer className="checkout-footer">
         <div className="footer-container">
-          <p>© {new Date().getFullYear()} AURORA. All rights reserved.</p>
+          <p>{t("footer.rights", { year: new Date().getFullYear() })}</p>
         </div>
       </footer>
     </div>

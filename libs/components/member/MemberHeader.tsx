@@ -7,6 +7,7 @@ import { Member } from '../../types/member/member';
 import { DEFAULT_USER_AVATAR, getImageUrl } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 import FollowButton from '../common/FollowButton';
+import { useI18n } from '../../i18n';
 
 interface MemberHeaderProps {
 	member: Member;
@@ -23,6 +24,7 @@ const MemberHeader: React.FC<MemberHeaderProps> = ({
 	articlesCount,
 	onFollowChange,
 }) => {
+	const { t, tError, formatNumber } = useI18n();
 	const router = useRouter();
 	const currentUser = useReactiveVar(userVar);
 
@@ -34,20 +36,19 @@ const MemberHeader: React.FC<MemberHeaderProps> = ({
 	const isOwnProfile = currentUser?._id === targetId;
 
 	const formatCount = (count: number) => {
-		if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
-		return String(count || 0);
+		return formatNumber(count || 0, { notation: 'compact', maximumFractionDigits: 1 });
 	};
 
 	/** HANDLERS **/
 	const handleFollowToggle = async () => {
 		if (!currentUser?._id) {
-			sweetMixinErrorAlert('Please log in to follow members.');
+			sweetMixinErrorAlert(t('member.header.loginToFollow'));
 			router.push('/account/login');
 			return;
 		}
 
 		if (isOwnProfile) {
-			sweetMixinErrorAlert('You cannot follow yourself.');
+			sweetMixinErrorAlert(t('common.cannotFollowYourself'));
 			return;
 		}
 
@@ -66,19 +67,19 @@ const MemberHeader: React.FC<MemberHeaderProps> = ({
 				onFollowChange(true);
 			}
 		} catch (err: any) {
-			sweetMixinErrorAlert(err?.message || 'Action failed.');
+			sweetMixinErrorAlert(tError(err, 'common.actionFailed'));
 		}
 	};
 
 	const handleMessageClick = async () => {
 		if (!currentUser?._id) {
-			sweetMixinErrorAlert('Please log in to send messages.');
+			sweetMixinErrorAlert(t('member.header.loginToMessage'));
 			router.push('/account/login');
 			return;
 		}
 
 		if (isOwnProfile) {
-			sweetMixinErrorAlert('You cannot message yourself.');
+			sweetMixinErrorAlert(t('member.header.cannotMessageYourself'));
 			return;
 		}
 
@@ -96,10 +97,10 @@ const MemberHeader: React.FC<MemberHeaderProps> = ({
 							<img
 								className="avatar-img"
 								src={getImageUrl(member?.memberImage, DEFAULT_USER_AVATAR)}
-								alt={member?.memberFullName || member?.memberNick || 'Member'}
+								alt={member?.memberFullName || member?.memberNick || t('common.member')}
 							/>
 						</div>
-						<span className="online-dot" title="Available Explorer"></span>
+						<span className="online-dot" title={t('member.header.availableExplorer')}></span>
 					</div>
 
 					<div className="bio-details">
@@ -107,25 +108,24 @@ const MemberHeader: React.FC<MemberHeaderProps> = ({
 							<h1>{member?.memberFullName || member?.memberNick}</h1>
 							<span
 								className="material-symbols-outlined verified-icon"
-								title="Verified Creator"
+								title={t('member.header.verifiedCreator')}
 							>
 								verified
 							</span>
 							<span className="member-handle">@{member?.memberNick}</span>
 							<span className="explorer-badge">
 								<span className="material-symbols-outlined">explore</span>
-								<span>Verified Explorer</span>
+								<span>{t('member.header.verifiedExplorer')}</span>
 							</span>
 						</div>
 
 						<div className="location-row">
 							<span className="material-symbols-outlined">pin_drop</span>
-							<span>{member?.memberAddress || 'Location not provided'}</span>
+							<span>{member?.memberAddress || t('common.locationNotProvided')}</span>
 						</div>
 
 						<p className="bio-text">
-							{member?.memberDesc ||
-								'Architectural traveler, high-alpine documentarian, and cultural enthusiast contributing to the AURA luxury collective.'}
+							{member?.memberDesc || t('member.header.noBio')}
 						</p>
 					</div>
 				</div>
@@ -135,17 +135,17 @@ const MemberHeader: React.FC<MemberHeaderProps> = ({
 					<div className="key-metrics">
 						<div className="metric-item">
 							<span className="metric-number">{articlesCount}</span>
-							<span className="metric-label">Articles</span>
+							<span className="metric-label">{t('common.articles')}</span>
 						</div>
 						<div className="metric-divider"></div>
 						<div className="metric-item">
 							<span className="metric-number">{formatCount(followersCount)}</span>
-							<span className="metric-label">Followers</span>
+							<span className="metric-label">{t('common.followers')}</span>
 						</div>
 						<div className="metric-divider"></div>
 						<div className="metric-item">
 							<span className="metric-number">{formatCount(member?.memberFollowings || 0)}</span>
-							<span className="metric-label">Following</span>
+							<span className="metric-label">{t('common.followButton.following')}</span>
 						</div>
 					</div>
 
@@ -162,7 +162,7 @@ const MemberHeader: React.FC<MemberHeaderProps> = ({
 								onClick={handleMessageClick}
 							>
 								<span className="material-symbols-outlined">chat_bubble</span>
-								<span>Message</span>
+								<span>{t('common.message')}</span>
 							</button>
 						</div>
 					)}

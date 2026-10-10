@@ -11,7 +11,7 @@ import { DEFAULT_USER_AVATAR, getImageUrl } from "../../../config";
 import {
   sweetErrorAlert,
 } from "../../../sweetAlert";
-import { formatApiDate } from "../../../utils";
+import { useI18n } from "../../../i18n";
 
 interface PropertyCommentsProps {
   property: Property;
@@ -24,6 +24,7 @@ const PropertyComments = ({
   property,
   refetchProperty,
 }: PropertyCommentsProps) => {
+  const { t, tError, formatDate } = useI18n();
   const user = useReactiveVar(userVar);
   const [commentText, setCommentText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -61,15 +62,15 @@ const PropertyComments = ({
   /** HANDLERS **/
   const handlePostComment = async () => {
     if (!user?._id) {
-      await sweetErrorAlert(Message.NOT_AUTHENTICATED);
+      await sweetErrorAlert(t(Message.NOT_AUTHENTICATED));
       return;
     }
     if (!commentText.trim()) {
-      await sweetErrorAlert("Please enter a comment before submitting.");
+      await sweetErrorAlert(t("hotels.comments.emptyComment"));
       return;
     }
     if (commentText.length > 500) {
-      await sweetErrorAlert("Comment must not exceed 500 characters.");
+      await sweetErrorAlert(t("hotels.comments.commentTooLong"));
       return;
     }
 
@@ -90,7 +91,7 @@ const PropertyComments = ({
       else await refetchComments();
       if (refetchProperty) await refetchProperty();
     } catch (err: any) {
-      await sweetErrorAlert(err.message || "Failed to post comment.");
+      await sweetErrorAlert(tError(err, "hotels.comments.failedToPostComment"));
     }
   };
 
@@ -106,25 +107,24 @@ const PropertyComments = ({
       <div className="comments-header-row">
         <div className="comments-title-group">
           <div className="comments-heading-wrap">
-            <h2 className="comments-main-heading">Guest Comments</h2>
+            <h2 className="comments-main-heading">{t("hotels.comments.guestComments")}</h2>
           </div>
           <p className="comments-subtext">
-            {displayTotal} evaluation{displayTotal === 1 ? "" : "s"} for{" "}
-            {property.propertyName}
+            {t("hotels.comments.evaluationsFor", { count: displayTotal, name: property.propertyName })}
           </p>
         </div>
 
         {/* Sort Dropdown */}
         <div className="sort-control">
-          <span className="sort-label">Sort by:</span>
+          <span className="sort-label">{t("common.sortBy")}</span>
           <div className="select-wrapper">
             <select
               className="sort-select"
               value={sortType}
               onChange={(e) => setSortType(e.target.value)}
             >
-              <option value="newest">Most Recent</option>
-              <option value="updated">Recently Updated</option>
+              <option value="newest">{t("hotels.comments.mostRecent")}</option>
+              <option value="updated">{t("hotels.comments.recentlyUpdated")}</option>
             </select>
             <span className="material-symbols-outlined select-arrow">
               expand_more
@@ -138,19 +138,19 @@ const PropertyComments = ({
         {loading ? (
           <div className="comments-loading">
             <span className="material-symbols-outlined animate-spin">sync</span>
-            <p>Loading evaluations...</p>
+            <p>{t("hotels.comments.loadingEvaluations")}</p>
           </div>
         ) : commentsList.length > 0 ? (
           commentsList.map((comment: Comment, idx: number) => {
             const authorName =
               comment.memberData?.memberNick ||
               comment.memberData?.memberFullName ||
-              "Guest";
+              t("hotels.comments.guest");
             const authorImg = getImageUrl(
               comment.memberData?.memberImage,
               defaultAvatar,
             );
-            const formattedDate = formatApiDate(comment.createdAt);
+            const formattedDate = formatDate(comment.createdAt) || t("common.dateUnavailable");
 
             return (
               <article key={comment._id || idx} className="review-card">
@@ -163,7 +163,7 @@ const PropertyComments = ({
                     />
                     <div className="author-meta">
                       <h3 className="author-name">{authorName}</h3>
-                      <p className="stay-date">Posted {formattedDate}</p>
+                      <p className="stay-date">{t("hotels.comments.posted", { formattedDate })}</p>
                     </div>
                   </div>
                 </div>
@@ -176,9 +176,9 @@ const PropertyComments = ({
             <span className="material-symbols-outlined empty-icon">
               rate_review
             </span>
-            <p className="empty-title">No evaluations posted yet</p>
+            <p className="empty-title">{t("hotels.comments.noEvaluationsPostedYet")}</p>
             <p className="empty-desc">
-              Be the first to share your experience at {property.propertyName}.
+              {t("hotels.comments.beTheFirst", { propertyName: property.propertyName })}
             </p>
           </div>
         )}
@@ -220,9 +220,9 @@ const PropertyComments = ({
             rate_review
           </span>
           <div>
-            <h3 className="form-title">Leave a Comment</h3>
+            <h3 className="form-title">{t("hotels.comments.leaveAComment")}</h3>
             <p className="form-desc">
-              Share your verified sanctuary experience with future voyagers
+              {t("hotels.comments.formIntro")}
             </p>
           </div>
         </div>
@@ -230,20 +230,20 @@ const PropertyComments = ({
         <div className="comment-form-body">
           <img
             src={getImageUrl(user?.memberImage, defaultAvatar)}
-            alt="Current user"
+            alt={t("hotels.comments.currentUser")}
             className="user-comment-avatar"
           />
           <div className="textarea-wrapper">
             <textarea
               rows={3}
               className="comment-textarea"
-              placeholder="Share your experience (e.g. scenic views, check-in, breakfast quality, spa temperatures)..."
+              placeholder={t("hotels.comments.placeholder")}
               value={commentText}
               onChange={(e) => setCommentText(e.target.value.slice(0, 500))}
             ></textarea>
             <div className="form-actions-row">
               <span className="char-count">
-                {commentText.length} / 500 characters
+                {t("hotels.comments.characterCount", { count: commentText.length })}
               </span>
               <div className="buttons-group">
                 <button
@@ -252,7 +252,7 @@ const PropertyComments = ({
                   disabled={commentLoading || !commentText.trim()}
                   onClick={handlePostComment}
                 >
-                  {commentLoading ? "Posting..." : "Post Comment"}
+                  {commentLoading ? t("common.posting") : t("common.postComment")}
                 </button>
               </div>
             </div>

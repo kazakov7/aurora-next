@@ -33,8 +33,10 @@ import {
 } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
 import { sweetErrorAlert } from '../../libs/sweetAlert';
+import { useI18n } from '../../libs/i18n';
 
 const DestinationDetail: NextPage = () => {
+	const { t, tError } = useI18n();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 
@@ -162,7 +164,7 @@ const DestinationDetail: NextPage = () => {
 
 	const handleLikeDestination = async (targetId: string) => {
 		try {
-			if (!user?._id) throw new Error(Message.NOT_AUTHENTICATED);
+			if (!user?._id) throw new Error(t(Message.NOT_AUTHENTICATED));
 
 			setIsLiked(!isLiked);
 			setLikesCount((prev) => (isLiked ? Math.max(0, prev - 1) : prev + 1));
@@ -176,33 +178,33 @@ const DestinationDetail: NextPage = () => {
 			// Roll back the optimistic toggle
 			setIsLiked(isLiked);
 			setLikesCount(destination?.destinationLikes || 0);
-			sweetErrorAlert(err.message);
+			sweetErrorAlert(tError(err));
 		}
 	};
 
 	const handleLikeProperty = async (propertyId: string) => {
 		try {
-			if (!user?._id) throw new Error(Message.NOT_AUTHENTICATED);
+			if (!user?._id) throw new Error(t(Message.NOT_AUTHENTICATED));
 			await likeTargetProperty({
 				variables: { propertyId },
 			});
 			await refetchProperties();
 		} catch (err: any) {
 			console.log('ERROR, handleLikeProperty:', err.message);
-			sweetErrorAlert(err.message);
+			sweetErrorAlert(tError(err));
 		}
 	};
 
 	const handleLikeTour = async (tourId: string) => {
 		try {
-			if (!user?._id) throw new Error(Message.NOT_AUTHENTICATED);
+			if (!user?._id) throw new Error(t(Message.NOT_AUTHENTICATED));
 			await likeTargetTour({
 				variables: { tourId },
 			});
 			await refetchTours();
 		} catch (err: any) {
 			console.log('ERROR, handleLikeTour:', err.message);
-			sweetErrorAlert(err.message);
+			sweetErrorAlert(tError(err));
 		}
 	};
 
@@ -229,7 +231,7 @@ const DestinationDetail: NextPage = () => {
 					>
 						sync
 					</span>
-					<span>Loading destination sanctuary...</span>
+					<span>{t('destinations.detail.loading')}</span>
 				</div>
 			</div>
 		);
@@ -238,14 +240,14 @@ const DestinationDetail: NextPage = () => {
 	return (
 		<div className="destination-detail-page-wrapper">
 			<Head>
-				<title>AURA | Discover {destination.destinationName} ({destination.destinationCountry})</title>
+				<title>{t('destinations.detail.metaTitle', { destinationName: destination.destinationName, destinationCountry: destination.destinationCountry })}</title>
 				<meta
 					name="title"
-					content={`Discover ${destination.destinationName} — Sanctuaries & Expeditions | AURA Travel`}
+					content={t('destinations.detail.metaName', { destinationName: destination.destinationName })}
 				/>
 				<meta
 					name="description"
-					content={destination.destinationDesc || 'Curated global destination sanctuaries.'}
+					content={destination.destinationDesc || t('destinations.detail.metaDescription')}
 				/>
 			</Head>
 

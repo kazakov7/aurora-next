@@ -9,6 +9,7 @@ import { Member } from '../../types/member/member';
 import { Following } from '../../types/follow/follow';
 import { DEFAULT_USER_AVATAR, getImageUrl } from '../../config';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { useI18n } from '../../i18n';
 
 interface MemberFollowingProps {
 	member: Member;
@@ -16,6 +17,7 @@ interface MemberFollowingProps {
 }
 
 const MemberFollowing: React.FC<MemberFollowingProps> = ({ member, onFollowingCountChange }) => {
+	const { t, tError } = useI18n();
 	const router = useRouter();
 	const currentUser = useReactiveVar(userVar);
 
@@ -55,13 +57,13 @@ const MemberFollowing: React.FC<MemberFollowingProps> = ({ member, onFollowingCo
 	const handleToggleFollow = async (e: React.MouseEvent, targetId: string, currentFollowing: boolean) => {
 		e.stopPropagation();
 		if (!currentUser?._id) {
-			sweetMixinErrorAlert('Please log in first.');
+			sweetMixinErrorAlert(t('common.pleaseLogInFirst'));
 			router.push('/account/login');
 			return;
 		}
 
 		if (currentUser._id === targetId) {
-			sweetMixinErrorAlert('You cannot follow yourself.');
+			sweetMixinErrorAlert(t('common.cannotFollowYourself'));
 			return;
 		}
 
@@ -69,19 +71,19 @@ const MemberFollowing: React.FC<MemberFollowingProps> = ({ member, onFollowingCo
 			if (currentFollowing) {
 				await unsubscribeMutation({ variables: { input: targetId } });
 				setFollowStatusMap((prev) => ({ ...prev, [targetId]: false }));
-				sweetTopSmallSuccessAlert('Unfollowed.', 700);
+				sweetTopSmallSuccessAlert(t('member.unfollowed'), 700);
 			} else {
 				await subscribeMutation({ variables: { input: targetId } });
 				setFollowStatusMap((prev) => ({ ...prev, [targetId]: true }));
-				sweetTopSmallSuccessAlert('Following!', 700);
+				sweetTopSmallSuccessAlert(t('member.followed'), 700);
 			}
 			await refetch();
 		} catch (err: any) {
-			sweetMixinErrorAlert(err?.message || 'Action failed.');
+			sweetMixinErrorAlert(tError(err, 'common.actionFailed'));
 		}
 	};
 
-	const memberName = member?.memberFullName || member?.memberNick || 'Member';
+	const memberName = member?.memberFullName || member?.memberNick || t('common.member');
 
 	return (
 		<div className="member-content-area">
@@ -89,10 +91,10 @@ const MemberFollowing: React.FC<MemberFollowingProps> = ({ member, onFollowingCo
 			<div className="follow-header-section">
 				<div className="header-top">
 					<div className="title-group">
-						<h2>Following</h2>
-						<span className="count-badge">{total} accounts</span>
+						<h2>{t('common.followButton.following')}</h2>
+						<span className="count-badge">{t('member.accountsCount', { total })}</span>
 					</div>
-					<p className="subtitle">Sanctuaries, expeditions, and creators {memberName} follows.</p>
+					<p className="subtitle">{t('member.following.intro', { memberName })}</p>
 				</div>
 				
 				{/* Search and Sort Filter Bar */}
@@ -101,19 +103,19 @@ const MemberFollowing: React.FC<MemberFollowingProps> = ({ member, onFollowingCo
 						<span className="material-symbols-outlined search-icon">search</span>
 						<input
 							type="text"
-							placeholder={`Search accounts ${memberName} follows...`}
+							placeholder={t('member.following.searchPlaceholder', { memberName })}
 						/>
 					</div>
 					<button className="sort-btn" type="button">
-						<span className="sort-label">Sort by:</span>
-						<span className="sort-value">Recently Added</span>
+						<span className="sort-label">{t('common.sortBy')}</span>
+						<span className="sort-value">{t('member.recentlyAdded')}</span>
 						<span className="material-symbols-outlined">expand_more</span>
 					</button>
 				</div>
 			</div>
 
 			{loading && followingsList.length === 0 ? (
-				<p className="member-profile-state">Loading followed members...</p>
+				<p className="member-profile-state">{t('member.following.loadingFollowedMembers')}</p>
 			) : followingsList.length > 0 ? (
 				<div className="member-follow-list-container">
 					{followingsList.map((following) => {
@@ -144,14 +146,14 @@ const MemberFollowing: React.FC<MemberFollowingProps> = ({ member, onFollowingCo
 										<div className="name-row">
 											<h4>{fData.memberFullName || fData.memberNick}</h4>
 											{/* Placeholder for verified icon and role badge if applicable */}
-											<span className="role-badge">Member</span>
+											<span className="role-badge">{t('common.member')}</span>
 										</div>
 										<div className="meta-row">
 											<span className="handle">@{fData.memberNick}</span>
 											<span className="dot">·</span>
 											<span className="location">
 												<span className="material-symbols-outlined">pin_drop</span>
-												AURA Explorer
+												{t('member.auroraExplorer')}
 											</span>
 										</div>
 									</div>
@@ -175,8 +177,8 @@ const MemberFollowing: React.FC<MemberFollowingProps> = ({ member, onFollowingCo
 					<div className="empty-icon-box">
 						<span className="material-symbols-outlined">person_add</span>
 					</div>
-					<h3>Not following anyone yet</h3>
-					<p>{memberName} is not following any public explorers yet.</p>
+					<h3>{t('member.following.notFollowingAnyoneYet')}</h3>
+					<p>{t('member.following.emptyText', { memberName })}</p>
 				</div>
 			)}
 
@@ -184,13 +186,13 @@ const MemberFollowing: React.FC<MemberFollowingProps> = ({ member, onFollowingCo
 			{totalPages > 1 && (
 				<div className="pagination-wrapper">
 					<span className="pagination-info">
-						Showing {(page - 1) * 10 + 1}–{Math.min(page * 10, total)} of {total} accounts
+						{t('member.showingAccounts', { page: (page - 1) * 10 + 1, math: Math.min(page * 10, total), total })}
 					</span>
 					<div className="pagination-pills">
 						<button
 							type="button"
 							className="nav-arrow-btn"
-							aria-label="Previous page"
+							aria-label={t('common.previousPage')}
 							disabled={page === 1}
 							onClick={() => setPage((p) => Math.max(1, p - 1))}
 						>
@@ -214,7 +216,7 @@ const MemberFollowing: React.FC<MemberFollowingProps> = ({ member, onFollowingCo
 						<button
 							type="button"
 							className="nav-arrow-btn"
-							aria-label="Next page"
+							aria-label={t('common.nextPage')}
 							disabled={page === totalPages}
 							onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
 						>

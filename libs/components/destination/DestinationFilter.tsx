@@ -1,4 +1,5 @@
 import React from 'react';
+import { useI18n } from '../../i18n';
 
 interface DestinationFilterProps {
 	selectedContinent: string;
@@ -9,13 +10,13 @@ interface DestinationFilterProps {
 }
 
 const continents = [
-	{ label: 'All', value: 'all' },
-	{ label: 'Asia', value: 'asia' },
-	{ label: 'Europe', value: 'europe' },
-	{ label: 'Africa', value: 'africa' },
-	{ label: 'North America', value: 'north-america' },
-	{ label: 'South America', value: 'south-america' },
-	{ label: 'Oceania', value: 'oceania' },
+	{ labelKey: 'destinations.filter.region.all', value: 'all' },
+	{ labelKey: 'destinations.filter.region.asia', value: 'asia' },
+	{ labelKey: 'destinations.filter.region.europe', value: 'europe' },
+	{ labelKey: 'destinations.filter.region.africa', value: 'africa' },
+	{ labelKey: 'destinations.filter.region.northAmerica', value: 'north-america' },
+	{ labelKey: 'destinations.filter.region.southAmerica', value: 'south-america' },
+	{ labelKey: 'destinations.filter.region.oceania', value: 'oceania' },
 ];
 
 const DestinationFilter = ({
@@ -25,6 +26,7 @@ const DestinationFilter = ({
 	onSelectSort,
 	totalCount,
 }: DestinationFilterProps) => {
+	const { t } = useI18n();
 	return (
 		<div className="destination-filter-wrapper">
 			{/* CONTINENT FILTER BAR */}
@@ -37,14 +39,14 @@ const DestinationFilter = ({
 							className={`continent-btn ${selectedContinent === item.value ? 'active' : ''}`}
 							onClick={() => onSelectContinent(item.value)}
 						>
-							{item.label}
+							{t(item.labelKey)}
 						</button>
 					))}
 				</div>
 
 				<div className="atlas-indicator">
 					<span className="material-symbols-outlined">public</span>
-					<span>Worldwide Atlas</span>
+					<span>{t('destinations.filter.worldwideAtlas')}</span>
 				</div>
 			</section>
 
@@ -52,26 +54,26 @@ const DestinationFilter = ({
 			<section className="section-title-stats-bar">
 				<div className="stats-left">
 					<div className="title-count-row">
-						<h2 className="section-heading">Discover Destinations</h2>
-						<span className="territories-badge">{totalCount} territories curated</span>
+						<h2 className="section-heading">{t('destinations.filter.discoverDestinations')}</h2>
+						<span className="territories-badge">{t('destinations.filter.territoriesCurated', { totalCount })}</span>
 					</div>
 					<p className="section-subtext">
-						Curated gateways to the world&apos;s most evocative landscapes.
+						{t('destinations.filter.intro')}
 					</p>
 				</div>
 
 				<div className="sort-dropdown-box">
-					<span className="sort-label">Sort:</span>
+					<span className="sort-label">{t('destinations.filter.sort')}</span>
 					<div className="sort-select-wrapper">
 						<select
 							className="sort-select"
 							value={selectedSort}
 							onChange={(e) => onSelectSort(e.target.value)}
 						>
-							<option value="views">Curated Index</option>
-							<option value="likes">Most Popular</option>
-							<option value="rating">Top Rated</option>
-							<option value="newest">Newest Added</option>
+							<option value="views">{t('destinations.filter.curatedIndex')}</option>
+							<option value="likes">{t('destinations.filter.mostPopular')}</option>
+							<option value="rating">{t('common.topRated')}</option>
+							<option value="newest">{t('destinations.filter.newestAdded')}</option>
 						</select>
 						<span className="material-symbols-outlined sort-arrow">expand_more</span>
 					</div>

@@ -31,7 +31,7 @@ const emptyInput: SupportTicketInput = {
 };
 
 const CsContactForm = () => {
-	const { t } = useI18n();
+	const { t, tError } = useI18n();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -64,12 +64,12 @@ const CsContactForm = () => {
 		if (!file) return;
 
 		if (!ALLOWED_ATTACHMENT_TYPES.includes(file.type)) {
-			sweetMixinErrorAlert('Only JPG and PNG images are supported.');
+			sweetMixinErrorAlert(t('support.form.invalidFileType'));
 			e.target.value = '';
 			return;
 		}
 		if (file.size > MAX_ATTACHMENT_SIZE) {
-			sweetMixinErrorAlert('Attachment must be smaller than 10MB.');
+			sweetMixinErrorAlert(t('support.form.fileTooLarge'));
 			e.target.value = '';
 			return;
 		}
@@ -99,13 +99,13 @@ const CsContactForm = () => {
 			});
 			const json = await response.json();
 			const uploadedPath = json.data?.imageUploader;
-			if (!uploadedPath) throw new Error(json.errors?.[0]?.message || 'Upload failed');
+			if (!uploadedPath) throw new Error(json.errors?.[0]?.message || t('common.uploadFailed'));
 
 			setInput((prev) => ({ ...prev, ticketAttachment: uploadedPath }));
-			setFileName(`Attached: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+			setFileName(t('support.form.attached', { name: file.name, size: (file.size / 1024 / 1024).toFixed(2) }));
 		} catch (err: any) {
 			console.log('Error, handleFileSelect:', err);
-			sweetMixinErrorAlert(err.message || 'Attachment upload failed');
+			sweetMixinErrorAlert(tError(err, 'support.form.attachmentUploadFailed'));
 			if (fileInputRef.current) fileInputRef.current.value = '';
 		} finally {
 			setUploading(false);
@@ -126,7 +126,7 @@ const CsContactForm = () => {
 			return;
 		}
 		if (input.ticketMessage.trim().length < 10) {
-			sweetMixinErrorAlert('Please describe your request in at least 10 characters.');
+			sweetMixinErrorAlert(t('support.form.messageTooShort'));
 			return;
 		}
 
@@ -146,7 +146,7 @@ const CsContactForm = () => {
 			setCreatedTicket(data?.createSupportTicket ?? null);
 		} catch (err: any) {
 			console.log('Error, handleSubmit:', err);
-			sweetMixinErrorAlert(err.message);
+			sweetMixinErrorAlert(tError(err));
 		} finally {
 			setSubmitting(false);
 		}
@@ -209,7 +209,7 @@ const CsContactForm = () => {
 						<label>{t('support.fullName')}</label>
 						<input
 							type="text"
-							placeholder="e.g. Elena Rostova"
+							placeholder={t('support.form.namePlaceholder')}
 							value={input.ticketName}
 							onChange={(e) => handleChange('ticketName', e.target.value)}
 							minLength={2}
@@ -221,7 +221,7 @@ const CsContactForm = () => {
 						<label>{t('support.email')}</label>
 						<input
 							type="email"
-							placeholder="e.g. elena@example.com"
+							placeholder={t('support.form.emailPlaceholder')}
 							value={input.ticketEmail}
 							onChange={(e) => handleChange('ticketEmail', e.target.value)}
 							required

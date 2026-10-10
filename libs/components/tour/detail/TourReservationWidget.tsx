@@ -6,7 +6,7 @@ import { userVar } from '../../../../apollo/store';
 import { Message } from '../../../enums/common.enum';
 import { Tour } from '../../../types/tour/tour';
 import { sweetErrorAlert } from '../../../sweetAlert';
-import { formatApiDate } from '../../../utils';
+import { useI18n } from '../../../i18n';
 
 interface TourReservationWidgetProps {
 	tour: Tour;
@@ -18,6 +18,7 @@ interface StartTourPaymentResponse {
 }
 
 const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps) => {
+	const { t, formatDate } = useI18n();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const seatsLeft = Math.max(0, tour.tourCapacity - (tour.tourReservedSeats ?? 0));
@@ -42,17 +43,17 @@ const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps
 	const closeCheckout = () => setClientSecret('');
 	const handleReserve = async () => {
 		if (!user?._id) {
-			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
+			await sweetErrorAlert(t(Message.NOT_AUTHENTICATED));
 			return;
 		}
 		if (!tour._id || seatsLeft < 1 || travelers < 1 || travelers > seatsLeft) {
-			await sweetErrorAlert('This tour no longer has enough available seats.');
+			await sweetErrorAlert(t('tours.reservation.notEnoughSeats'));
 			return;
 		}
 		try {
 			await router.push({ pathname: '/checkout', query: { type: 'tour', id: tour._id, guests: travelers } });
 		} catch (error) {
-			await sweetErrorAlert('Unable to open secure checkout. Please try again.');
+			await sweetErrorAlert(t('tours.reservation.checkoutFailed'));
 		}
 	};
 	const handlePaymentConfirmed = async () => {
@@ -65,22 +66,22 @@ const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps
 			<aside className="tour-reservation-widget">
 				<div className="widget-card">
 					<div className="price-header-row">
-						<div className="price-tags-group"><span className="price-current">${tour.tourPrice.toLocaleString()}</span><span className="price-unit">/ person</span></div>
+						<div className="price-tags-group"><span className="price-current">${tour.tourPrice.toLocaleString('en-US')}</span><span className="price-unit">{t('tours.reservation.perPerson')}</span></div>
 						<div className="rating-badge-inline"><span className="material-symbols-outlined star-icon" style={{ fontVariationSettings: "'FILL' 1" }}>star</span><span className="score">{rating}</span><span className="count">({reviews})</span></div>
 					</div>
 
 					<div className="tour-window-block">
-						<div className="window-top-labels"><span className="window-title">Tour dates</span><span className="seats-alert-badge">{seatsLeft} seat{seatsLeft === 1 ? '' : 's'} available</span></div>
-						<div className="window-date-card"><div><div className="window-dates">{formatApiDate(tour.tourStartDate)} — {formatApiDate(tour.tourEndDate)}</div><div className="window-sub">Seats are confirmed after successful payment.</div></div><span className="material-symbols-outlined verified-icon">event</span></div>
+						<div className="window-top-labels"><span className="window-title">{t('tours.reservation.tourDates')}</span><span className="seats-alert-badge">{t('tours.reservation.seatsAvailable', { count: seatsLeft })}</span></div>
+						<div className="window-date-card"><div><div className="window-dates">{formatDate(tour.tourStartDate) || t('common.dateUnavailable')} — {formatDate(tour.tourEndDate) || t('common.dateUnavailable')}</div><div className="window-sub">{t('tours.reservation.seatsConfirmedNote')}</div></div><span className="material-symbols-outlined verified-icon">event</span></div>
 						<div className="traveler-selector-row">
-							<div><label className="traveler-label">Travelers</label><div className="traveler-val">{travelers} {travelers === 1 ? 'Traveler' : 'Travelers'}</div></div>
+							<div><label className="traveler-label">{t('tours.reservation.travelers')}</label><div className="traveler-val">{travelers} {travelers === 1 ? t('common.travelerLabel') : t('tours.reservation.travelers')}</div></div>
 							<div className="stepper-controls"><button type="button" className="stepper-btn" disabled={travelers <= 1} onClick={() => { setTravelers((current) => current - 1); resetCheckout(); }}>-</button><span className="stepper-count">{travelers}</span><button type="button" className="stepper-btn" disabled={travelers >= seatsLeft} onClick={() => { setTravelers((current) => current + 1); resetCheckout(); }}>+</button></div>
 						</div>
 					</div>
 
-					<button className="reserve-cta-btn" type="button" disabled={paymentStarting || seatsLeft < 1} onClick={handleReserve}><span className="material-symbols-outlined lock-icon">lock</span><span>{paymentStarting ? 'Preparing secure payment...' : seatsLeft < 1 ? 'Sold out' : 'Reserve tour'}</span></button>
-					<p className="refund-guarantee-note">A secure Stripe payment form opens before any charge is confirmed.</p>
-					<div className="itemized-breakdown"><div className="breakdown-row"><span className="breakdown-label">${tour.tourPrice.toLocaleString()} × {travelers} traveler{travelers === 1 ? '' : 's'}</span><span className="breakdown-value">${totalPrice.toLocaleString()}</span></div><div className="total-price-box"><span className="total-title">Total</span><span className="total-amount">${totalPrice.toLocaleString()}</span></div></div>
+					<button className="reserve-cta-btn" type="button" disabled={paymentStarting || seatsLeft < 1} onClick={handleReserve}><span className="material-symbols-outlined lock-icon">lock</span><span>{paymentStarting ? t('tours.reservation.preparingSecurePayment') : seatsLeft < 1 ? t('tours.reservation.soldOut') : t('tours.reservation.reserveTour')}</span></button>
+					<p className="refund-guarantee-note">{t('tours.reservation.stripeNote')}</p>
+					<div className="itemized-breakdown"><div className="breakdown-row"><span className="breakdown-label">{t('tours.reservation.priceBreakdown', { count: travelers, price: tour.tourPrice.toLocaleString('en-US') })}</span><span className="breakdown-value">${totalPrice.toLocaleString('en-US')}</span></div><div className="total-price-box"><span className="total-title">{t('common.total')}</span><span className="total-amount">${totalPrice.toLocaleString('en-US')}</span></div></div>
 				</div>
 			</aside>
 			

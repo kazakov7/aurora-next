@@ -8,20 +8,15 @@ import { GET_UNREAD_NOTIFICATION_COUNT } from "../../apollo/user/query";
 import { useNotificationRealtime } from "../hooks/useNotificationRealtime";
 import AuroraLogo3D from "./AuroraLogo3D";
 import GlobalSearch from "./common/GlobalSearch";
-import { AppLocale, useI18n } from "../i18n";
+import { APP_LOCALES, AppLocale, useI18n } from "../i18n";
 
 const LOCALE_CONFIG: Record<
   AppLocale,
-  { flag: string; short: string; full: string; alt: string }
+  { flag: string; short: string; full: string }
 > = {
-  en: { flag: "/img/flags/us.svg", short: "EN", full: "English", alt: "USA flag" },
-  ko: { flag: "/img/flags/kr.svg", short: "KOR", full: "한국어", alt: "Korea flag" },
-  uz: {
-    flag: "/img/flags/uz.svg",
-    short: "UZ",
-    full: "O‘zbekcha",
-    alt: "Uzbekistan flag",
-  },
+  en: { flag: "/img/flags/us.svg", short: "EN", full: "English" },
+  ko: { flag: "/img/flags/kr.svg", short: "KOR", full: "한국어" },
+  uz: { flag: "/img/flags/uz.svg", short: "UZ", full: "O‘zbekcha" },
 };
 
 const Top = () => {
@@ -156,7 +151,7 @@ const Top = () => {
             <span className="flag-sphere-3d" aria-hidden="true">
               <img
                 src={LOCALE_CONFIG[locale]?.flag || "/img/flags/us.svg"}
-                alt={LOCALE_CONFIG[locale]?.alt || "Language flag"}
+                alt=""
               />
             </span>
             <span className="lang-current-label">
@@ -180,9 +175,11 @@ const Top = () => {
               }
               aria-label={t("language.select")}
             >
-              <option value="en">English</option>
-              <option value="ko">한국어</option>
-              <option value="uz">O‘zbekcha</option>
+              {APP_LOCALES.map((code) => (
+                <option value={code} key={code}>
+                  {LOCALE_CONFIG[code].full}
+                </option>
+              ))}
             </select>
           </div>
 

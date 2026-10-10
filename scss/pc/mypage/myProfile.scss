@@ -11,7 +11,6 @@
       max-width: 1300px;
       width: 100%;
       margin: 0 auto;
-      
     }
 
     /* ==========================================================================
@@ -217,7 +216,6 @@
           }
 
           @media (min-width: 1024px) {
-            
             border-right: 1px solid rgba(226, 232, 240, 0.8);
           }
 
@@ -336,7 +334,7 @@
 		   3. PERMANENT LEFT SIDEBAR
 		   ========================================================================== */
     .profile-sidebar {
-      width: 250px;
+      width: 260px;
       flex-shrink: 0;
 
       @media (max-width: 1024px) {
@@ -2357,4 +2355,4 @@
     }
   }
 }
-@import 'agent.scss';
+@import "agent.scss";

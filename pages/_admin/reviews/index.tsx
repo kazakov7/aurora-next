@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import { NextPage } from "next";
 import withAdminLayout from "../../../libs/components/layout/LayoutAdmin";
 import { sweetMixinErrorAlert } from "../../../libs/sweetAlert";
+import { useI18n } from "../../../libs/i18n";
 
 const AdminReviewsPage: NextPage = () => {
   // BACKEND LIMITATION: There are no GraphQL schemas to fetch ALL Comments or Reviews across the platform.
   // The existing `GET_COMMENTS` and `GET_DESTINATION_REVIEWS` require a specific `refId`.
   // We render the layout to match the Stitch design but data is disabled.
 
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<"comments" | "reviews">(
     "comments",
   );
@@ -18,21 +20,21 @@ const AdminReviewsPage: NextPage = () => {
 
   const exportCSV = () => {
     sweetMixinErrorAlert(
-      "Global Comments API is not supported by the backend.",
+      t("admin.reviews.commentsApiUnsupported"),
     );
   };
 
   const unsupportedAction = () => {
-    sweetMixinErrorAlert("This action is not supported by the backend API.");
+    sweetMixinErrorAlert(t("admin.reviews.actionUnsupported"));
   };
 
   return (
     <div className="admin-overview dashboard-container">
       <div className="overview-header">
         <div className="header-text">
-          <h1>Comments & Reviews Management</h1>
+          <h1>{t("admin.reviews.commentsReviewsManagement")}</h1>
           <p>
-            Moderate user feedback, property reviews, and community comments.
+            {t("admin.reviews.intro")}
           </p>
         </div>
       </div>
@@ -53,7 +55,7 @@ const AdminReviewsPage: NextPage = () => {
                 paddingBottom: "8px",
               }}
             >
-              <h2>Comments</h2>
+              <h2>{t("common.comments")}</h2>
             </div>
             <div
               onClick={() => setActiveTab("reviews")}
@@ -68,7 +70,7 @@ const AdminReviewsPage: NextPage = () => {
                 paddingBottom: "8px",
               }}
             >
-              <h2>Reviews</h2>
+              <h2>{t("admin.reviews.reviews")}</h2>
             </div>
           </div>
           <div className="header-right">
@@ -76,13 +78,13 @@ const AdminReviewsPage: NextPage = () => {
               <span className="material-symbols-outlined">search</span>
               <input
                 type="text"
-                placeholder={`Search ${activeTab}...`}
+                placeholder={t(activeTab === "comments" ? "admin.reviews.searchComments" : "admin.reviews.searchReviews")}
                 disabled
               />
             </div>
             <div className="filter-select-group">
               <select className="filter-select" disabled>
-                <option value="all">All Contexts</option>
+                <option value="all">{t("admin.reviews.allContexts")}</option>
               </select>
               <button
                 className="reset-filter-btn"
@@ -92,7 +94,7 @@ const AdminReviewsPage: NextPage = () => {
                 <span className="material-symbols-outlined">
                   filter_alt_off
                 </span>
-                Reset
+                {t("common.reset")}
               </button>
             </div>
           </div>
@@ -102,12 +104,12 @@ const AdminReviewsPage: NextPage = () => {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Author</th>
-                <th>Content</th>
-                <th>Context (Target)</th>
-                {activeTab === "reviews" && <th>Rating</th>}
-                <th>Date</th>
-                <th style={{ width: 120, textAlign: "right" }}>Actions</th>
+                <th>{t("admin.reviews.author")}</th>
+                <th>{t("common.content")}</th>
+                <th>{t("admin.reviews.contextTarget")}</th>
+                {activeTab === "reviews" && <th>{t("admin.reviews.rating")}</th>}
+                <th>{t("common.date")}</th>
+                <th style={{ width: 120, textAlign: "right" }}>{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -131,10 +133,9 @@ const AdminReviewsPage: NextPage = () => {
                     >
                       api
                     </span>
-                    <h3>Unsupported Feature</h3>
+                    <h3>{t("admin.unsupportedFeature")}</h3>
                     <p style={{ color: "#707881" }}>
-                      The backend does not support fetching all {activeTab}{" "}
-                      globally without a specific target ID.
+                      {t(activeTab === "comments" ? "admin.reviews.unsupportedComments" : "admin.reviews.unsupportedReviews")}
                     </p>
                   </div>
                 </td>
@@ -145,7 +146,7 @@ const AdminReviewsPage: NextPage = () => {
 
         <div className="table-footer">
           <span>
-            Showing {startItem}–{endItem} of {total} records
+            {t("admin.showingRecords", { startItem, endItem, total })}
           </span>
           <div className="pagination">
             <button className="page-btn square" disabled type="button">

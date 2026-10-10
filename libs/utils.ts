@@ -15,15 +15,10 @@ export const parseApiDate = (value?: Date | string | number): Date | null => {
 	return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
-export const formatApiDate = (value?: Date | string | number): string => {
-	const date = parseApiDate(value);
-	return date ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Date unavailable';
-};
-
-export const getDateDuration = (start?: Date | string | number, end?: Date | string | number): string => {
+/** Whole days between two API dates (minimum 1); null when either date is missing. Text is built by the caller with `t('common.days', { count })` **/
+export const getDurationDays = (start?: Date | string | number, end?: Date | string | number): number | null => {
 	const startDate = parseApiDate(start);
 	const endDate = parseApiDate(end);
-	if (!startDate || !endDate) return 'Duration unavailable';
-	const days = Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 86_400_000));
-	return `${days} day${days === 1 ? '' : 's'}`;
+	if (!startDate || !endDate) return null;
+	return Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 86_400_000));
 };

@@ -8,8 +8,10 @@ import { BookingCategory, BookingStatus } from '../../enums/booking.enum';
 import { Booking } from '../../types/booking/booking';
 import { DEFAULT_PROPERTY_IMAGE, DEFAULT_TOUR_IMAGE, getImageUrl } from '../../config';
 import { sweetConfirmAlert, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { useI18n } from '../../i18n';
 
 const MyProfileBookings: React.FC = () => {
+	const { t, tEnum, tError, formatDate } = useI18n();
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 	const [activeCategory, setActiveCategory] = useState<'ALL' | 'HOTEL' | 'TOUR'>('ALL');
@@ -54,7 +56,7 @@ const MyProfileBookings: React.FC = () => {
 
 	/** HANDLERS **/
 	const handleCancel = async (booking: Booking) => {
-		const confirmed = await sweetConfirmAlert('Are you sure you want to cancel this reservation?');
+		const confirmed = await sweetConfirmAlert(t('profile.bookings.cancelConfirm'));
 		if (!confirmed) return;
 
 		try {
@@ -62,24 +64,24 @@ const MyProfileBookings: React.FC = () => {
 				? cancelTourBookingMutation
 				: cancelBookingMutation;
 			await cancelMutation({ variables: { bookingId: booking._id } });
-			sweetTopSmallSuccessAlert('Reservation cancelled successfully.', 1000);
+			sweetTopSmallSuccessAlert(t('profile.bookings.cancelled'), 1000);
 			await refetch();
 		} catch (err: any) {
-			sweetMixinErrorAlert(err.message || 'Cancellation failed.');
+			sweetMixinErrorAlert(tError(err, 'profile.bookings.cancellationFailed'));
 		}
 	};
 
 	const handleExportCalendar = () => {
 		const calendarBookings = allBookings.filter((booking) => booking.checkIn);
 		if (!calendarBookings.length) {
-			sweetMixinErrorAlert('There are no dated bookings to export.');
+			sweetMixinErrorAlert(t('profile.bookings.nothingToExport'));
 			return;
 		}
 		const toDate = (value?: Date | string) => value
 			? new Date(value).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
 			: '';
 		const events = calendarBookings.map((booking) => {
-			const title = booking.propertyData?.propertyName || booking.tourData?.tourName || 'AURA booking';
+			const title = booking.propertyData?.propertyName || booking.tourData?.tourName || t('profile.bookings.auroraBooking');
 			return ['BEGIN:VEVENT', `UID:${booking._id}@aurora.travel`, `DTSTART:${toDate(booking.checkIn)}`, `DTEND:${toDate(booking.checkOut || booking.checkIn)}`, `SUMMARY:${title.replace(/[;,]/g, ' ')}`, `DESCRIPTION:Booking ${booking.bookingRefId} — ${booking.bookingStatus}`, 'END:VEVENT'].join('\r\n');
 		});
 		const blob = new Blob([['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//AURA Travel//Bookings//EN', ...events, 'END:VCALENDAR'].join('\r\n')], { type: 'text/calendar;charset=utf-8' });
@@ -96,10 +98,10 @@ const MyProfileBookings: React.FC = () => {
 	}).format(amount);
 
 	const formatDateRange = (inDate?: Date | string, outDate?: Date | string) => {
-		if (!inDate) return 'Flexible Dates';
-		const start = new Date(inDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+		if (!inDate) return t('profile.bookings.flexibleDates');
+		const start = formatDate(inDate, { month: 'short', day: 'numeric' });
 		if (!outDate) return start;
-		const end = new Date(outDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+		const end = formatDate(outDate, { month: 'short', day: 'numeric', year: 'numeric' });
 		return `${start} – ${end}`;
 	};
 
@@ -109,13 +111,13 @@ const MyProfileBookings: React.FC = () => {
 			<div className="section-top-bar" style={{ borderBottom: '1px solid #dce2f7', paddingBottom: '18px' }}>
 				<div className="title-group" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
 					<div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-						<h2>My Bookings</h2>
+						<h2>{t('profile.bookings.myBookings')}</h2>
 						<span className="counter-pill">
-							{total} bookings · {activeCount} active
+							{t('profile.bookings.summary', { total, activeCount })}
 						</span>
 					</div>
 					<p style={{ margin: 0, fontSize: '13px', color: '#545c72' }}>
-						Manage your upcoming and past trips with seamless concierge integration.
+						{t('profile.bookings.intro')}
 					</p>
 				</div>
 				<div className="bar-actions">
@@ -128,7 +130,7 @@ const MyProfileBookings: React.FC = () => {
 						<span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#545c72' }}>
 							file_download
 						</span>
-						<span>Export Calendar</span>
+						<span>{t('profile.bookings.exportCalendar')}</span>
 					</button>
 				</div>
 			</div>
@@ -142,21 +144,21 @@ const MyProfileBookings: React.FC = () => {
 						className={`cat-pill-btn ${activeCategory === 'ALL' ? 'active' : ''}`}
 						onClick={() => setActiveCategory('ALL')}
 					>
-						All ({total})
+						{t('profile.bookings.tabAll', { total })}
 					</button>
 					<button
 						type="button"
 						className={`cat-pill-btn ${activeCategory === 'HOTEL' ? 'active' : ''}`}
 						onClick={() => setActiveCategory('HOTEL')}
 					>
-						Hotels ({hotelCount})
+						{t('profile.bookings.tabHotels', { hotelCount })}
 					</button>
 					<button
 						type="button"
 						className={`cat-pill-btn ${activeCategory === 'TOUR' ? 'active' : ''}`}
 						onClick={() => setActiveCategory('TOUR')}
 					>
-						Tours ({tourCount})
+						{t('profile.bookings.tabTours', { tourCount })}
 					</button>
 				</div>
 
@@ -167,47 +169,47 @@ const MyProfileBookings: React.FC = () => {
 						className={`status-tab-btn ${activeStatus === 'ALL' ? 'active' : ''}`}
 						onClick={() => setActiveStatus('ALL')}
 					>
-						All Statuses ({total})
+						{t('profile.bookings.statusAll', { total })}
 					</button>
 					<button
 						type="button"
 						className={`status-tab-btn ${activeStatus === 'UPCOMING' ? 'active' : ''}`}
 						onClick={() => setActiveStatus('UPCOMING')}
 					>
-						Upcoming ({activeCount})
+						{t('profile.bookings.statusUpcoming', { activeCount })}
 					</button>
 					<button
 						type="button"
 						className={`status-tab-btn ${activeStatus === 'COMPLETED' ? 'active' : ''}`}
 						onClick={() => setActiveStatus('COMPLETED')}
 					>
-						Completed
+						{t('booking.completed')}
 					</button>
 					<button
 						type="button"
 						className={`status-tab-btn ${activeStatus === 'CANCELLED' ? 'active' : ''}`}
 						onClick={() => setActiveStatus('CANCELLED')}
 					>
-						Cancelled
+						{t('booking.cancelled')}
 					</button>
 				</div>
 			</div>
 
 			{/* Booking Cards Stack */}
 			{loading && !data ? (
-				<div className="profile-empty-state"><div className="loading-spinner" /><p>Loading your bookings...</p></div>
+				<div className="profile-empty-state"><div className="loading-spinner" /><p>{t('profile.bookings.loading')}</p></div>
 			) : error ? (
-				<div className="profile-empty-state"><h3>Bookings are unavailable</h3><p>{error.message}</p></div>
+				<div className="profile-empty-state"><h3>{t('profile.bookings.unavailable')}</h3><p>{error.message}</p></div>
 			) : bookings.length > 0 ? (
 				<div className="booking-cards-stack">
 					{bookings.map((booking: Booking) => {
 						const isHotel = booking.bookingCategory === BookingCategory.PROPERTY;
 						const title = isHotel
-							? booking.propertyData?.propertyName || 'Unavailable property'
-							: booking.tourData?.tourName || 'Unavailable tour';
+							? booking.propertyData?.propertyName || t('profile.bookings.unavailableProperty')
+							: booking.tourData?.tourName || t('profile.bookings.unavailableTour');
 						const city = isHotel
-							? booking.propertyData?.propertyCity || booking.propertyData?.propertyAddress || 'Location not provided'
-							: booking.tourData?.tourDestinationCity || booking.tourData?.tourDepartureCity || 'Location not provided';
+							? booking.propertyData?.propertyCity || booking.propertyData?.propertyAddress || t('common.locationNotProvided')
+							: booking.tourData?.tourDestinationCity || booking.tourData?.tourDepartureCity || t('common.locationNotProvided');
 						const imgUrl = isHotel
 							? getImageUrl(booking.propertyData?.propertyImages?.[0], DEFAULT_PROPERTY_IMAGE)
 							: getImageUrl(booking.tourData?.tourImages?.[0], DEFAULT_TOUR_IMAGE);
@@ -229,7 +231,7 @@ const MyProfileBookings: React.FC = () => {
 
 								<div className="card-middle-info">
 									<div className="top-meta">
-										<span className="type-pill">{isHotel ? 'HOTEL' : 'TOUR'}</span>
+										<span className="type-pill">{isHotel ? t('common.hotelBadge') : t('common.tourBadge')}</span>
 										<span className="ref-code">{refCode}</span>
 									</div>
 									<h3 className="booking-title">{title}</h3>
@@ -245,7 +247,7 @@ const MyProfileBookings: React.FC = () => {
 										<span>·</span>
 										<span>
 											<span className="material-symbols-outlined">person</span>
-											{booking.bookingGuests} Guests
+											{t('profile.bookings.guests', { bookingGuests: booking.bookingGuests })}
 										</span>
 									</div>
 								</div>
@@ -257,14 +259,14 @@ const MyProfileBookings: React.FC = () => {
 										}`}
 									>
 										{isConfirmed && <span className="pulse-dot"></span>}
-										{isCancelled ? 'Cancelled' : isConfirmed ? 'Confirmed' : 'Completed'}
+										{isCancelled ? t('booking.cancelled') : isConfirmed ? t('booking.confirmed') : t('booking.completed')}
 									</span>
 
 									<div className="price-block">
 										<span className="amount">
 											{formatPrice(booking.bookingTotalPrice, booking.bookingCurrency)}
 										</span>
-										<span className="note">total · taxes included</span>
+										<span className="note">{t('profile.bookings.totalTaxesIncluded')}</span>
 									</div>
 
 									<div className="action-btns">
@@ -273,7 +275,7 @@ const MyProfileBookings: React.FC = () => {
 											className="view-btn"
 											onClick={() => setSelectedBooking(booking)}
 										>
-											View Details
+											{t('common.viewDetails')}
 										</button>
 									{isCancellable && (
 											<button
@@ -281,7 +283,7 @@ const MyProfileBookings: React.FC = () => {
 												className="cancel-btn"
 											onClick={() => handleCancel(booking)}
 											>
-												Cancel
+												{t('common.cancel')}
 											</button>
 										)}
 									</div>
@@ -295,8 +297,8 @@ const MyProfileBookings: React.FC = () => {
 					<div className="empty-icon">
 						<span className="material-symbols-outlined">confirmation_number</span>
 					</div>
-					<h3>No reservations found</h3>
-					<p>Explore luxury hotels and bespoke expeditions to reserve your next journey.</p>
+					<h3>{t('profile.bookings.noReservationsFound')}</h3>
+					<p>{t('profile.bookings.emptyText')}</p>
 				</div>
 			)}
 
@@ -331,7 +333,7 @@ const MyProfileBookings: React.FC = () => {
 						<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
 							<div>
 								<span style={{ fontSize: '11px', fontWeight: 700, color: '#006194', textTransform: 'uppercase' }}>
-									Reservation Details
+									{t('profile.bookings.reservationDetails')}
 								</span>
 								<h3 style={{ margin: '4px 0 0 0', fontSize: '20px', color: '#141b2b' }}>
 									{selectedBooking.bookingRefId}
@@ -348,21 +350,21 @@ const MyProfileBookings: React.FC = () => {
 
 						<div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '14px', color: '#3f4850' }}>
 							<div>
-								<strong>Destination / Property:</strong>{' '}
-								{selectedBooking.propertyData?.propertyName || selectedBooking.tourData?.tourName || 'Listing unavailable'}
+								<strong>{t('profile.bookings.destinationProperty')}</strong>{' '}
+								{selectedBooking.propertyData?.propertyName || selectedBooking.tourData?.tourName || t('profile.bookings.listingUnavailable')}
 							</div>
 							<div>
-								<strong>Stay / Tour Dates:</strong> {formatDateRange(selectedBooking.checkIn, selectedBooking.checkOut)}
+								<strong>{t('profile.bookings.stayTourDates')}</strong> {formatDateRange(selectedBooking.checkIn, selectedBooking.checkOut)}
 							</div>
 							<div>
-								<strong>Registered Guests:</strong> {selectedBooking.bookingGuests} persons
+								<strong>{t('profile.bookings.registeredGuests')}</strong> {t('profile.bookings.persons', { bookingGuests: selectedBooking.bookingGuests })}
 							</div>
 							<div>
-								<strong>Total Amount:</strong> {formatPrice(selectedBooking.bookingTotalPrice, selectedBooking.bookingCurrency)}
+								<strong>{t('profile.bookings.totalAmount')}</strong> {formatPrice(selectedBooking.bookingTotalPrice, selectedBooking.bookingCurrency)}
 							</div>
 							<div>
-								<strong>Status:</strong>{' '}
-								<span style={{ color: '#137333', fontWeight: 600 }}>{selectedBooking.bookingStatus}</span>
+								<strong>{t('profile.bookings.status')}</strong>{' '}
+								<span style={{ color: '#137333', fontWeight: 600 }}>{tEnum('bookingStatus', selectedBooking.bookingStatus)}</span>
 							</div>
 						</div>
 
@@ -381,7 +383,7 @@ const MyProfileBookings: React.FC = () => {
 								}}
 								onClick={() => router.push('/chat')}
 							>
-								Contact Atelier Concierge
+								{t('profile.bookings.contactAtelierConcierge')}
 							</button>
 						</div>
 					</div>

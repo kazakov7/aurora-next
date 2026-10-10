@@ -5,8 +5,10 @@ import { useRouter } from 'next/router';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import SignIn from '../../libs/components/account/SignIn';
 import SignUp from '../../libs/components/account/SignUp';
+import { useI18n } from '../../libs/i18n';
 
 const JoinPage: NextPage = () => {
+	const { t } = useI18n();
 	const router = useRouter();
 	const [activeView, setActiveView] = useState<'signin' | 'signup'>('signin');
 
@@ -42,12 +44,12 @@ const JoinPage: NextPage = () => {
 			<Head>
 				<title>
 					{activeView === 'signin'
-						? 'AURA Travel — Sign In'
-						: 'AURA Travel — Sign Up'}
+						? t('auth.meta.signInTitle')
+						: t('auth.meta.signUpTitle')}
 				</title>
 				<meta
 					name="description"
-					content="Sign in or register for your AURA Travel luxury exploration account."
+					content={t('auth.meta.joinDescription')}
 				/>
 			</Head>
 

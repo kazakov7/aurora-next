@@ -1,18 +1,18 @@
 import React from 'react';
+import { useI18n } from '../../i18n';
 
 export interface CategoryPillItem {
 	key: string;
-	label: string;
 	categoryValue?: string; // BoardArticleCategory or undefined
 }
 
 export const COMMUNITY_CATEGORIES: CategoryPillItem[] = [
-	{ key: 'all', label: 'All Stories', categoryValue: undefined },
-	{ key: 'itineraries', label: 'Itineraries', categoryValue: 'TOUR' },
-	{ key: 'hotel-reviews', label: 'Hotel Reviews', categoryValue: 'HOTEL' },
-	{ key: 'photography', label: 'Photography', categoryValue: 'DESTINATION' },
-	{ key: 'expeditions', label: 'Expedition Logs', categoryValue: 'GUIDE' },
-	{ key: 'insights', label: 'Local Insights', categoryValue: 'NEWS' },
+	{ key: 'all', categoryValue: undefined },
+	{ key: 'itineraries', categoryValue: 'TOUR' },
+	{ key: 'hotel-reviews', categoryValue: 'HOTEL' },
+	{ key: 'photography', categoryValue: 'DESTINATION' },
+	{ key: 'expeditions', categoryValue: 'GUIDE' },
+	{ key: 'insights', categoryValue: 'NEWS' },
 ];
 
 interface CommunityFilterProps {
@@ -24,8 +24,9 @@ const CommunityFilter: React.FC<CommunityFilterProps> = ({
 	selectedCategoryKey,
 	onCategoryChange,
 }) => {
+	const { t, tEnum } = useI18n();
 	return (
-		<nav aria-label="Community Categories" className="community-categories-nav">
+		<nav aria-label={t('community.filter.communityCategories')} className="community-categories-nav">
 			<div className="pills-scroll-wrapper">
 				{COMMUNITY_CATEGORIES.map((cat) => {
 					const isActive = selectedCategoryKey === cat.key;
@@ -36,7 +37,7 @@ const CommunityFilter: React.FC<CommunityFilterProps> = ({
 							className={`category-pill ${isActive ? 'active' : ''}`}
 							onClick={() => onCategoryChange(cat.key, cat.categoryValue)}
 						>
-							{cat.label}
+							{cat.categoryValue ? tEnum('articleCategory', cat.categoryValue) : t('community.filter.allStories')}
 						</button>
 					);
 				})}

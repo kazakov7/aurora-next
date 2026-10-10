@@ -5,6 +5,7 @@ import { userVar } from "../../../apollo/store";
 import { Property } from "../../types/property/property";
 import { DEFAULT_PROPERTY_IMAGE, getImageUrl } from "../../config";
 import LikeButton from "../common/LikeButton";
+import { useI18n } from "../../i18n";
 
 interface PropertyCardProps {
   property: Property;
@@ -16,14 +17,14 @@ interface PropertyCardProps {
 const NEW_LISTING_DAYS = 30;
 const getListingBadge = (
   property: Property,
-): { label: string; className: string } | null => {
+): { labelKey: string; className: string } | null => {
   if (
     (property.propertyReviews ?? 0) > 0 &&
     (property.propertyRating ?? 0) >= 4.5
   )
-    return { label: "Top Rated", className: "best-price" };
+    return { labelKey: "hotels.card.badgeTopRated", className: "best-price" };
   if ((property.propertyBookings ?? 0) >= 5)
-    return { label: "Popular", className: "popular" };
+    return { labelKey: "hotels.card.badgePopular", className: "popular" };
   const createdAt = property.createdAt
     ? new Date(property.createdAt).getTime()
     : NaN;
@@ -31,11 +32,12 @@ const getListingBadge = (
     !Number.isNaN(createdAt) &&
     Date.now() - createdAt < NEW_LISTING_DAYS * 24 * 60 * 60 * 1000
   )
-    return { label: "New", className: "rare-find" };
+    return { labelKey: "hotels.card.new", className: "rare-find" };
   return null;
 };
 
 const PropertyCard = ({ property, likePropertyHandler }: PropertyCardProps) => {
+  const { t, tEnum } = useI18n();
   const router = useRouter();
   const user = useReactiveVar(userVar);
   const isLiked = Boolean(property?.meLiked?.[0]?.myFavorite);
@@ -76,7 +78,7 @@ const PropertyCard = ({ property, likePropertyHandler }: PropertyCardProps) => {
         />
         {badge && (
           <div className={`card-badge-pill ${badge.className}`}>
-            {badge.label}
+            {t(badge.labelKey)}
           </div>
         )}
         <div
@@ -110,17 +112,17 @@ const PropertyCard = ({ property, likePropertyHandler }: PropertyCardProps) => {
                   <span className="reviews-count">({reviewsCount})</span>
                 </>
               ) : (
-                <span className="rating-value">New</span>
+                <span className="rating-value">{t("hotels.card.new")}</span>
               )}
             </div>
           </div>
 
           <div className="location-info-row">
             <span className="distance-info">
-              Up to {property.maxGuests ?? 0} guests
+              {t("hotels.card.upToGuests", { maxGuests: property.maxGuests ?? 0 })}
             </span>
             <span className="distance-info">
-              {property.bedrooms ?? 0} bedrooms · {property.beds ?? 0} beds
+              {t("hotels.card.bedroomsBeds", { bedrooms: property.bedrooms ?? 0, beds: property.beds ?? 0 })}
             </span>
           </div>
 
@@ -135,7 +137,7 @@ const PropertyCard = ({ property, likePropertyHandler }: PropertyCardProps) => {
 
           <div className="tags-row">
             {property.propertyType && (
-              <span className="tag-pill">{property.propertyType}</span>
+              <span className="tag-pill">{tEnum("propertyType", property.propertyType)}</span>
             )}
             {property.amenities && property.amenities[0] && (
               <span className="tag-pill">{property.amenities[0]}</span>
@@ -148,13 +150,13 @@ const PropertyCard = ({ property, likePropertyHandler }: PropertyCardProps) => {
           <div className="price-reserve-row">
             <div className="price-box">
               <div className="price-main">
-                <span className="price-prefix">From</span>
+                <span className="price-prefix">{t("common.from")}</span>
                 <span className="price-amount">
-                  ${property.pricePerNight?.toLocaleString()}
+                  ${property.pricePerNight?.toLocaleString("en-US")}
                 </span>
-                <span className="price-suffix">/ night</span>
+                <span className="price-suffix">{t("common.perNight")}</span>
               </div>
-              <span className="price-sub">taxes included</span>
+              <span className="price-sub">{t("hotels.card.taxesIncluded")}</span>
             </div>
             <button
               className="reserve-action-btn"
@@ -164,7 +166,7 @@ const PropertyCard = ({ property, likePropertyHandler }: PropertyCardProps) => {
                 pushDetailHandler();
               }}
             >
-              Reserve
+              {t("booking.reserve")}
             </button>
           </div>
         </div>

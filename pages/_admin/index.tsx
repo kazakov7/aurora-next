@@ -18,9 +18,11 @@ import { PropertyStatus } from "../../libs/enums/property.enum";
 import { TourStatus } from "../../libs/enums/tour.enum";
 import { AgentVerificationStatus } from "../../libs/enums/agent.enum";
 import moment from "moment";
+import { useI18n } from "../../libs/i18n";
 
 const AdminDashboardOverview: NextPage = () => {
   // Stat states
+  const { tEnum, t, formatNumber, formatDate } = useI18n();
   const [totalMembers, setTotalMembers] = useState<number>(0);
   const [activeProperties, setActiveProperties] = useState<number>(0);
   const [activeTours, setActiveTours] = useState<number>(0);
@@ -115,84 +117,83 @@ const AdminDashboardOverview: NextPage = () => {
       {/* TOP SECTION: HEADER / CONTEXT BAR */}
       <div className="overview-header">
         <div className="header-text">
-          <h1>System Overview</h1>
+          <h1>{t("admin.dashboard.systemOverview")}</h1>
           <p>
-            Real-time marketplace telemetry, operational pipeline, and agent
-            verifications
+            {t("admin.dashboard.intro")}
           </p>
         </div>
         <div className="header-actions">
           <span className="live-sync-badge">
             <span className="sync-dot"></span>
-            Live Sync Active
+            {t("admin.dashboard.liveSyncActive")}
           </span>
         </div>
       </div>
 
       {/* 1. OVERVIEW STATISTICS: 4 COMPACT CARDS */}
-      <section aria-label="Key Performance Indicators" className="kpi-grid">
+      <section aria-label={t("admin.dashboard.keyPerformanceIndicators")} className="kpi-grid">
         <div className="kpi-card group">
           <div className="kpi-top">
-            <span className="kpi-label">Total Members</span>
+            <span className="kpi-label">{t("admin.dashboard.totalMembers")}</span>
             <div className="kpi-icon-box">
               <span className="material-symbols-outlined">group</span>
             </div>
           </div>
           <div className="kpi-bottom">
-            <span className="kpi-value">{totalMembers.toLocaleString()}</span>
+            <span className="kpi-value">{formatNumber(totalMembers)}</span>
             <div className="kpi-trend positive">
               <span className="material-symbols-outlined">trending_up</span>
-              <span>Live</span>
+              <span>{t("admin.dashboard.live")}</span>
             </div>
           </div>
         </div>
 
         <div className="kpi-card group">
           <div className="kpi-top">
-            <span className="kpi-label">Active Hotels</span>
+            <span className="kpi-label">{t("admin.dashboard.activeHotels")}</span>
             <div className="kpi-icon-box">
               <span className="material-symbols-outlined">hotel</span>
             </div>
           </div>
           <div className="kpi-bottom">
             <span className="kpi-value">
-              {activeProperties.toLocaleString()}
+              {formatNumber(activeProperties)}
             </span>
             <div className="kpi-trend positive">
               <span className="material-symbols-outlined">trending_up</span>
-              <span>Live</span>
+              <span>{t("admin.dashboard.live")}</span>
             </div>
           </div>
         </div>
 
         <div className="kpi-card group">
           <div className="kpi-top">
-            <span className="kpi-label">Active Tours</span>
+            <span className="kpi-label">{t("admin.dashboard.activeTours")}</span>
             <div className="kpi-icon-box">
               <span className="material-symbols-outlined">explore</span>
             </div>
           </div>
           <div className="kpi-bottom">
-            <span className="kpi-value">{activeTours.toLocaleString()}</span>
+            <span className="kpi-value">{formatNumber(activeTours)}</span>
             <div className="kpi-trend positive">
               <span className="material-symbols-outlined">trending_up</span>
-              <span>Live</span>
+              <span>{t("admin.dashboard.live")}</span>
             </div>
           </div>
         </div>
 
         <div className="kpi-card group">
           <div className="kpi-top">
-            <span className="kpi-label">Total Bookings</span>
+            <span className="kpi-label">{t("admin.dashboard.totalBookings")}</span>
             <div className="kpi-icon-box">
               <span className="material-symbols-outlined">calendar_month</span>
             </div>
           </div>
           <div className="kpi-bottom">
-            <span className="kpi-value">{totalBookings.toLocaleString()}</span>
+            <span className="kpi-value">{formatNumber(totalBookings)}</span>
             <div className="kpi-trend warning">
               <span className="material-symbols-outlined">pending</span>
-              <span>Dev</span>
+              <span>{t("admin.dashboard.dev")}</span>
             </div>
           </div>
         </div>
@@ -202,13 +203,13 @@ const AdminDashboardOverview: NextPage = () => {
       <section className="admin-table-section">
         <div className="table-header">
           <div className="header-left">
-            <h2>Recent Bookings</h2>
-            <span className="table-badge primary">{totalBookings} Total</span>
+            <h2>{t("admin.dashboard.recentBookings")}</h2>
+            <span className="table-badge primary">{t("admin.dashboard.total", { totalBookings })}</span>
           </div>
           <div className="header-right">
             <div className="search-box">
               <span className="material-symbols-outlined">search</span>
-              <input type="text" placeholder="Search reference, customer..." />
+              <input type="text" placeholder={t("admin.dashboard.searchReferenceCustomer")} />
             </div>
           </div>
         </div>
@@ -217,14 +218,14 @@ const AdminDashboardOverview: NextPage = () => {
           <table>
             <thead>
               <tr>
-                <th className="px-6">Booking ID</th>
-                <th>Customer</th>
-                <th>Category</th>
-                <th>Booking Item</th>
-                <th>Date</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th className="px-6 text-right">Actions</th>
+                <th className="px-6">{t("common.bookingId")}</th>
+                <th>{t("common.customer")}</th>
+                <th>{t("common.category")}</th>
+                <th>{t("admin.dashboard.bookingItem")}</th>
+                <th>{t("common.date")}</th>
+                <th>{t("common.total")}</th>
+                <th>{t("common.status")}</th>
+                <th className="px-6 text-right">{t("common.actions")}</th>
               </tr>
             </thead>
 
@@ -236,7 +237,7 @@ const AdminDashboardOverview: NextPage = () => {
                     style={{ textAlign: "center", padding: "24px" }}
                   >
                     <span style={{ color: "#707881" }}>
-                      Loading bookings...
+                      {t("admin.dashboard.loadingBookings")}
                     </span>
                   </td>
                 </tr>
@@ -247,7 +248,7 @@ const AdminDashboardOverview: NextPage = () => {
                     style={{ textAlign: "center", padding: "24px" }}
                   >
                     <span style={{ color: "#707881" }}>
-                      No recent bookings found.
+                      {t("admin.dashboard.noRecentBookingsFound")}
                     </span>
                   </td>
                 </tr>
@@ -277,7 +278,7 @@ const AdminDashboardOverview: NextPage = () => {
                         </div>
                         <div className="user-cell">
                           <span className="user-name">
-                            {booking.memberData?.memberNick || "Unknown"}
+                            {booking.memberData?.memberNick || t("common.unknown")}
                           </span>
                         </div>
                       </div>
@@ -288,25 +289,25 @@ const AdminDashboardOverview: NextPage = () => {
                           booking.bookingCategory === "HOTEL" ? "sky" : "indigo"
                         }`}
                       >
-                        {booking.bookingCategory}
+                        {tEnum("bookingCategory", booking.bookingCategory)}
                       </span>
                     </td>
                     <td>
                       <span className="item-text">
                         {booking.propertyData?.propertyName ||
                           booking.tourData?.tourName ||
-                          "Unknown Item"}
+                          t("admin.dashboard.unknownItem")}
                       </span>
                     </td>
                     <td>
                       <span className="date-text">
-                        {moment(booking.createdAt).format("MMM DD, YYYY")}
+                        {formatDate(booking.createdAt, "medium")}
                       </span>
                     </td>
                     <td>
                       <strong style={{ color: "#1a2b49" }}>
                         {booking.bookingCurrency === "USD" ? "$" : "$"}
-                        {booking.bookingTotalPrice.toLocaleString()}
+                        {booking.bookingTotalPrice.toLocaleString("en-US")}
                       </strong>
                     </td>
                     <td>
@@ -319,12 +320,12 @@ const AdminDashboardOverview: NextPage = () => {
                             : "red"
                         }`}
                       >
-                        <span className="dot"></span> {booking.bookingStatus}
+                        <span className="dot"></span> {tEnum("bookingStatus", booking.bookingStatus)}
                       </span>
                     </td>
                     <td className="px-6 text-right">
                       <div className="actions-group">
-                        <button className="text-btn">View</button>
+                        <button className="text-btn">{t("common.view")}</button>
                       </div>
                     </td>
                   </tr>

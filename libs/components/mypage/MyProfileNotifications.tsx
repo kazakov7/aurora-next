@@ -11,6 +11,7 @@ import { sweetErrorHandling } from '../../sweetAlert';
 import { useRouter } from 'next/router';
 import moment from 'moment';
 import { useNotificationRealtime } from '../../hooks/useNotificationRealtime';
+import { useI18n } from '../../i18n';
 
 interface NotificationsInquiry {
 	page: number;
@@ -29,6 +30,7 @@ const CONTENT_ROUTES: Partial<Record<NotificationGroup, string>> = {
 };
 
 const MyProfileNotifications = () => {
+	const { t, formatRelativeTime } = useI18n();
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 	const [expandedNotificationId, setExpandedNotificationId] = useState<string | null>(null);
@@ -214,11 +216,11 @@ const MyProfileNotifications = () => {
 		<Stack className="profile-notifications">
 			<Stack className="notifications-top-bar" direction="row" justifyContent="space-between" alignItems="center">
 				<Stack className="title-box" direction="row" alignItems="center" spacing={2}>
-					<h2>Notifications</h2>
+					<h2>{t('navigation.notifications')}</h2>
 					{unreadCount > 0 && (
 						<Box className="unread-badge">
 							<Box className="dot" />
-							{unreadCount} unread
+							{t('profile.notifications.unreadCount', { unreadCount })}
 						</Box>
 					)}
 				</Stack>
@@ -228,29 +230,29 @@ const MyProfileNotifications = () => {
 							className={`filter-btn ${!inquiry.search.notificationStatus ? 'active' : ''}`}
 							onClick={() => handleFilterChange(undefined)}
 						>
-							All
+							{t('profile.notifications.all')}
 						</button>
 						<button
 							className={`filter-btn ${inquiry.search.notificationStatus === NotificationStatus.WAIT ? 'active' : ''}`}
 							onClick={() => handleFilterChange(NotificationStatus.WAIT)}
 						>
-							Unread ({unreadCount})
+							{t('profile.notifications.tabUnread', { unreadCount })}
 						</button>
 					</Stack>
 					<button className="mark-all-btn" onClick={handleMarkAllAsRead} disabled={unreadCount === 0}>
 						<span className="material-symbols-outlined">done_all</span>
-						Mark all as read
+						{t('profile.notifications.markAllAsRead')}
 					</button>
 				</Stack>
 			</Stack>
 
 			<Stack className="notifications-list-container">
 				{loading && !data ? (
-					<Box className="empty-state"><span className="loading-spinner" /><p>Loading notifications...</p></Box>
+					<Box className="empty-state"><span className="loading-spinner" /><p>{t('profile.notifications.loading')}</p></Box>
 				) : notifications.length === 0 ? (
 					<Box className="empty-state">
 						<span className="material-symbols-outlined">notifications_off</span>
-						<p>No notifications found.</p>
+						<p>{t('profile.notifications.empty')}</p>
 					</Box>
 				) : (
 					notifications.map((notif) => (
@@ -274,7 +276,7 @@ const MyProfileNotifications = () => {
 									</div>
 									{notif.authorData && <span className="sender">{notif.authorData.memberFullName || notif.authorData.memberNick}</span>}
 									{expandedNotificationId === notif._id && notif.notificationDesc && <span className="desc">“{notif.notificationDesc}”</span>}
-									<span className="time">{moment(isNaN(Number(notif.createdAt)) ? notif.createdAt : Number(notif.createdAt)).fromNow()}</span>
+									<span className="time">{formatRelativeTime(notif.createdAt)}</span>
 								</Stack>
 							</Stack>
 							<Stack className="item-right" direction="row" alignItems="center" spacing={1}>
@@ -282,15 +284,15 @@ const MyProfileNotifications = () => {
 									<Box className="unread-dot" />
 								)}
 								{notif.notificationType === 'FOLLOW' && notif.authorId && followingData && !followingIds.has(notif.authorId) && (
-									<button className="action-btn" onClick={(event) => { event.stopPropagation(); void handleNotificationAction(notif); }}>Follow Back</button>
+									<button className="action-btn" onClick={(event) => { event.stopPropagation(); void handleNotificationAction(notif); }}>{t('profile.notifications.followBack')}</button>
 								)}
 								{notif.notificationType === 'BOOKING' && (
-									<button className="action-btn-primary" onClick={(event) => { event.stopPropagation(); void handleNotificationAction(notif); }}>View Booking</button>
+									<button className="action-btn-primary" onClick={(event) => { event.stopPropagation(); void handleNotificationAction(notif); }}>{t('profile.notifications.viewBooking')}</button>
 								)}
 								{notif.notificationType !== 'BOOKING' && getNotificationLink(notif) && (
-									<button className="action-btn-primary" onClick={(event) => { event.stopPropagation(); void handleNotificationAction(notif); }}>View</button>
+									<button className="action-btn-primary" onClick={(event) => { event.stopPropagation(); void handleNotificationAction(notif); }}>{t('common.view')}</button>
 								)}
-								<button className="more-btn" aria-label="Mark notification as read" disabled={notif.notificationStatus === NotificationStatus.READ} onClick={(event) => { event.stopPropagation(); void handleMarkAsRead(notif._id); }}>
+								<button className="more-btn" aria-label={t('profile.notifications.markRead')} disabled={notif.notificationStatus === NotificationStatus.READ} onClick={(event) => { event.stopPropagation(); void handleMarkAsRead(notif._id); }}>
 									<span className="material-symbols-outlined">check</span>
 								</button>
 							</Stack>
@@ -307,10 +309,14 @@ const MyProfileNotifications = () => {
 						onChange={handlePaginationChange}
 						shape="circular"
 						color="primary"
+						getItemAriaLabel={(type, page, selected) =>
+							type === 'page'
+								? t(selected ? 'common.pagination.currentPage' : 'common.pagination.goToPage', { page })
+								: t(`common.pagination.${type}`)
+						}
 					/>
 					<p className="pagination-text">
-						Showing {(inquiry.page - 1) * inquiry.limit + 1}–
-						{Math.min(inquiry.page * inquiry.limit, total)} of {total} notifications
+						{t('profile.notifications.showingRange', { page: (inquiry.page - 1) * inquiry.limit + 1, math: Math.min(inquiry.page * inquiry.limit, total), total })}
 					</p>
 				</Stack>
 			)}

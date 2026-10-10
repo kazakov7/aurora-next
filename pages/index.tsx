@@ -90,7 +90,6 @@ const Home: NextPage = () => {
         loading={tours.loading}
         error={tours.error}
       />
-      ;
       <CommunityCurators
         travelers={travelers.data?.getTopTravelers?.list ?? []}
         loading={travelers.loading}

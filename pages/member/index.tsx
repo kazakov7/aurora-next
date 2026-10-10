@@ -12,12 +12,14 @@ import MemberArticles from '../../libs/components/member/MemberArticles';
 import MemberFollowers from '../../libs/components/member/MemberFollowers';
 import MemberFollowing from '../../libs/components/member/MemberFollowing';
 import MemberProducts from '../../libs/components/member/MemberProducts';
+import { useI18n } from '../../libs/i18n';
 
 interface GetMemberResponse {
 	getMember?: Member;
 }
 
 const MemberPage: NextPage = () => {
+	const { t } = useI18n();
 	const router = useRouter();
 	const rawMemberId = router.query.memberId || router.query.id;
 	const memberId = typeof rawMemberId === 'string' ? rawMemberId : '';
@@ -54,28 +56,28 @@ const MemberPage: NextPage = () => {
 		setFollowersCount((prev) => (newStatus ? prev + 1 : Math.max(0, prev - 1)));
 	};
 
-	const memberTitle = member?.memberFullName || member?.memberNick || 'Member';
+	const memberTitle = member?.memberFullName || member?.memberNick || t('common.member');
 
 	return (
 		<div className="member-profile-page">
 			<Head>
-				<title>{member ? `${memberTitle} — AURA Member Profile` : 'Member — AURA'}</title>
+				<title>{member ? t('member.page.metaTitle', { memberTitle }) : t('member.page.metaTitleFallback')}</title>
 				<meta
 					name="description"
 					content={
 						member?.memberDesc ||
-						'Explore curated journals, monographs, and architectural chronicles on AURA.'
+						t('member.page.metaDescription')
 					}
 				/>
 			</Head>
 
 			<div className="member-profile-container">
-				{loading && !member && <p className="member-profile-state">Loading member profile…</p>}
+				{loading && !member && <p className="member-profile-state">{t('member.page.loadingMemberProfile')}</p>}
 				{!loading && !memberId && (
-					<p className="member-profile-state">Member ID parameter is required.</p>
+					<p className="member-profile-state">{t('member.page.idRequired')}</p>
 				)}
 				{!loading && memberId && !member && (
-					<p className="member-profile-state">Member not found.</p>
+					<p className="member-profile-state">{t('member.page.memberNotFound')}</p>
 				)}
 
 				{member && (

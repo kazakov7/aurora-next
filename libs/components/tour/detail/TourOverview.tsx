@@ -12,8 +12,9 @@ import { MemberType } from '../../../enums/member.enum';
 import { Destination } from '../../../types/destination/destination';
 import { Tour } from '../../../types/tour/tour';
 import { sweetErrorAlert } from '../../../sweetAlert';
-import { formatApiDate, getDateDuration } from '../../../utils';
+import { getDurationDays } from '../../../utils';
 import FollowButton from '../../common/FollowButton';
+import { useI18n } from '../../../i18n';
 
 interface TourOverviewProps { tour: Tour; }
 
@@ -29,6 +30,8 @@ const parseAdditionalInfo = (value?: string[] | string): string[] => {
 };
 
 const TourOverview = ({ tour }: TourOverviewProps) => {
+	const { t, tEnum, tError, formatNumber, formatDate } = useI18n();
+	const durationDays = getDurationDays(tour.tourStartDate, tour.tourEndDate);
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const [subscribe, { loading: subscribing }] = useMutation(SUBSCRIBE);
@@ -36,7 +39,7 @@ const TourOverview = ({ tour }: TourOverviewProps) => {
 	const { data: destinationData } = useQuery<{ getDestination?: Destination }>(GET_DESTINATION, { fetchPolicy: 'cache-and-network', variables: { destinationId: tour.destinationId }, skip: !tour.destinationId });
 	const { data: organizerData, refetch: refetchOrganizer } = useQuery(GET_PROPERTY_HOST, { fetchPolicy: 'network-only', variables: { input: tour.memberId }, skip: !tour.memberId });
 	const organizer = organizerData?.getMember || tour.memberData;
-	const organizerName = organizer?.memberFullName || organizer?.memberNick || 'Organizer';
+	const organizerName = organizer?.memberFullName || organizer?.memberNick || t('tours.overview.organizer');
 	const organizerImage = getImageUrl(organizer?.memberImage, DEFAULT_USER_AVATAR);
 	const isOwnOrganizer = organizer?._id === user?._id;
 	const isFollowing = Boolean(organizer?.meFollowed?.[0]?.myFollowing);
@@ -53,20 +56,20 @@ const TourOverview = ({ tour }: TourOverviewProps) => {
 	/** HANDLERS **/
 	const handleFollow = async () => {
 		if (!organizer?._id || isOwnOrganizer) return;
-		if (!user?._id || !getJwtToken()) { await sweetErrorAlert(Message.NOT_AUTHENTICATED); return; }
+		if (!user?._id || !getJwtToken()) { await sweetErrorAlert(t(Message.NOT_AUTHENTICATED)); return; }
 		try {
 			const options = { variables: { input: organizer._id } };
 			if (isFollowing) await unsubscribe(options); else await subscribe(options);
 			await refetchOrganizer();
 		} catch (error: unknown) {
-			await sweetErrorAlert(error instanceof Error ? error.message : 'Unable to update follow status.');
+			await sweetErrorAlert(tError(error, 'common.followUpdateFailed'));
 		}
 	};
 
 	const handleMessageOrganizer = async () => {
 		if (!organizer?._id || isOwnOrganizer) return;
 		if (!user?._id || !getJwtToken()) {
-			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
+			await sweetErrorAlert(t(Message.NOT_AUTHENTICATED));
 			void router.push('/account/login');
 			return;
 		}
@@ -76,30 +79,30 @@ const TourOverview = ({ tour }: TourOverviewProps) => {
 	return (
 		<div className="left-column-content">
 			<div className="detail-card tour-about-card">
-				<div className="about-header-row"><div><h2 className="about-heading">About this tour</h2><p className="about-subtext">{tour.tourStatus}</p></div></div>
+				<div className="about-header-row"><div><h2 className="about-heading">{t('tours.overview.aboutThisTour')}</h2><p className="about-subtext">{tEnum('tourStatus', tour.tourStatus)}</p></div></div>
 				<div className="metadata-badges-grid">
-					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">schedule</span><div className="badge-details"><span className="badge-label">Duration</span><span className="badge-val">{getDateDuration(tour.tourStartDate, tour.tourEndDate)}</span></div></div>
-					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">event</span><div className="badge-details"><span className="badge-label">Start date</span><span className="badge-val">{formatApiDate(tour.tourStartDate)}</span></div></div>
-					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">event_available</span><div className="badge-details"><span className="badge-label">End date</span><span className="badge-val">{formatApiDate(tour.tourEndDate)}</span></div></div>
-					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">groups</span><div className="badge-details"><span className="badge-label">Availability</span><span className="badge-val">{seatsLeft} / {tour.tourCapacity} seats</span></div></div>
-					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">flight_takeoff</span><div className="badge-details"><span className="badge-label">Departure</span><span className="badge-val">{[tour.tourDepartureCity, tour.tourDepartureCountry].filter(Boolean).join(', ') || 'Unavailable'}</span></div></div>
-					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">favorite</span><div className="badge-details"><span className="badge-label">Saved by</span><span className="badge-val">{tour.tourLikes.toLocaleString()} traveler{tour.tourLikes === 1 ? '' : 's'}</span></div></div>
-					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">visibility</span><div className="badge-details"><span className="badge-label">Views</span><span className="badge-val">{tour.tourViews.toLocaleString()}</span></div></div>
+					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">schedule</span><div className="badge-details"><span className="badge-label">{t('tours.overview.duration')}</span><span className="badge-val">{durationDays ? t('common.days', { count: durationDays }) : t('common.durationUnavailable')}</span></div></div>
+					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">event</span><div className="badge-details"><span className="badge-label">{t('tours.overview.startDate')}</span><span className="badge-val">{formatDate(tour.tourStartDate) || t('common.dateUnavailable')}</span></div></div>
+					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">event_available</span><div className="badge-details"><span className="badge-label">{t('tours.overview.endDate')}</span><span className="badge-val">{formatDate(tour.tourEndDate) || t('common.dateUnavailable')}</span></div></div>
+					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">groups</span><div className="badge-details"><span className="badge-label">{t('tours.overview.availability')}</span><span className="badge-val">{t('tours.overview.seats', { seatsLeft, tourCapacity: tour.tourCapacity })}</span></div></div>
+					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">flight_takeoff</span><div className="badge-details"><span className="badge-label">{t('tours.overview.departure')}</span><span className="badge-val">{[tour.tourDepartureCity, tour.tourDepartureCountry].filter(Boolean).join(', ') || t('tours.overview.unavailable')}</span></div></div>
+					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">favorite</span><div className="badge-details"><span className="badge-label">{t('tours.overview.savedBy')}</span><span className="badge-val">{t('tours.overview.travelers', { count: tour.tourLikes, formatted: formatNumber(tour.tourLikes) })}</span></div></div>
+					<div className="meta-badge-chip"><span className="material-symbols-outlined badge-icon">visibility</span><div className="badge-details"><span className="badge-label">{t('common.views')}</span><span className="badge-val">{formatNumber(tour.tourViews)}</span></div></div>
 				</div>
-				{tour.tourDesc ? <div className="about-description-text"><p>{tour.tourDesc}</p></div> : <p className="detail-empty-copy">The organizer has not added a tour description yet.</p>}
+				{tour.tourDesc ? <div className="about-description-text"><p>{tour.tourDesc}</p></div> : <p className="detail-empty-copy">{t('tours.overview.noDescription')}</p>}
 			</div>
 
-			{additionalInfo.length ? <div className="detail-card provisions-card"><div className="provisions-header-row"><h3 className="section-title">Tour information</h3></div><ul className="provisions-list">{additionalInfo.map((item) => <li key={item} className="provision-item"><span className="material-symbols-outlined check-icon">check</span><span>{item}</span></li>)}</ul></div> : null}
+			{additionalInfo.length ? <div className="detail-card provisions-card"><div className="provisions-header-row"><h3 className="section-title">{t('tours.overview.tourInformation')}</h3></div><ul className="provisions-list">{additionalInfo.map((item) => <li key={item} className="provision-item"><span className="material-symbols-outlined check-icon">check</span><span>{item}</span></li>)}</ul></div> : null}
 
 			<div className="detail-card departure-card">
-				<div className="departure-header-row"><div><h3 className="section-title">Departure & destination</h3><p className="section-subtext">{[tour.tourDeparturePlace, tour.tourDepartureCity].filter(Boolean).join(', ') || 'Departure details are not available yet.'}</p></div></div>
-				{hasCoordinates ? <div className="tour-location-map"><iframe className="tour-location-map-frame" src={mapUrl} title={`${tour.tourName} destination map`} loading="lazy" /><a className="tour-map-open-link" href={mapLink} target="_blank" rel="noreferrer"><span className="material-symbols-outlined">open_in_new</span>Open map</a></div> : null}
+				<div className="departure-header-row"><div><h3 className="section-title">{t('tours.overview.departureDestination')}</h3><p className="section-subtext">{[tour.tourDeparturePlace, tour.tourDepartureCity].filter(Boolean).join(', ') || t('tours.overview.noDeparture')}</p></div></div>
+				{hasCoordinates ? <div className="tour-location-map"><iframe className="tour-location-map-frame" src={mapUrl} title={t('tours.overview.destinationMap', { tourName: tour.tourName })} loading="lazy" /><a className="tour-map-open-link" href={mapLink} target="_blank" rel="noreferrer"><span className="material-symbols-outlined">open_in_new</span>{t('tours.overview.openMap')}</a></div> : null}
 			</div>
 
 			<div className="detail-card organizer-card">
 				<div className="organizer-inner">
-					<div className="organizer-main-info"><div className="organizer-avatar-wrapper"><img src={organizerImage} alt={organizerName} className="organizer-avatar" /></div><div className="organizer-text-info"><div className="organizer-name-row"><h4 className="organizer-name">{organizerName}</h4>{organizer?.memberType === MemberType.AGENT ? <span className="verified-operator-pill"><span className="material-symbols-outlined">verified</span>Agent</span> : null}</div><p className="organizer-desc">{organizer?.memberDesc || (organizer?.memberType === MemberType.AGENT ? 'Verified tour operator' : 'Tour organizer')}</p><div className="organizer-metrics-row"><span><strong>{organizer?.memberFollowers ?? 0}</strong> Followers</span><span>•</span><span><strong>{organizer?.memberTours ?? 0}</strong> Tours</span></div></div></div>
-					<div className="organizer-actions">{organizer?._id ? <Link className="organizer-btn secondary" href={`/member?memberId=${organizer._id}`}>View profile</Link> : null}{!isOwnOrganizer && organizer?._id ? <button className="organizer-btn chat-btn" type="button" onClick={() => void handleMessageOrganizer()}><span className="material-symbols-outlined">chat</span>Message</button> : null}{!isOwnOrganizer && organizer?._id ? (
+					<div className="organizer-main-info"><div className="organizer-avatar-wrapper"><img src={organizerImage} alt={organizerName} className="organizer-avatar" /></div><div className="organizer-text-info"><div className="organizer-name-row"><h4 className="organizer-name">{organizerName}</h4>{organizer?.memberType === MemberType.AGENT ? <span className="verified-operator-pill"><span className="material-symbols-outlined">verified</span>{t('common.agent')}</span> : null}</div><p className="organizer-desc">{organizer?.memberDesc || (organizer?.memberType === MemberType.AGENT ? t('tours.overview.verifiedTourOperator') : t('tours.overview.tourOrganizer'))}</p><div className="organizer-metrics-row"><span><strong>{organizer?.memberFollowers ?? 0}</strong> {t('common.followers')}</span><span>•</span><span><strong>{organizer?.memberTours ?? 0}</strong> {t('navigation.tours')}</span></div></div></div>
+					<div className="organizer-actions">{organizer?._id ? <Link className="organizer-btn secondary" href={`/member?memberId=${organizer._id}`}>{t('tours.overview.viewProfile')}</Link> : null}{!isOwnOrganizer && organizer?._id ? <button className="organizer-btn chat-btn" type="button" onClick={() => void handleMessageOrganizer()}><span className="material-symbols-outlined">chat</span>{t('common.message')}</button> : null}{!isOwnOrganizer && organizer?._id ? (
 						<FollowButton 
 							isFollowing={isFollowing} 
 							isLoading={subscribing || unsubscribing} 

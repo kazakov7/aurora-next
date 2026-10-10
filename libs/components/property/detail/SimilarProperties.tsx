@@ -9,6 +9,7 @@ import { Property } from '../../../types/property/property';
 import { getImageUrl } from '../../../config';
 import { sweetErrorAlert } from '../../../sweetAlert';
 import { Message } from '../../../enums/common.enum';
+import { useI18n } from '../../../i18n';
 
 interface SimilarPropertiesProps {
 	currentPropertyId: string;
@@ -16,6 +17,7 @@ interface SimilarPropertiesProps {
 }
 
 const SimilarProperties = ({ currentPropertyId, city }: SimilarPropertiesProps) => {
+	const { t, tEnum, tError } = useI18n();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 
@@ -40,14 +42,14 @@ const SimilarProperties = ({ currentPropertyId, city }: SimilarPropertiesProps) 
 	const handleLike = async (e: React.MouseEvent, propId: string) => {
 		e.stopPropagation();
 		if (!user?._id) {
-			await sweetErrorAlert(Message.NOT_AUTHENTICATED);
+			await sweetErrorAlert(t(Message.NOT_AUTHENTICATED));
 			return;
 		}
 		try {
 			await likeTargetProperty({ variables: { propertyId: propId } });
 			await refetch();
 		} catch (err: any) {
-			await sweetErrorAlert(err.message || 'Error occurred');
+			await sweetErrorAlert(tError(err, 'common.errorOccurred'));
 		}
 	};
 
@@ -55,11 +57,11 @@ const SimilarProperties = ({ currentPropertyId, city }: SimilarPropertiesProps) 
 		<section className="similar-properties-section">
 			<div className="section-header-row">
 				<div>
-					<h2 className="section-heading">Similar Hotels</h2>
-					<p className="section-subtext">{city ? `More stays in ${city}` : 'More available stays'}</p>
+					<h2 className="section-heading">{t('hotels.similar.similarHotels')}</h2>
+					<p className="section-subtext">{city ? t('hotels.similar.moreStaysIn', { city }) : t('hotels.similar.moreAvailableStays')}</p>
 				</div>
 				<Link href="/property" className="view-all-link">
-					<span>View All Hotels</span>
+					<span>{t('hotels.similar.viewAllHotels')}</span>
 					<span className="material-symbols-outlined">arrow_forward</span>
 				</Link>
 			</div>
@@ -77,7 +79,7 @@ const SimilarProperties = ({ currentPropertyId, city }: SimilarPropertiesProps) 
 							onClick={() => router.push(`/property/detail?id=${item._id}`)}
 						>
 							<div className="card-image-box">
-								{cardImg ? <img src={cardImg} alt={item.propertyName} className="card-img" /> : <div className="card-image-empty">No image available</div>}
+								{cardImg ? <img src={cardImg} alt={item.propertyName} className="card-img" /> : <div className="card-image-empty">{t('common.noImageAvailable')}</div>}
 								{item.propertyCity ? <span className="card-city-pill">{item.propertyCity}</span> : null}
 								<button
 									className={`card-heart-btn ${isLiked ? 'liked' : ''}`}
@@ -96,7 +98,7 @@ const SimilarProperties = ({ currentPropertyId, city }: SimilarPropertiesProps) 
 							<div className="card-info-box">
 								<div className="card-meta-line">
 									<span className="guests-beds">
-										{item.maxGuests} Guests · {item.bedrooms} Bedrooms
+										{t('hotels.similar.guestsBedrooms', { maxGuests: item.maxGuests, bedrooms: item.bedrooms })}
 									</span>
 									<div className="rating-tag">
 										<span
@@ -110,13 +112,13 @@ const SimilarProperties = ({ currentPropertyId, city }: SimilarPropertiesProps) 
 								</div>
 
 								<h3 className="card-title">{item.propertyName}</h3>
-								<p className="card-type">{item.propertyType}</p>
+								<p className="card-type">{tEnum('propertyType', item.propertyType)}</p>
 
 								<div className="card-bottom-price">
 									<span className="price-tag">
-										${item.pricePerNight?.toLocaleString()}
+										${item.pricePerNight?.toLocaleString('en-US')}
 									</span>
-									<span className="night-tag">/ night</span>
+									<span className="night-tag">{t('common.perNight')}</span>
 								</div>
 							</div>
 						</article>

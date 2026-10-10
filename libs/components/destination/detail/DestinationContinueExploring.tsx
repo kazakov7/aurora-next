@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Destination } from '../../../types/destination/destination';
 import { DEFAULT_DESTINATION_IMAGE, getImageUrl } from '../../../config';
+import { useI18n } from '../../../i18n';
 
 interface DestinationContinueExploringProps {
 	destinations: Destination[];
@@ -21,6 +22,7 @@ const countryFlags: Record<string, string> = {
 };
 
 const DestinationContinueExploring = ({ destinations }: DestinationContinueExploringProps) => {
+	const { t } = useI18n();
 	if (!destinations || destinations.length === 0) return null;
 
 	const displayList = destinations.slice(0, 3);
@@ -28,9 +30,9 @@ const DestinationContinueExploring = ({ destinations }: DestinationContinueExplo
 	return (
 		<section className="destination-continue-exploring-section">
 			<div className="section-header-box">
-				<h2 className="continue-heading">Continue Exploring</h2>
+				<h2 className="continue-heading">{t('destinations.continueExploring.continueExploring')}</h2>
 				<p className="continue-subheading">
-					Iconic curated destinations across East Asia &amp; beyond.
+					{t('destinations.continueExploring.subtitle')}
 				</p>
 			</div>
 
@@ -64,10 +66,10 @@ const DestinationContinueExploring = ({ destinations }: DestinationContinueExplo
 								<div className="card-info-box">
 									<p className="card-desc-text">
 										{dest.destinationDesc ||
-											`Tradition meets visionary architecture across iconic landscapes in ${dest.destinationName}.`}
+											t('destinations.continueExploring.fallbackDescription', { destinationName: dest.destinationName })}
 									</p>
 									<div className="explore-cta-row">
-										<span>Explore {dest.destinationName}</span>
+										<span>{t('destinations.continueExploring.explore', { destinationName: dest.destinationName })}</span>
 										<span className="material-symbols-outlined icon-arrow">arrow_forward</span>
 									</div>
 								</div>

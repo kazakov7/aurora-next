@@ -19,6 +19,7 @@ import {
   sweetTopSmallSuccessAlert,
   sweetMixinErrorAlert,
 } from "../../../libs/sweetAlert";
+import { useI18n } from "../../../libs/i18n";
 
 const STATUS_PILL: Record<SupportStatus, string> = {
   [SupportStatus.OPEN]: "amber",
@@ -36,6 +37,7 @@ const initialInquiry: SupportTicketsInquiry = {
 };
 
 const AdminSupportPage: NextPage = () => {
+  const { t, tEnum, tError, formatDate } = useI18n();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [searchFilter, setSearchFilter] =
@@ -122,29 +124,29 @@ const AdminSupportPage: NextPage = () => {
 
       await updateSupportTicketByAdmin({ variables: { input } });
       sweetTopSmallSuccessAlert(
-        input.ticketReply ? "Reply sent to member!" : "Ticket updated!",
+        input.ticketReply ? t("admin.support.replySentToMember") : t("admin.support.ticketUpdated"),
         800,
       );
       closeDrawer();
       refetch();
     } catch (err: any) {
-      sweetMixinErrorAlert(err.message);
+      sweetMixinErrorAlert(tError(err));
     }
   };
 
   const exportCSV = () => {
     if (tickets.length === 0) {
-      sweetMixinErrorAlert("No tickets to export");
+      sweetMixinErrorAlert(t("admin.support.noTicketsToExport"));
       return;
     }
     const headers = [
       "ID",
-      "Subject",
-      "Name",
-      "Email",
-      "Category",
-      "Status",
-      "Created Date",
+      t("admin.support.subject"),
+      t("common.name"),
+      t("admin.support.email"),
+      t("common.category"),
+      t("common.status"),
+      t("common.createdDate"),
     ];
     const rows = tickets.map((t) => [
       t._id,
@@ -153,7 +155,7 @@ const AdminSupportPage: NextPage = () => {
       t.ticketEmail,
       t.ticketCategory,
       t.ticketStatus,
-      new Date(t.createdAt).toLocaleDateString(),
+      formatDate(t.createdAt),
     ]);
 
     const csvContent =
@@ -177,8 +179,8 @@ const AdminSupportPage: NextPage = () => {
       {/* TOP SECTION: HEADER */}
       <div className="overview-header">
         <div className="header-text">
-          <h1>Support Tickets Management</h1>
-          <p>Handle member inquiries, bug reports, and assistance requests.</p>
+          <h1>{t("admin.support.supportTicketsManagement")}</h1>
+          <p>{t("admin.support.intro")}</p>
         </div>
       </div>
 
@@ -186,15 +188,15 @@ const AdminSupportPage: NextPage = () => {
       <section className="admin-table-section">
         <div className="table-header">
           <div className="header-left">
-            <h2>Directory</h2>
-            <span className="table-badge">{total} Tickets</span>
+            <h2>{t("common.directory")}</h2>
+            <span className="table-badge">{t("admin.support.tickets", { total })}</span>
           </div>
           <div className="header-right">
             <div className="search-box">
               <span className="material-symbols-outlined">search</span>
               <input
                 type="text"
-                placeholder="Search tickets..."
+                placeholder={t("admin.support.searchTickets")}
                 value={searchFilter.search.text || ""}
                 onChange={(e) => handleSearchChange(e.target.value)}
               />
@@ -205,10 +207,10 @@ const AdminSupportPage: NextPage = () => {
                 value={searchFilter.search.ticketCategory || "all"}
                 onChange={(e) => handleCategoryChange(e.target.value)}
               >
-                <option value="all">All Categories</option>
+                <option value="all">{t("common.allCategories")}</option>
                 {Object.values(SupportCategory).map((category) => (
                   <option key={category} value={category}>
-                    {category}
+                    {tEnum("supportCategory", category)}
                   </option>
                 ))}
               </select>
@@ -217,10 +219,10 @@ const AdminSupportPage: NextPage = () => {
                 value={searchFilter.search.ticketStatus || "all"}
                 onChange={(e) => handleStatusChange(e.target.value)}
               >
-                <option value="all">All Statuses</option>
+                <option value="all">{t("common.allStatuses")}</option>
                 {Object.values(SupportStatus).map((status) => (
                   <option key={status} value={status}>
-                    {status.replace("_", " ")}
+                    {tEnum("supportStatus", status)}
                   </option>
                 ))}
               </select>
@@ -232,7 +234,7 @@ const AdminSupportPage: NextPage = () => {
                 <span className="material-symbols-outlined">
                   filter_alt_off
                 </span>
-                Reset
+                {t("common.reset")}
               </button>
             </div>
           </div>
@@ -242,12 +244,12 @@ const AdminSupportPage: NextPage = () => {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Ticket Subject</th>
-                <th>Submitter</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Created Date</th>
-                <th style={{ width: 120, textAlign: "right" }}>Actions</th>
+                <th>{t("admin.support.ticketSubject")}</th>
+                <th>{t("admin.support.submitter")}</th>
+                <th>{t("common.category")}</th>
+                <th>{t("common.status")}</th>
+                <th>{t("common.createdDate")}</th>
+                <th style={{ width: 120, textAlign: "right" }}>{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -257,7 +259,7 @@ const AdminSupportPage: NextPage = () => {
                     colSpan={6}
                     style={{ textAlign: "center", padding: "40px" }}
                   >
-                    Loading...
+                    {t("common.loading")}
                   </td>
                 </tr>
               ) : tickets.length === 0 ? (
@@ -266,7 +268,7 @@ const AdminSupportPage: NextPage = () => {
                     colSpan={6}
                     style={{ textAlign: "center", padding: "40px" }}
                   >
-                    No support tickets found.
+                    {t("admin.support.noSupportTicketsFound")}
                   </td>
                 </tr>
               ) : (
@@ -289,7 +291,7 @@ const AdminSupportPage: NextPage = () => {
                     </td>
                     <td>
                       <span className="badge-pill neutral">
-                        {ticket.ticketCategory}
+                        {tEnum("supportCategory", ticket.ticketCategory)}
                       </span>
                     </td>
                     <td>
@@ -299,12 +301,12 @@ const AdminSupportPage: NextPage = () => {
                         }`}
                       >
                         <span className="dot"></span>
-                        {ticket.ticketStatus.replace("_", " ")}
+                        {tEnum("supportStatus", ticket.ticketStatus)}
                       </span>
                     </td>
                     <td>
                       <span style={{ fontSize: 13, color: "#707881" }}>
-                        {new Date(ticket.createdAt).toLocaleDateString()}
+                        {formatDate(ticket.createdAt)}
                       </span>
                     </td>
                     <td style={{ textAlign: "right" }}>
@@ -337,7 +339,7 @@ const AdminSupportPage: NextPage = () => {
 
         <div className="table-footer">
           <span>
-            Showing {startItem}–{endItem} of {total} records
+            {t("admin.showingRecords", { startItem, endItem, total })}
           </span>
           <div className="pagination">
             <button
@@ -387,7 +389,7 @@ const AdminSupportPage: NextPage = () => {
               <div className="header-title">
                 <span className="material-symbols-outlined">support_agent</span>
                 <span>
-                  Ticket #{selectedTicket._id.slice(-8).toUpperCase()}
+                  {t("admin.support.ticket", { id: selectedTicket._id.slice(-8).toUpperCase() })}
                 </span>
               </div>
               <button className="close-btn" type="button" onClick={closeDrawer}>
@@ -397,7 +399,7 @@ const AdminSupportPage: NextPage = () => {
 
             <div className="drawer-body">
               <div className="admin-form-group">
-                <label>Subject</label>
+                <label>{t("admin.support.subject")}</label>
                 <p style={{ margin: 0, fontWeight: 600, color: "#141b2b" }}>
                   {selectedTicket.ticketSubject}
                 </p>
@@ -405,7 +407,7 @@ const AdminSupportPage: NextPage = () => {
 
               <div className="grid-2-col">
                 <div className="admin-form-group">
-                  <label>Submitter</label>
+                  <label>{t("admin.support.submitter")}</label>
                   <p style={{ margin: 0 }}>{selectedTicket.ticketName}</p>
                   <a
                     href={`mailto:${selectedTicket.ticketEmail}`}
@@ -415,16 +417,16 @@ const AdminSupportPage: NextPage = () => {
                   </a>
                 </div>
                 <div className="admin-form-group">
-                  <label>Category / Created</label>
-                  <p style={{ margin: 0 }}>{selectedTicket.ticketCategory}</p>
+                  <label>{t("admin.support.categoryCreated")}</label>
+                  <p style={{ margin: 0 }}>{tEnum("supportCategory", selectedTicket.ticketCategory)}</p>
                   <span style={{ fontSize: 13, color: "#707881" }}>
-                    {new Date(selectedTicket.createdAt).toLocaleString()}
+                    {formatDate(selectedTicket.createdAt, "dateTime")}
                   </span>
                 </div>
               </div>
 
               <div className="admin-form-group">
-                <label>Message</label>
+                <label>{t("common.message")}</label>
                 <p
                   style={{
                     margin: 0,
@@ -439,7 +441,7 @@ const AdminSupportPage: NextPage = () => {
 
               {selectedTicket.ticketAttachment && (
                 <div className="admin-form-group">
-                  <label>Attachment</label>
+                  <label>{t("admin.support.attachment")}</label>
                   <a
                     href={getImageUrl(selectedTicket.ticketAttachment)}
                     target="_blank"
@@ -447,7 +449,7 @@ const AdminSupportPage: NextPage = () => {
                   >
                     <img
                       src={getImageUrl(selectedTicket.ticketAttachment)}
-                      alt="attachment"
+                      alt={t("admin.support.attachmentAlt")}
                       style={{
                         maxWidth: "100%",
                         maxHeight: 240,
@@ -460,7 +462,7 @@ const AdminSupportPage: NextPage = () => {
               )}
 
               <div className="admin-form-group">
-                <label>Status</label>
+                <label>{t("common.status")}</label>
                 <select
                   className="admin-form-control select"
                   value={formStatus}
@@ -470,24 +472,23 @@ const AdminSupportPage: NextPage = () => {
                 >
                   {Object.values(SupportStatus).map((status) => (
                     <option key={status} value={status}>
-                      {status.replace("_", " ")}
+                      {tEnum("supportStatus", status)}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div className="admin-form-group">
-                <label>Reply to Member</label>
+                <label>{t("admin.support.replyToMember")}</label>
                 <textarea
                   className="admin-form-control textarea"
-                  placeholder="Write a reply. The member will receive it as a notification."
+                  placeholder={t("admin.support.replyPlaceholder")}
                   value={formReply}
                   onChange={(e) => setFormReply(e.target.value)}
                 />
                 {selectedTicket.repliedAt && (
                   <span style={{ fontSize: 12, color: "#707881" }}>
-                    Last replied:{" "}
-                    {new Date(selectedTicket.repliedAt).toLocaleString()}
+                    {t("admin.support.lastReplied", { value: formatDate(selectedTicket.repliedAt, "dateTime") })}
                   </span>
                 )}
               </div>
@@ -499,14 +500,14 @@ const AdminSupportPage: NextPage = () => {
                 type="button"
                 onClick={closeDrawer}
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               <button
                 className="btn primary"
                 type="button"
                 onClick={handleSave}
               >
-                Save Changes
+                {t("common.saveChanges")}
               </button>
             </div>
           </aside>

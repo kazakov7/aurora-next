@@ -17,8 +17,10 @@ import {
   sweetConfirmAlert,
 } from "../../../libs/sweetAlert";
 import moment from "moment";
+import { useI18n } from "../../../libs/i18n";
 
 const AdminToursPage: NextPage = () => {
+  const { t, tEnum, tError, formatDate } = useI18n();
   const [tours, setTours] = useState<Tour[]>([]);
   const [total, setTotal] = useState<number>(0);
   const [selectedTour, setSelectedTour] = useState<Tour | null>(null);
@@ -99,41 +101,41 @@ const AdminToursPage: NextPage = () => {
             input: { _id: selectedTour._id, tourStatus: formStatus },
           },
         });
-        sweetTopSmallSuccessAlert("Tour status updated!", 800);
+        sweetTopSmallSuccessAlert(t("admin.tours.tourStatusUpdated"), 800);
       }
       closeDrawer();
       refetch();
     } catch (err: any) {
-      sweetMixinErrorAlert(err.message);
+      sweetMixinErrorAlert(tError(err));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (await sweetConfirmAlert("Are you sure you want to delete this tour?")) {
+    if (await sweetConfirmAlert(t("admin.tours.deleteConfirm"))) {
       try {
         await removeTourByAdmin({ variables: { tourId: id } });
-        sweetTopSmallSuccessAlert("Tour deleted!", 800);
+        sweetTopSmallSuccessAlert(t("admin.tours.tourDeleted"), 800);
         refetch();
       } catch (err: any) {
-        sweetMixinErrorAlert(err.message);
+        sweetMixinErrorAlert(tError(err));
       }
     }
   };
 
   const exportCSV = () => {
     if (!tours || tours.length === 0) {
-      sweetMixinErrorAlert("No data to export");
+      sweetMixinErrorAlert(t("common.noDataToExport"));
       return;
     }
     const headers = [
       "ID",
-      "Name",
-      "Price",
-      "Capacity",
-      "Start Date",
-      "End Date",
-      "Status",
-      "Created Date",
+      t("common.name"),
+      t("admin.tours.price"),
+      t("common.capacity"),
+      t("admin.tours.startDate"),
+      t("admin.tours.endDate"),
+      t("common.status"),
+      t("common.createdDate"),
     ];
     const rows = tours.map((t) => [
       t._id,
@@ -167,23 +169,23 @@ const AdminToursPage: NextPage = () => {
     <div className="admin-overview dashboard-container">
       <div className="overview-header">
         <div className="header-text">
-          <h1>Tours Management</h1>
-          <p>Review, approve, and moderate guided tours and packages.</p>
+          <h1>{t("admin.tours.toursManagement")}</h1>
+          <p>{t("admin.tours.intro")}</p>
         </div>
       </div>
 
       <section className="admin-table-section">
         <div className="table-header">
           <div className="header-left">
-            <h2>Directory</h2>
-            <span className="table-badge">{total} Tours</span>
+            <h2>{t("common.directory")}</h2>
+            <span className="table-badge">{t("admin.tours.tours", { total })}</span>
           </div>
           <div className="header-right">
             <div className="search-box">
               <span className="material-symbols-outlined">search</span>
               <input
                 type="text"
-                placeholder="Search departure city..."
+                placeholder={t("admin.tours.searchDepartureCity")}
                 onChange={(e) => handleSearchChange(e.target.value)}
               />
             </div>
@@ -192,11 +194,11 @@ const AdminToursPage: NextPage = () => {
                 className="filter-select"
                 onChange={(e) => handleStatusChange(e.target.value)}
               >
-                <option value="all">All Statuses</option>
-                <option value={TourStatus.ACTIVE}>Active</option>
-                <option value={TourStatus.PENDING}>Pending</option>
-                <option value={TourStatus.INACTIVE}>Inactive</option>
-                <option value={TourStatus.REJECTED}>Rejected</option>
+                <option value="all">{t("common.allStatuses")}</option>
+                <option value={TourStatus.ACTIVE}>{t("common.active")}</option>
+                <option value={TourStatus.PENDING}>{t("common.pending")}</option>
+                <option value={TourStatus.INACTIVE}>{t("common.inactive")}</option>
+                <option value={TourStatus.REJECTED}>{t("common.rejected")}</option>
               </select>
               <button
                 className="reset-filter-btn"
@@ -206,7 +208,7 @@ const AdminToursPage: NextPage = () => {
                 <span className="material-symbols-outlined">
                   filter_alt_off
                 </span>
-                Reset
+                {t("common.reset")}
               </button>
             </div>
           </div>
@@ -216,12 +218,12 @@ const AdminToursPage: NextPage = () => {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Tour Name</th>
-                <th>Schedule</th>
-                <th>Price</th>
-                <th>Capacity</th>
-                <th>Status</th>
-                <th style={{ width: 120, textAlign: "right" }}>Actions</th>
+                <th>{t("admin.tours.tourName")}</th>
+                <th>{t("admin.tours.schedule")}</th>
+                <th>{t("admin.tours.price")}</th>
+                <th>{t("common.capacity")}</th>
+                <th>{t("common.status")}</th>
+                <th style={{ width: 120, textAlign: "right" }}>{t("common.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -231,7 +233,7 @@ const AdminToursPage: NextPage = () => {
                     colSpan={6}
                     style={{ textAlign: "center", padding: "40px" }}
                   >
-                    Loading...
+                    {t("common.loading")}
                   </td>
                 </tr>
               ) : tours.length === 0 ? (
@@ -240,7 +242,7 @@ const AdminToursPage: NextPage = () => {
                     colSpan={6}
                     style={{ textAlign: "center", padding: "40px" }}
                   >
-                    No tours found.
+                    {t("admin.tours.noToursFound")}
                   </td>
                 </tr>
               ) : (
@@ -260,15 +262,15 @@ const AdminToursPage: NextPage = () => {
                         }}
                       >
                         <span style={{ color: "#141b2b" }}>
-                          {moment(tour.tourStartDate).format("MMM DD")} -{" "}
-                          {moment(tour.tourEndDate).format("MMM DD, YYYY")}
+                          {formatDate(tour.tourStartDate, "short")} -{" "}
+                          {formatDate(tour.tourEndDate, "medium")}
                         </span>
                       </div>
                     </td>
                     <td>
                       <span style={{ fontWeight: 600, color: "#006194" }}>
                         {tour.tourCurrency === "USD" ? "$" : "$"}
-                        {tour.tourPrice.toLocaleString()}
+                        {tour.tourPrice.toLocaleString("en-US")}
                       </span>
                     </td>
                     <td>
@@ -287,7 +289,7 @@ const AdminToursPage: NextPage = () => {
                         }`}
                       >
                         <span className="dot"></span>
-                        {tour.tourStatus}
+                        {tEnum("tourStatus", tour.tourStatus)}
                       </span>
                     </td>
                     <td style={{ textAlign: "right" }}>
@@ -341,7 +343,7 @@ const AdminToursPage: NextPage = () => {
 
         <div className="table-footer">
           <span>
-            Showing {startItem}–{endItem} of {total} records
+            {t("admin.showingRecords", { startItem, endItem, total })}
           </span>
           <div className="pagination">
             <button
@@ -389,7 +391,7 @@ const AdminToursPage: NextPage = () => {
             <div className="drawer-header">
               <div className="header-title">
                 <span className="material-symbols-outlined">edit_document</span>
-                <span>Moderate Tour</span>
+                <span>{t("admin.tours.moderateTitle")}</span>
               </div>
               <button className="close-btn" type="button" onClick={closeDrawer}>
                 <span className="material-symbols-outlined">close</span>
@@ -398,7 +400,7 @@ const AdminToursPage: NextPage = () => {
 
             <div className="drawer-body">
               <div className="admin-form-group">
-                <label>Tour Name</label>
+                <label>{t("admin.tours.tourName")}</label>
                 <div
                   className="admin-form-control"
                   style={{ background: "#f1f3ff", border: "none" }}
@@ -408,7 +410,7 @@ const AdminToursPage: NextPage = () => {
               </div>
 
               <div className="admin-form-group">
-                <label>Description</label>
+                <label>{t("common.description")}</label>
                 <div
                   className="admin-form-control"
                   style={{
@@ -424,17 +426,17 @@ const AdminToursPage: NextPage = () => {
 
               <div className="admin-form-group">
                 <label>
-                  Status <span className="required">*</span>
+                  {t("common.status")} <span className="required">*</span>
                 </label>
                 <select
                   className="admin-form-control select"
                   value={formStatus}
                   onChange={(e) => setFormStatus(e.target.value as TourStatus)}
                 >
-                  <option value={TourStatus.ACTIVE}>Active</option>
-                  <option value={TourStatus.PENDING}>Pending</option>
-                  <option value={TourStatus.INACTIVE}>Inactive</option>
-                  <option value={TourStatus.REJECTED}>Rejected</option>
+                  <option value={TourStatus.ACTIVE}>{t("common.active")}</option>
+                  <option value={TourStatus.PENDING}>{t("common.pending")}</option>
+                  <option value={TourStatus.INACTIVE}>{t("common.inactive")}</option>
+                  <option value={TourStatus.REJECTED}>{t("common.rejected")}</option>
                 </select>
               </div>
             </div>
@@ -445,14 +447,14 @@ const AdminToursPage: NextPage = () => {
                 type="button"
                 onClick={closeDrawer}
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               <button
                 className="btn primary"
                 type="button"
                 onClick={handleSave}
               >
-                Save Changes
+                {t("common.saveChanges")}
               </button>
             </div>
           </aside>

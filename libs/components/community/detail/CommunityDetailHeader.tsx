@@ -3,6 +3,7 @@ import { BoardArticle } from "../../../types/board-article/board-article";
 import { getImageUrl, DEFAULT_USER_AVATAR } from "../../../config";
 import { sweetTopSmallSuccessAlert } from "../../../sweetAlert";
 import FollowButton from "../../common/FollowButton";
+import { useI18n } from "../../../i18n";
 
 interface CommunityDetailHeaderProps {
   article: BoardArticle;
@@ -14,20 +15,6 @@ interface CommunityDetailHeaderProps {
   onFollow?: () => void;
 }
 
-const formatDate = (date?: Date | string): string => {
-  if (!date) return "";
-  try {
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      timeZone: "UTC",
-    });
-  } catch {
-    return "";
-  }
-};
-
 const CommunityDetailHeader: React.FC<CommunityDetailHeaderProps> = ({
   article,
   categoryLabel,
@@ -37,10 +24,11 @@ const CommunityDetailHeader: React.FC<CommunityDetailHeaderProps> = ({
   showFollowButton = true,
   onFollow,
 }) => {
+  const { t, formatDate } = useI18n();
   const authorName =
     article.memberData?.memberFullName ||
     article.memberData?.memberNick ||
-    "Member";
+    t("common.member");
 
   const authorAvatar = getImageUrl(
     article.memberData?.memberImage,
@@ -50,15 +38,15 @@ const CommunityDetailHeader: React.FC<CommunityDetailHeaderProps> = ({
   const wordCount = (article.articleContent || "").trim().split(/\s+/).length;
   const readTimeMinutes = Math.max(3, Math.ceil(wordCount / 160));
   const excerpt = article.articleContent?.replace(/<[^>]+>/g, "").trim();
-  const publishedDate = formatDate(article.createdAt);
+  const publishedDate = formatDate(article.createdAt, { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
   const handleShare = async () => {
     if (typeof window !== "undefined") {
       try {
         await navigator.clipboard.writeText(window.location.href);
-        sweetTopSmallSuccessAlert("Article URL copied to clipboard!");
+        sweetTopSmallSuccessAlert(t("community.detailHeader.urlCopied"));
       } catch {
-        sweetTopSmallSuccessAlert("Link copied!");
+        sweetTopSmallSuccessAlert(t("common.linkCopied"));
       }
     }
   };
@@ -85,8 +73,9 @@ const CommunityDetailHeader: React.FC<CommunityDetailHeaderProps> = ({
               <span className="author-name">{authorName}</span>
             </div>
             <span className="date-readtime">
-              {publishedDate ? `Published ${publishedDate} · ` : ""}
-              {readTimeMinutes} min read
+              {publishedDate
+                ? t("community.detailHeader.publishedReadTime", { date: publishedDate, minutes: readTimeMinutes })
+                : t("community.detailHeader.readTime", { minutes: readTimeMinutes })}
             </span>
           </div>
         </div>
@@ -96,7 +85,7 @@ const CommunityDetailHeader: React.FC<CommunityDetailHeaderProps> = ({
           <button
             type="button"
             className="share-icon-btn"
-            aria-label="Share article"
+            aria-label={t("community.detailHeader.shareArticle")}
             onClick={handleShare}
           >
             <span className="material-symbols-outlined">share</span>
@@ -108,7 +97,7 @@ const CommunityDetailHeader: React.FC<CommunityDetailHeaderProps> = ({
       <div className="engagement-counts-bar">
         <span className="count-item">
           <span className="material-symbols-outlined icon">visibility</span>
-          <span>{article.articleViews ?? 0} Views</span>
+          <span>{t("community.detailHeader.views", { articleViews: article.articleViews ?? 0 })}</span>
         </span>
         <span className="bullet">•</span>
         <span className="count-item liked">
@@ -118,12 +107,12 @@ const CommunityDetailHeader: React.FC<CommunityDetailHeaderProps> = ({
           >
             favorite
           </span>
-          <span>{likeCount} Likes</span>
+          <span>{t("community.detailHeader.likes", { likeCount })}</span>
         </span>
         <span className="bullet">•</span>
         <span className="count-item">
           <span className="material-symbols-outlined icon">chat_bubble</span>
-          <span>{commentsCount} Comments</span>
+          <span>{t("community.detailHeader.comments", { commentsCount })}</span>
         </span>
       </div>
     </header>

@@ -16,6 +16,7 @@ import { LIKE_TARGET_TOUR } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
 import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
 import { useI18n } from '../../libs/i18n';
+import MobileFilterPanel from '../../libs/components/common/MobileFilterPanel';
 
 const defaultInput: ToursInquiry = {
 	page: 1,
@@ -200,11 +201,13 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 			<div className="tour-main-container">
 				<div className="tour-layout-flex">
 					{/* Left Sidebar Filter */}
-					<TourFilter
-						searchFilter={searchFilter}
-						setSearchFilter={setSearchFilter}
-						initialInput={initialInput}
-					/>
+					<MobileFilterPanel title={t('tours.filter.filters')}>
+						<TourFilter
+							searchFilter={searchFilter}
+							setSearchFilter={setSearchFilter}
+							initialInput={initialInput}
+						/>
+					</MobileFilterPanel>
 
 					{/* Right Column Listing */}
 					<main className="tour-listing-main">

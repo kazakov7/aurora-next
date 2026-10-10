@@ -16,7 +16,7 @@
     height: 48vh;
     min-height: 400px;
     max-height: 560px;
-    margin-top: -64px;
+    // margin-top: -64px;
     overflow: hidden;
     display: flex;
     align-items: flex-end;
@@ -40,12 +40,11 @@
       position: absolute;
       inset: 0;
       background: linear-gradient(
-          to top,
-          rgba(20, 27, 43, 0.9) 0%,
-          rgba(20, 27, 43, 0.4) 60%,
-          transparent 100%
-        ),
-        linear-gradient(to right, rgba(20, 27, 43, 0.8) 0%, transparent 65%);
+        to right,
+        rgba(20, 27, 43, 0.9) 0%,
+        rgba(20, 27, 43, 0.4) 60%,
+        transparent 100%
+      );
       pointer-events: none;
     }
 
@@ -55,7 +54,7 @@
       width: 100%;
       max-width: $container-width;
       margin: 0 auto;
-      padding: 100px 0px 48px;
+      padding-bottom: 100px;
 
       .hero-text-container {
         max-width: 640px;
@@ -120,7 +119,8 @@
     width: 100%;
     max-width: $container-width;
     margin: 0 auto;
-    padding: 36px 0px 80px;
+    padding: 36px 24px 80px;
+    box-sizing: border-box;
 
     .tour-layout-flex {
       display: flex;
@@ -644,12 +644,23 @@
     /* 5. TOURS GRID (3 Columns x 4 Rows = 12 Cards) */
     .tours-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 20px;
+      min-width: 0;
+
+      @media (max-width: 1200px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* 6. TOUR CARD COMPONENT */
     .tour-card {
+      min-width: 0;
+      width: 100%;
       background: $surface-container-lowest;
       border-radius: 20px;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);

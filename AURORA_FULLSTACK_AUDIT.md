@@ -1,556 +1,86 @@
-# AURORA — COMPLETE FULL-STACK DEEP AUDIT REPORT
-**Audited Target:** AURORA Full-Stack Travel Marketplace  
-**Backend:** `/Users/dadakhonovich/Desktop/AURORA` (NestJS 11, GraphQL, MongoDB / Mongoose, Socket.io, Stripe)  
-**Frontend:** `/Users/dadakhonovich/Desktop/aurora-next` (Next.js 14 Pages Router, React 18, Apollo Client, SCSS)  
-**Audit Team Roles:** Principal Backend Engineer, Senior Frontend Engineer, Software Architect, Security Auditor, Database Engineer, QA Automation Engineer, DevOps Readiness Engineer  
-**Date of Audit:** October 2026  
+# AURORA — Condensed Full-Stack Audit
 
-## VERIFIED REMEDIATION STATUS — PHASE 4 (2026-10-10)
+**Audit:** October 2026; latest verified update: Phase 4, October 10, 2026.  
+**Backend:** `/Users/dadakhonovich/Desktop/AURORA` — NestJS 11, GraphQL, Mongoose/MongoDB, Socket.IO, Stripe.  
+**Frontend:** `/Users/dadakhonovich/Desktop/aurora-next` — Next.js 14 (Pages Router), React 18, Apollo Client, SCSS.
 
-Phase 4 continued from the uncommitted OpenAI Codex handoff. Codex work was reviewed first, confirmed defects in it were fixed, and the frontend/backend integration audit continued. Phase 1–3 backend logic (auth/CORS, pagination, booking/payment integrity) and Tour publication status were not modified. Nothing was committed or pushed.
+> **Reading rule:** Phase 1–4 remediation results supersede the original audit findings below. A problem reported in the initial baseline may already have been fixed. No changes were committed or pushed during Phase 4.
 
-### Codex handoff review
+## 1. Executive verdict
 
-| Codex change | Verdict | Action |
-|---|---|---|
-| `GlobalSearch.tsx` (Destinations/Properties/Tours, 300 ms debounce, 2-char minimum, keyboard) | ✅ Works against live API | Kept. Enter now opens the first result when none is highlighted. Desktop dropdown verified on top of page content (no z-index conflict). |
-| Navbar `USD · EN` → `KRW · EN` | ✅ Correct | Kept. |
-| `useAuthSession` server revalidation via public `getMember` | 🔴 **Security defect** | `getMember` uses `WithoutGuard`: a revoked/forged/expired token is treated as anonymous and the public lookup still returns an ACTIVE member, so the session was kept. Rewritten: uses a dedicated silent `VerifyMemberSession` own-profile read; the backend returns `accessToken` **only** when it authenticated the bearer token against the current ACTIVE member. No `accessToken` → session cleared. Refreshed token is stored (role changes apply). Logout/login race guarded (token compared after the request). GraphQL error → session cleared; pure network failure → JWT session kept (server still enforces auth). String matching on error text (`'blocked'`, `'DELETED'`) removed. |
-| Apollo auth error list | ✅ Messages match backend `Messages` enum | Centralised in `libs/auth` (`AUTH_TOKEN_ERRORS`). `extensions.code === 'UNAUTHENTICATED'` also recognised, excluding credential-exchange operations (Login/Signup/Google/Kakao/Telegram) so a wrong password with a stale stored token no longer logs the user out with a misleading "session expired". |
-| Upload mutations `target: String!` | ✅ Matches schema | Kept. |
-| Travel history `destinationId`, `visitedAt` | ✅ Matches schema | Kept. |
-| Removed `GET_AGENTS` | ✅ Unused (no references) | Kept. |
-| `NEXT_PUBLIC_AURORA_SOCKET_URL` | ✅ Correct (`ws://localhost:3007` + `/chat` namespace, `auth.token` handshake) | URL logic deduplicated into `getChatSocketUrl()`. Socket `auth` is now a callback so reconnects use the current token. Both sockets now handle the server's `chat:error` auth messages (blocked/deleted/expired) by ending the stale session instead of silently looping. |
-| SCSS added inside `pc/main.scss` and `mobile/main.scss` | ⚠️ AGENTS.md §7.5 violation | Moved verbatim (same selectors, same visuals) to `scss/pc/common/global-search.scss` and `scss/mobile/common/navbar.scss`, imported from the respective `main.scss`. |
-| Booking cancel UI only for `PENDING` | ✅ Matches backend (`cancelBooking`/`cancelTourBooking` only claim PENDING) | Kept. Confirmed-booking cancellation not restored. |
+AURORA's core full-stack architecture and API integration are functional. However, **real-money production launch remains BLOCKED** by payment/payout policy and reconciliation, production infrastructure, incomplete automated frontend coverage, and several unverified flows. The original baseline grades (Backend 7.5/10, Frontend 7.0/10, Integration 8.5/10, Security 5.0/10, DB 6.5/10, UI 7.0/10, DevOps 4.0/10) describe the **pre-remediation state**, not a fresh Phase 4 rescore.
 
-### Bugs found and repaired in Phase 4
+## 2. Confirmed fixes — Phases 1–4
 
-| ID | Severity | Area | Root cause | Fix |
-|---|---|---|---|---|
-| P4-01 | P0 | Frontend auth | Public lookup treated as proof of identity (above) | Server-verified `accessToken` check |
-| P4-02 | P1 | **Backend security** | `imageUploader`/`imagesUploader` wrote to `uploads/${target}/` with unvalidated `target` (path traversal, arbitrary write location) and took the extension from the client filename (`evil.html` with `image/png` was stored as `.html` and served statically → stored XSS on the API origin) | `target` must be one of `member, article, board, property, tour, destination, support` (BAD_REQUEST otherwise); extension derived from the validated mimetype. Live check: `../apps` rejected; `evil.html` stored as `.png`. |
-| P4-03 | P1 | **Backend search** | Property/Tour/Destination/Notice/Article search passed raw user text to `new RegExp()` → typing `(` in any search returned HTTP 500 (`Invalid regular expression`), plus ReDoS exposure | Shared `escapeRegExp()` in `libs/config.ts` (same escaping Member/Support already used). Live check: `se(` now returns an empty result, not an error. |
-| P4-04 | P1 | Agent dashboard | "Add Hotel"/"Add Tour" pushed to non-existent `/property/create` and `/tour/create` (404); "Edit" pushed to admin-only pages (agent redirected home). Agents could not create or edit listings at all | New `AgentPropertyForm` / `AgentTourForm` modals using existing `createProperty`/`updateProperty`/`createTour`/`updateTour`, real destination list, multi-image upload, KRW, validation aligned with backend DTOs (tour end date strictly after start; capacity ≥ reserved seats; destination fixed on property edit because `UpdatePropertyInput` has no `destinationId`). Agent list queries extended with the editable fields. |
-| P4-05 | P1 | Mobile (all public pages) | Device detection is user-agent based; nearly all domain styles were scoped to `#pc-wrap` only, so real phones received essentially unstyled pages (raw HTML layout, 6 000 px overflow) | Domain stylesheets now target `#pc-wrap, #mobile-wrap` (the pattern destination/community already used); `#main`/footer shared; new `scss/mobile/responsive.scss` collapses desktop grids, adds 16 px gutters, horizontal scrollers for chips, single-column detail/auth layouts. Verified with iPhone emulation: layout viewport stays 390 px on all crawled pages (previously 628–769 px). |
-| P4-06 | P2 | Hardcoded fake data (AGENTS.md §9) | `PropertyCard`: fake `4.96` rating, fabricated review counts, rotating fake badges, "0.8 km from center", dead "View map", "Free cancellation" (false — confirmed bookings cannot be cancelled), fake address/type fallbacks, hot-linked stock photos | Rating shown only when reviews exist (else "New"); badges derived from real metrics (rating/bookings/created date); guests/bedrooms/beds from data; false claims removed; local default image. |
-| P4-07 | P2 | Hardcoded fake data | Hotel filter: fixed type counts, fake star-rating section with fake counts and non-functional checkboxes, city chips incl. countries (`Japan`, `Greece`) sent as `propertyCityList` (always 0 results), price max ₩500,000, `USD / KRW` label | City chips built from real listing cities; all `PropertyType` values without counts; non-functional star section removed; KRW slider ₩50,000–₩1,000,000+ step ₩10,000 (AGENTS.md §9.2); shared canonical amenity list. |
-| P4-08 | P2 | Hardcoded fake data | 15/20 destinations without images showed random hot-linked photos of other places; admin fallbacks `"CHE-109.432.891"` tax ID and `"Zermatt, Switzerland"` location; `"Global Citizen"`, fake article excerpt; `tourLocation` (non-existent field) → always "Curated Expedition" | Local default destination image; honest "Not provided"/"Location not provided"; real tour city/country. |
-| P4-09 | P2 | Checkout | Signed-out users stuck on "Initializing secure payment…" forever; missing/invalid stay dates also stuck and summary showed `₩NaN`; pay button showed a client-side estimate; missing `/img/placeholder.png` | Redirect to login with `referrer` back to checkout; explicit date error with link back; server `paymentAmount`/`paymentCurrency` now requested and displayed; local default images. Stripe client confirmation is still not treated as booking authority (webhook confirms). |
-| P4-10 | P3 | Agent dashboard | Prices rendered with `$`, missing placeholder image, "Showing 1–0 of 0" when empty | `₩` formatting, default images, pagination footer hidden when empty. Same `$` fix in agent Reservations. |
-| P4-11 | P3 | My Page | `GetMyAgentApplications` fired without a token before redirect (`Bearer token is not provided!`) | Query skipped until a user exists. |
-| P4-12 | P3 | CS page | Two hero images were expiring `lh3.googleusercontent.com/aida/…` URLs (blocked, `ERR_BLOCKED_BY_ORB`) | Local banner images. |
-| P4-13 | P3 | Uploads | Article cover input accepted WebP; avatar input accepted any image; backend accepts only PNG/JPEG | `accept` aligned to PNG/JPEG. |
-| P4-14 | P3 | Head | `/favicon.ico` 404 on every page | `public/favicon.svg` + `<link rel="icon">`. |
+| Phase                          | Verified changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1 — Auth & CORS**            | JWT access checks current ACTIVE, non-deleted member and current role in MongoDB; revoked/blocked users lose GraphQL and Socket.IO access. Auth failures now use appropriate unauthorized responses and avoid login account enumeration. HTTP and Socket.IO share `CORS_ALLOWED_ORIGINS`; production needs the actual allowed origins configured.                                                                                                                                                                                                                   |
+| **2 — Pagination**             | Standard GraphQL page/limit inputs require integers, `page >= 1`, and `1 <= limit <= 100`; ranking queries retain `1..20`. Invalid values return `BAD_REQUEST`; cursor messages limit remains 100.                                                                                                                                                                                                                                                                                                                                                                  |
+| **3 — Booking/Payment**        | Tour seat reservation + Booking creation now share a MongoDB transaction; competing Property bookings are serialized by `availabilityVersion`. Idempotency keys are checked for member/booking/amount context. **Only signature-verified Stripe webhooks** with matching server-side amount/currency confirm payments; duplicates, stale events, cancellation, expiry and seat release are conditionally guarded.                                                                                                                                                   |
+| **4 — Session/Uploads/Search** | `useAuthSession` now uses authenticated `VerifyMemberSession` rather than public `getMember`; handles token refresh, race conditions and auth errors. Socket reconnect reads current token. Upload target allowlist prevents path traversal; extension derives from MIME. User-entered regex text is escaped across search services.                                                                                                                                                                                                                                |
+| **4 — Pages/UI**               | Global Search API integration kept and keyboard behavior fixed. Agent hotel/tour create/edit modals now call actual GraphQL APIs. Mobile domain CSS restored for `#mobile-wrap`, with responsive layouts. Fake hotel ratings, badges, addresses, map links, cancellation promises, destination imagery and admin placeholder fields were replaced/removed. Checkout now handles signed-out users, invalid dates and displays server-calculated payment totals. SCSS moved into proper partials; favicon, upload accept types and several missing images were fixed. |
+| **4 — Telegram**               | OAuth authorization-code + PKCE flow added to sign-in/up and callback. Backend detects HTTP 200 token error bodies correctly. Invalid code, expired state, cancellation, and PKCE were exercised; real login still requires allowed redirect URLs in BotFather (potential HTTPS tunnel for localhost).                                                                                                                                                                                                                                                              |
 
-### Verification evidence
+Other Phase 4 improvements: Global Search 300 ms debounce and 2-character minimum; `getChatSocketUrl()` reuse; centralized auth error handling excluding login/signup exchanges; correct GraphQL upload `target`; travel-history fields; booking cancellation UI shown only when `PENDING`; navigation/auth/agent listing display fixes; non-functional hotel filters removed and city/type/amenity filters aligned to real data.
 
-| Check | Result |
-|---|---|
-| Frontend `tsc --noEmit` | ✅ pass |
-| Next.js production build (isolated copy, so the running dev server on :3000 was not disturbed) | ✅ pass — 33/33 pages |
-| GraphQL contract validation — every `gql` document in `apollo/**` parsed and validated against live introspection | ✅ 108/108 valid |
-| ESLint | ⛔ **BLOCKED** — no ESLint config in `aurora-next`; `next lint` would start interactive setup |
-| Backend `aurora-api` / `aurora-batch` TypeScript | ✅ pass / ✅ pass |
-| Backend unit tests | ✅ 27/27 (5 suites; +4 new tests for `escapeRegExp`, upload target whitelist, mimetype extension) |
-| Backend E2E (MongoMemoryReplSet, verified isolated from the dev DB) | ⚠️ 68/69 — sole failure is the unchanged Tour `PENDING`/`ACTIVE` policy mismatch (`catalog-social.e2e-spec.ts:169`) |
-| Backend Nest build | ✅ pass |
-| Browser crawl (headless Chrome, desktop 1440 px), anonymous: 17 routes; authenticated USER: 17 routes incl. all My Page tabs, chat, member, details | ✅ 0 GraphQL errors, 0 page errors (remaining console noise: Google Sign-In origin not allowed — configuration) |
-| Mobile crawl (iPhone UA, 390 px) | ✅ layout viewport = 390 px on all 17 checked routes; no squeezed grids |
-| Global Search interaction | ✅ grouped results, ArrowDown+Enter navigates to detail, `se(` handled, dropdown not covered |
-| Chat Socket.IO | ✅ "Connected" with refreshed token; `/chat` namespace |
-| Session verification (live API) | ✅ no token / garbage token → `accessToken: null` (session cleared); valid token → refreshed `accessToken` |
-| Checkout | ✅ signed-out redirect to login with referrer; missing dates message; Stripe **test-mode** PaymentIntent initialised for a tour and server amount displayed. No payment was confirmed or charged. |
+## 3. Latest verification (Phase 4)
 
-### Production-blocking data finding
+| Check                                    | Result                                                                                                                          |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend TypeScript                      | **PASS**                                                                                                                        |
+| Next.js production build                 | **PASS — 33/33 pages**                                                                                                          |
+| GraphQL documents against live schema    | **PASS — 108/108**                                                                                                              |
+| Backend TypeScript + Nest build          | **PASS**                                                                                                                        |
+| Backend unit tests                       | **PASS — 27/27 (5 suites)**                                                                                                     |
+| Backend E2E                              | **68/69**; one unchanged mismatch: Tour creation defaults to `ACTIVE`, while `catalog-social.e2e-spec.ts:169` expects `PENDING` |
+| Browser desktop                          | **PASS**; anonymous 17 routes, logged-in USER 17 routes, no page/GraphQL errors; Google OAuth origin still needs configuration  |
+| Mobile browser                           | **PASS** at 390 px viewport on 17 routes; does not establish full device/browser coverage                                       |
+| Global Search, Socket.IO, session checks | **PASS** in exercised scenarios                                                                                                 |
+| Stripe checkout                          | **Test mode** PaymentIntent initialized; no actual confirmation or charge tested                                                |
+| ESLint                                   | **BLOCKED**: frontend config absent; `next lint` prompts for setup                                                              |
 
-- The live tour tested at checkout was stored with `tourCurrency: "USD"` and `tourPrice: 450000`, so the server prepared a **USD 450,000** charge (Stripe amount ×100). The backend accepts any client-supplied `currency`/`tourCurrency` on create/update. The new agent forms always send `KRW`, but the backend should enforce the platform currency (KRW) server-side and existing non-KRW listings must be migrated before launch.
+Earlier phase results: security E2E 6/6; pagination-focused 12/12; booking-focused 15/15. Initial audit's 21 unit tests and earlier TypeScript issues are historical, superseded by the latest results above.
 
-### Environment incident during Phase 4 (not caused by Phase 4 work)
+## 4. Remaining production blockers and risks
 
-- At about 04:05 KST the dev database `AURORA` was emptied (all collections 0 documents; later 1 member + the auto-created global chat) while MongoDB Compass was open and the backend was restarted from another terminal; `pages/index.tsx` and `TrendingDestinations.tsx` were edited concurrently in the same minute. Phase 4 executed only read-only counts against the database, unit tests without DB access, and E2E against an in-memory replica set (confirmed: the dev DB was unchanged after E2E). The test account `p4smk030619` and the test-mode tour hold created during verification were removed together with the reset. The matching Stripe **test-mode** PaymentIntent remains unconfirmed in the Stripe test account (no charge). Runtime checks needing listing data after 04:05 were therefore **BLOCKED**.
+**Critical — before accepting real payments**
 
-### Telegram sign-in (Phase 4 addendum)
+1. **Payouts:** Stripe Connect / destination charges, agent onboarding, direct agent settlement, commission and payout reconciliation are **not implemented**; funds currently settle to the platform Stripe account.
+2. **Refund policy:** Confirmed bookings cannot currently be cancelled/refunded through the implemented state machine. Define deadlines, eligibility, partial refunds, disputes and inventory recovery before showing cancellation/refund promises.
+3. **Payment reconciliation:** No durable Stripe webhook event ledger or reconciliation worker; a crash between Stripe PaymentIntent creation and local DB insert can orphan an intent. Add replay/recovery, monitoring and alerting for failed refunds.
+4. **Worker ownership:** 60-second booking-expiry/travel-history timers run inside each process. State guards protect correctness, but replicas repeat scans. Move to a dedicated scheduler with lease/ownership and observability.
+5. **Currency consistency:** Phase 4 observed a Tour stored as `USD 450000`, causing a prospective **USD 450,000** Stripe charge in test mode. Backend currently accepts input currency; report proposes enforcing **KRW** server-side and migrating inconsistent records. **Confirm the intended business currency before applying any migration**; the report's KRW policy may not reflect later product decisions.
+6. **Production environment:** Configure allowed CORS origins and secret management; rotate exposed credentials; preserve MongoDB transaction-capable deployment. Uploaded images currently use local disk (`uploads`), unsuitable for stateless/multi-instance production; migrate to S3/R2 or equivalent persistent object storage. Health checks and monitoring remain needed.
 
-| Area | Result |
-|---|---|
-| Backend contract | `telegramAuth(input: { code, redirectUri, codeVerifier })` exchanges the code at `https://oauth.telegram.org/token` (Basic auth + PKCE verifier) and verifies the RS256 `id_token` against Telegram JWKS (`iss`, `aud` = bot ID). Matches Telegram's live discovery document and official docs. Existing E2E covers member creation, reuse and nickname candidates. |
-| Backend fix | Telegram answers token errors with **HTTP 200** and `{"error":"invalid_grant"}`; the service only handled 4xx, so expired/invalid codes surfaced as "Telegram authentication failed". `error` bodies now map to `INVALID_TELEGRAM_AUTHORIZATION_CODE` (`invalid_client`/`unauthorized_client` → `TELEGRAM_AUTH_NOT_CONFIGURED`), with unit coverage. Verified live. |
-| Frontend | Sign-in and sign-up Telegram buttons start the OIDC authorization code flow (`scope=openid profile`, `state`, PKCE S256, 10-minute one-time request in `sessionStorage`); new `/auth/telegram/callback` page sends `code`, the same `redirectUri` and the verifier to `telegramAuth`, stores the AURORA JWT and returns to the safe `referrer`. `MemberAuthType.TELEGRAM` added; `TelegramAuth` errors are shown on the callback page (silent in the global error link). Back-navigation from a provider page re-enables social buttons. |
-| Browser verification | Authorization URL parameters and `code_challenge = BASE64URL(SHA256(verifier))` verified from both pages; callback verified for invalid code (backend reached Telegram), state mismatch, expired request and user cancellation; an existing session is kept when Telegram sign-in fails. |
-| **Required configuration (BLOCKED for a real login)** | Telegram currently rejects every local redirect URI (`redirect_uri required`). Register `http://localhost:3000/auth/telegram/callback` (and the production `https://<domain>/auth/telegram/callback`) in @BotFather → Bot Settings → Login Widget → Allowed URLs. If Telegram does not accept `http://localhost`, serve the frontend through an HTTPS tunnel, register that callback URL, open the site from the tunnel origin and add the origin to backend `CORS_ALLOWED_ORIGINS`. Keep the ID-token signing algorithm at the default RS256 (the backend verifies RS256 only). |
+**Functionality / quality to verify or finish**
 
-### Remaining problems and recommended repairs
+- Agent create/edit hotel/tour modals were contract-checked but **not runtime-tested** with approved HOTEL and TOUR agents. Test uploads, validations and reserved-seat limits.
+- Admin pages were not runtime-tested with ADMIN credentials.
+- Google Sign-In 403: authorize `http://localhost:3000` as a JavaScript origin; Telegram: register callback URLs in BotFather.
+- Tour publish policy is unresolved: immediate `ACTIVE` creation versus moderation `PENDING` (and the failing E2E assertion).
+- Legacy data: inconsistent amenity spellings (`WiFi`/`WIFI` etc.); destination property/tour counters not updated consistently; external Stitch images can expire.
+- Agent My Hotels/Tours search/type filters need backend support or must remain disabled. Phone signup links to missing `/account/phone-signup` (404): implement or hide.
+- Frontend lacks automated component/e2e tests and ESLint setup. Reduce unnecessary Apollo `network-only` fetches, improve protected-route transitions and standardize z-index/SCSS.
+- Original audit also identified potentially unused GraphQL endpoints: `getHello`, `getMyRating`, `submitRating`, `getMySupportTickets`; verify usage before deletion. `telegramAuth` was initially listed unused but **became integrated in Phase 4**.
 
-| Item | File / area | Probable cause | Recommended repair |
-|---|---|---|---|
-| Non-KRW listings accepted | backend `property.service.ts`, `tour.service.ts` | Currency taken from client input | Force `KRW` on create/update (or validate `IsIn([KRW])`) and migrate existing data |
-| Agent forms not runtime-tested | `AgentPropertyForm.tsx`, `AgentTourForm.tsx` | No approved HOTEL/TOUR agent and DB reset | Test with an approved agent account: create, upload, edit, capacity below reserved seats |
-| Admin pages not runtime-tested | `pages/_admin/*` | No ADMIN credentials | Contract-validated only; run an authenticated admin crawl |
-| Google Sign-In button 403 | Google Cloud OAuth client | `http://localhost:3000` not an authorised JavaScript origin | Add the origin in Google Cloud Console |
-| Hot-linked Stitch images | `DestinationHero`, `SignIn`/`SignUp` editorial panels, `PropertyCard` removed | `lh3.googleusercontent.com/aida-public` URLs can expire (the CS ones already did) | Download into `public/img` |
-| Inconsistent amenity values in data (`WiFi` vs `WIFI`, `AIR_CONDITIONING`) | DB data | Older seed/import formats | Normalise to the canonical list in `libs/config.ts` |
-| Destination counters always 0 | backend destination service | `destinationProperties`/`destinationTours` not incremented for most listings | Recompute counters or increment on listing create/status change |
-| Agent search/type filters disabled | `MyHotels.tsx`, `MyTours.tsx` | `AgentPropertiesInquiry.search` only supports status | Add backend `text`/`propertyType` filters or keep disabled |
-| Confirmed-booking cancellation/refunds | backend payment | Product policy undefined (Phase 3) | Define policy before exposing UI |
-| No frontend automated tests / ESLint config | `aurora-next` | Not set up | Add ESLint config and Playwright smoke tests (crawler approach used here) |
-| Phone sign-up button leads to a 404 | `SignUp.tsx` → `/account/phone-signup` | Page was never created; backend has no phone OTP flow | Build the page on top of `signup` with `memberAuthType: PHONE`, or hide the button |
+## 5. Booking and payment behavior
 
----
+- **Booking:** `PENDING -> CONFIRMED` only after a valid on-time webhook; `PENDING -> CANCELLED` for eligible cancel/expiry/failure; `CONFIRMED -> COMPLETED` via travel-history processing after stay checkout / tour end. `CANCELLED` and `COMPLETED` are terminal. `CONFIRMED -> CANCELLED/REFUNDED` is not implemented.
+- **Payment:** `PENDING -> SUCCEEDED` on verified Stripe success; invalid captured payment may transition to `REFUNDED`; late failure cannot downgrade terminal success/refund. Refund requests use deterministic Stripe idempotency keys.
+- Payment and booking integrity received 15/15 targeted E2E tests and MongoDB transaction verification. Production-grade reconciliation is still outstanding.
 
-## VERIFIED REMEDIATION STATUS — PHASE 3 (2026-10-10)
+## 6. Additional historical observations
 
-The original findings below remain as the historical audit baseline. Phase 3 audited the complete booking/payment path and hardened only confirmed integrity defects. Phase 1 authentication/CORS fixes, Phase 2 pagination validation, Tour publication status, frontend design, and unrelated schemas were preserved.
+Original architecture audit: modular NestJS design and typed GraphQL are strong; the frontend uses Apollo/SCSS and a 1300 px design standard. Initial findings included unnecessary `network-only` fetches, weak SSR route gating, CSS stacking conflicts, unindexed querying, local uploads, and no frontend automated tests. Several original security, booking-concurrency, pagination, false UI content and mobile findings have since been **fixed** as documented in Section 2; do **not** reopen them as unfixed solely based on the original findings table.
 
-### Root-cause corrections and verified fixes
+During Phase 4 a **historical environment incident** was recorded: around 04:05 KST, the then-connected development `AURORA` DB was observed emptied while Compass/backend activities overlapped. The audit attributed no cause to Phase 4 tests and did not establish a root cause. The information reflects that moment, **not necessarily the current database contents**. The temporary Stripe test PaymentIntent remained unconfirmed.
 
-| Area | Status | Verified result |
-|---|---|---|
-| **DAT-01 historical diagnosis** | ✅ **CORRECTED AND RESOLVED** | The original claim that duplicate-key compensation caused seat under-counting was incomplete: two concurrent attempts could each increment seats, so compensating the losing insert was necessary. The actual defect was the non-transactional gap between the atomic Tour seat increment and Booking insert; a process failure in that gap could leak reserved seats. Both operations now execute in one MongoDB transaction, so abort restores the increment exactly. The old manual compensation is no longer needed because transaction abort owns rollback. Duplicate-key recovery returns only a precisely matching, unexpired PENDING hold. |
-| **Property overlap concurrency** | ✅ **VERIFIED** | The existing `availabilityVersion` write inside the transaction serializes competing Property holds; the overlap query includes CONFIRMED and unexpired PENDING bookings. Parallel overlapping requests produce one hold and one rejection. Duplicate-key recovery was tightened to require the same member, property, dates, guest count, key, status, and live expiry. |
-| **Checkout idempotency ownership** | ✅ **HARDENED** | A globally unique Payment idempotency key is no longer blindly reusable. Existing payments must match the current member, category, listing, guest count, and Property dates. A duplicate Payment insert is returned only when it belongs to the same member and Booking; otherwise the newly created hold is cancelled safely and the request fails. |
-| **Webhook authority and amount integrity** | ✅ **HARDENED** | Only Stripe's signature-verified webhook can confirm a booking. A success event must match the server-stored amount and currency before `PENDING -> CONFIRMED`; a mismatch marks the Payment failed, refunds it, cancels the pending Booking, and releases Tour inventory. Client redirects and frontend state cannot confirm payment. |
-| **Duplicate/out-of-order events** | ✅ **HARDENED AND VERIFIED** | Conditional database state transitions prevent a duplicate success or later failure event from downgrading an already successful payment/confirmed booking. Refund calls use the deterministic Stripe idempotency key `booking-refund:<paymentIntentId>`. Expiry and cancellation release Tour seats only after a conditional PENDING claim, preventing double release across simultaneous workers. |
-| **MongoDB transaction support** | ✅ **VERIFIED IN DEVELOPMENT** | The configured development Atlas deployment reported a replica-set primary and logical session support. E2E tests run against `MongoMemoryReplSet` with WiredTiger, so transaction behavior is exercised rather than mocked. Production deployment must retain replica-set/sharded transaction support. |
-| **Stripe environment** | ✅ **TEST MODE VERIFIED** | Backend secret key and frontend publishable key are test-mode keys; a webhook secret is configured. No live payment was executed and no secret value was printed or copied into this report. |
+## 7. Priority action plan
 
-### Booking and Payment state machine
+1. **Immediately:** protect DB/Stripe secrets, verify current database/backups and environment mapping, set production CORS origins and OAuth callback allowlists; resolve the currency policy and audit listing amounts.
+2. **Before go-live:** implement payout/Stripe Connect approach, refund policy, durable event reconciliation, worker ownership, asset storage and operational monitoring/health checks.
+3. **Verify core roles:** authenticated ADMIN and approved HOTEL/TOUR agent end-to-end flows; fix Tour status policy and the sole failing E2E case.
+4. **Finish data/UI integrity:** destination counters, amenity normalization, expired images, agent filters, phone signup and protected-route polish.
+5. **Quality/performance:** add frontend ESLint + automated smoke/component tests, optimize Apollo cache and review indexes, pagination and z-index scale.
 
-- Booking: `PENDING -> CONFIRMED` only after a valid, signed, exact-amount Stripe success event received before hold expiry.
-- Booking: `PENDING -> CANCELLED` by the owner cancellation mutation, hold expiry, Stripe setup failure, or payment verification failure.
-- Booking: `CONFIRMED -> COMPLETED` after the stay checkout date or Tour end date through the Travel History worker.
-- `CANCELLED` and `COMPLETED` are terminal in the current implementation. `CONFIRMED -> CANCELLED/REFUNDED` is not implemented; this is a product-policy gap, not silently added in Phase 3.
-- Payment: `PENDING -> SUCCEEDED` on valid confirmation; `PENDING/FAILED -> REFUNDED` when a captured payment cannot validly confirm its Booking; later failure/cancel events do not downgrade `SUCCEEDED` or `REFUNDED`.
-
-### Phase 3 regression evidence
-
-- Focused commerce E2E: **15/15 passed**. Coverage includes trusted server-side pricing, sequential and parallel Property overlap, Tour capacity overflow, two users racing for the last seat, concurrent duplicate checkout, injected failure after seat increment, expiry plus duplicate late success, simultaneous expiry workers, repeated cancellation, cross-member idempotency-key reuse, wrong signed amount, unsigned/invalid-signature webhooks, invalid dates/capacity, and Travel History idempotency.
-- Full backend E2E: **68/69 passed** across 8 suites. All booking/payment tests passed. The sole failure is the unchanged Tour publication-policy mismatch: `catalog-social.e2e-spec.ts:169` expects `PENDING`, while the current schema/service creates `ACTIVE` Tours.
-- Backend unit tests: **23/23 passed** across 4 suites.
-- `aurora-api` TypeScript check: passed.
-- `aurora-batch` TypeScript check: passed.
-- Backend Nest build: passed (`webpack 5.106.2 compiled successfully`).
-- Frontend TypeScript check: passed. No frontend compatibility change was required.
-
-### Compatibility and remaining payment risks
-
-- GraphQL operation names, inputs, response shapes, frontend Stripe flow, existing valid idempotent retries, and server-calculated prices are unchanged. No collection migration or new index was introduced.
-- Expiry and Travel History use per-process 60-second timers. Atomic status predicates preserve correctness across replicas, but every replica performs the same scans; a dedicated scheduler/lease is still recommended for efficiency and operational visibility.
-- Stripe Connect/destination charges are absent. Funds settle to the platform Stripe account; direct agent payout, commission, onboarding, and payout reconciliation remain unimplemented.
-- There is no durable Stripe event ledger or reconciliation worker. A process failure after PaymentIntent creation but before the local Payment insert can leave an orphan provider object. Webhook replay/audit tooling and provider-to-database reconciliation remain production requirements.
-- Confirmed-booking cancellation/refund policy is not implemented, while frontend support wording may imply refunds. Product/legal policy must define eligibility, deadlines, partial refunds, inventory restoration, and dispute handling before launch.
-- If Stripe refund creation fails, the webhook returns an error and relies on Stripe retry; operational alerting and a recovery queue are still needed.
-
-### Phase 3 production-readiness verdict
-
-**Booking inventory correctness is materially hardened and the tested concurrency paths pass, but real-money production launch remains blocked** by the absent payout/Stripe Connect design, confirmed-booking refund policy, durable payment-event reconciliation, and production-grade background-job ownership/observability.
-
-## VERIFIED REMEDIATION STATUS — PHASE 2 (2026-10-10)
-
-The original findings below remain as the historical audit baseline. Phase 2 repaired the confirmed pagination exposure without changing authentication/CORS, booking/payment behavior, Tour seat rollback logic, frontend design, or API response structures.
-
-| Finding | Remediation status | Verified change |
-|---|---|---|
-| **DAT-02** | ✅ **RESOLVED** | Every active standard page/limit GraphQL inquiry now requires integer values, `page >= 1`, and `1 <= limit <= 100`. This covers Member, Property, Tour, Like/View favorites and history, Chat, Booking, Board Article, Comment, Follow, Destination, Notification, Notice, Agent Application, Destination Review, Travel History, and Support Ticket pagination. Cursor-based messages retain their existing maximum of 100 and now explicitly require an integer limit. |
-| **Ranking limit exception** | ✅ **VERIFIED** | `RankingInquiry` and `TopAgentsInquiry` intentionally retain the stricter existing `1..20` maximum and now explicitly require integer limits. Resolver defaults (`4` or `5`) are unchanged. |
-| **Tour creation status test** | ⚠️ **OPEN POLICY MISMATCH — NOT MODIFIED** | `catalog-social.e2e-spec.ts` and the Property moderation flow expect new listings to be `PENDING`, but `Tour.model.ts` defaults new Tours to `ACTIVE`. `TourInput` does not accept a status, `createTour` does not override it, the resolver correctly requires a current `AGENT`, and `assertApprovedAgent` verifies an approved `TOUR` agent. The schema default was changed to `ACTIVE` after the still-current test was introduced. Product/security policy must decide whether Tours require admin moderation; if yes, restore the schema default to `PENDING`, otherwise update the test and document immediate publication. No status logic or test expectation was changed in Phase 2. |
-
-### Phase 2 implementation and validation evidence
-
-- Added `@IsInt()` where missing, `@Min(1)` to valid page/limit inputs, and `@Max(100)` to all standard pagination limits. Invalid values are rejected with GraphQL `BAD_REQUEST`; values are not silently clamped.
-- All MongoDB `$skip`, `$limit`, `find().limit()` and `find().skip()` call paths were audited. Pagination service methods are reached through resolver DTOs; Property/Tour wrapper calls into Like/View preserve the already-validated DTO. No separate raw client pagination arguments or unvalidated database pagination path was found.
-- Focused pagination E2E: **12/12 passed**. Verified limits `1`, `20`, and `100`; rejected `0`, `-1`, `101`, and `500000`; rejected page `0`, `-1`, and non-integer `1.5`; preserved `metaCounter`; separately verified Property, Tour, Like, Chat, and Booking boundaries.
-- Backend unit tests: **23/23 passed**.
-- Full backend E2E: **60/61 passed**. The sole failure is the unchanged Tour `PENDING`/`ACTIVE` policy mismatch documented above.
-- `aurora-api` TypeScript check: passed.
-- `aurora-batch` TypeScript check: passed.
-- Backend Nest build: passed.
-- Frontend TypeScript check: passed. All inspected frontend page sizes are within the new standard maximum; no frontend compatibility edit was required.
-
-### Phase 2 compatibility and residual risk
-
-- Existing defaults, sorting, aggregation pipelines, list/meta response shapes, and valid frontend requests are unchanged. Clients sending a standard limit above 100 now receive a validation error and must paginate.
-- Very large positive page numbers remain valid. They cannot produce a negative skip, but deep offset pagination can still become slow on large collections; cursor/keyset pagination is a future scalability improvement rather than part of this repair.
-- Direct in-process service calls do not automatically invoke Nest's global `ValidationPipe`; the audited production GraphQL resolver paths do. Future jobs/controllers calling these service methods directly must validate or construct bounded inputs.
-
-## VERIFIED REMEDIATION STATUS — PHASE 1 (2026-10-10)
-
-The original findings below remain as the historical audit baseline. The following Phase 1 changes were implemented and independently verified against the current backend working tree:
-
-| Finding | Remediation status | Verified change |
-|---|---|---|
-| **SEC-01** | ✅ **RESOLVED** | JWT signature/expiry validation is followed by an indexed MongoDB lookup requiring an existing `ACTIVE` member with `deletedAt: null`. `AuthGuard` and `RolesGuard` now use the current database member and current database role. Optional-auth endpoints treat revoked tokens as anonymous. Socket.IO validates the current member on connection and on each client action; admin blocking/deletion disconnects existing member sockets. |
-| **SEC-02** | ✅ **CODE FIXED — DEPLOYMENT CONFIG REQUIRED** | HTTP GraphQL and Socket.IO now share an exact-origin allowlist configured through `CORS_ALLOWED_ORIGINS`. Localhost, `127.0.0.1`, and IPv6 localhost remain available outside production. Production does not receive a wildcard fallback. Production deployment must set the authorized frontend origins. |
-| **BE-01 (authentication failures)** | ✅ **RESOLVED** | Missing, invalid, expired, blocked and deleted authentication states now use `UnauthorizedException`; wrong-password, unknown-account, passwordless-account, blocked-account and deleted-account login attempts share the same non-enumerating response. A dummy bcrypt comparison reduces timing differences for unknown/passwordless accounts. |
-
-### Phase 1 verification evidence
-
-- Backend unit tests: **23/23 passed** (`npm test -- --runInBand`).
-- Focused Phase 1 security E2E tests: **6/6 passed**, covering active/blocked/deleted members, invalid/expired JWTs, current USER/AGENT/ADMIN roles, optional/public GraphQL, login errors, Socket.IO revocation, and allowed/disallowed CORS origins.
-- Existing auth-agent plus Phase 1 security E2E tests: **21/21 passed**.
-- Full backend E2E attempt: **48/49 passed**. The remaining failure is outside Phase 1: `catalog-social.e2e-spec.ts` expects a newly created Tour to be `PENDING`, while the current unrelated Tour implementation returns `ACTIVE`.
-- `aurora-api` TypeScript check: passed.
-- `aurora-batch` TypeScript check: passed.
-- Backend Nest build: passed.
-- Frontend TypeScript check and Next.js production build: passed. The frontend build emitted only external Google Fonts optimization warnings and completed successfully.
-
-### Phase 1 compatibility and residual risk
-
-- The JWT payload shape and 30-day lifetime were preserved for frontend session compatibility. Server authorization no longer trusts the payload's role/status claims.
-- Every authenticated GraphQL request performs one indexed Member `_id` lookup. No revocation cache was introduced, so status and role changes take effect immediately at the cost of this additional database read.
-- Active-member JWTs still have no per-token logout denylist or refresh-token rotation. A stolen token remains usable until expiry unless the member is blocked/deleted or a future token-version/revocation mechanism is added.
-
----
-
-## A. EXECUTIVE SUMMARY
-
-An exhaustive, evidence-based engineering audit was performed across both the backend (`AURORA`) and frontend (`aurora-next`) codebases. The overall system exhibits solid foundational patterns—notably typed GraphQL schemas, NestJS modular organization, Mongoose transactions for complex booking holds, and an aesthetically polished Next.js UI. However, several critical architectural, security, database, and operational vulnerabilities prevent the platform from being production-ready in its current state.
-
-### High-Level Domain Assessments
-
-| Domain | Status | Rating | Summary |
-|---|---|---|---|
-| **Backend Architecture** | ⚠️ Partial Risk | 7.5 / 10 | Modular NestJS structure with monorepo setup (`aurora-api` & `aurora-batch`). Builds cleanly with Webpack. Critical gaps in global error classification (throws 500 on auth/client errors) and background job isolation. |
-| **Frontend Architecture** | ⚠️ Partial Risk | 7.0 / 10 | Clean Next.js Pages router setup. TypeScript compiles without errors. However, suffers from excessive `network-only` fetch policies, client-side auth gating without server-side redirects, and scattered `any` types. |
-| **Full-Stack Integration** | ✅ Functional | 8.5 / 10 | 85+ GraphQL operations aligned between frontend and backend. 5 backend APIs are currently unused. No dummy mock data found. |
-| **Security & Auth** | 🔴 High Risk | 5.0 / 10 | 30-day JWTs with signature-only validation (no DB revocation check), permitting blocked/demoted accounts to maintain full access. CORS set to wildcard origin with credentials. Hardcoded secrets in `.env`. Local disk file upload vulnerabilities. |
-| **Database & Integrity** | ⚠️ Partial Risk | 6.5 / 10 | Good use of MongoDB sessions in `confirmPaidBooking` and `createPropertyHold`. Critical issues: Tour seat hold cancellation race condition on duplicate key errors, unindexed fields in queries, and unbounded pagination limits across 4+ core services. |
-| **UI / UX & CSS** | ⚠️ Partial Risk | 7.0 / 10 | Premium visual direction and 1300px container width standards. Key defects: uncoordinated arbitrary `z-index` values up to 9999, overflow clipping, and mobile styles split into separate duplicate CSS trees rather than clean responsive media queries. |
-| **DevOps & Production Readiness** | 🔴 Not Ready | 4.0 / 10 | No health check endpoints, local disk storage for asset uploads (fails horizontal scaling), `setInterval` background workers inside web workers, and virtually 0% automated test coverage on the frontend. |
-
----
-
-## B. COMPLETE FINDINGS TABLE
-
-| ID | Severity | Area | File / Location | Issue | Evidence | Impact | Recommended Fix |
-|---|---|---|---|---|---|---|---|
-| **SEC-01** | **P0** | Security | `apps/aurora-api/src/components/auth/auth.service.ts:95-99` | 30-day JWT without revocation or database status verification | `verifyToken` calls `jwtService.verifyAsync(token)` and directly shapes ObjectId without fetching `Member` from DB. | A user blocked by Admin or with revoked agent privileges retains full API access for up to 30 days. | Validate user status (`memberStatus !== BLOCKED`) in `verifyToken` or maintain a Redis revocation/denylist for active tokens. |
-| **SEC-02** | **P0** | Security / DevOps | `apps/aurora-api/src/main.ts:15` | Wildcard CORS with credentials enabled | `app.enableCors({ origin: true, credentials: true });` | Any third-party origin in the browser can execute authenticated requests with credentials if CSRF protection is absent. | Restrict `origin` to explicit whitelist domains (e.g. `https://aurora.travel`, `https://admin.aurora.travel`). |
-| **SEC-03** | **P1** | Security / Storage | `apps/aurora-api/src/main.ts:12` & `components/image-uploader` | Local disk file storage without virus scan or cloud bucket | `app.useStaticAssets(join(process.cwd(), 'uploads'))` | Multi-instance deployment causes broken images. Local disk can be filled up, risking denial of service. | Migrate file uploads to AWS S3 / Cloudflare R2 / Google Cloud Storage with presigned URLs or dedicated buffer upload. |
-| **SEC-04** | **P1** | Security / Config | `apps/aurora-api/.env` | Hardcoded production/dev database passwords and Stripe secret keys in repository | Plaintext credentials stored in checked `.env` file (`MONGO_DEV`, `STRIPE_SECRET_KEY`). | Risk of catastrophic credential leakage if repository or logs are compromised. | Move secrets to AWS Secrets Manager, Doppler, or environment variables in CI/CD deployment pipelines. |
-| **DAT-01** | **P1** | Database / Booking | `apps/aurora-api/src/components/payment/payment.service.ts:285-295` | Tour reserved seats undercounting bug on duplicate key hold collision | In `createTourHold`, when `bookingModel.create` catches error code 11000, it decrements `tourReservedSeats` even though the booking already existed. | Duplicate payment attempts or fast retries cause reserved seat counters to artificially decrement below actual booked seats. | Only decrement `tourReservedSeats` if the booking was NOT created and no existing hold exists. Wrap `createTourHold` in a MongoDB transaction session. |
-| **DAT-02** | **P1** | Performance / Database | Multiple services: `like.service.ts:110`, `chat.service.ts:136`, `booking.service.ts:66`, `property.service.ts:153` | Unbounded pagination limits | API queries pass user-supplied `limit` directly into `$limit` without upper bound validation (e.g. `limit: 1000000`). | Denial of service / memory exhaustion on MongoDB and NestJS by requesting huge page sizes. | Enforce server-side maximum pagination constraint (e.g., `Math.min(input.limit || 10, 100)`). |
-| **DAT-03** | **P2** | Architecture / Concurrency | `apps/aurora-api/src/components/travel-history/travel-history.service.ts:21` | In-process `setInterval` background worker inside API process | `setInterval(() => void this.completeExpiredBookings(), 60 * 1000)` runs on every API cluster replica. | In clustered/multi-replica deployments, multiple instances compete and execute duplicate aggregate queries every minute without distributed locking. | Move `completeExpiredBookings` to `aurora-batch` or implement Redis/Mongo-based distributed locking (like `BatchLock`). |
-| **DAT-04** | **P2** | Performance | `apps/aurora-batch/src/aurora-batch.service.ts:94-135` | N+1 queries during batch daily ranking calculations | `destinations`, `listings`, and `travelers` mapping functions execute queries sequentially inside loops. | Exponentially slower ranking calculations as number of active listings and travelers grows. | Refactor to bulk `$in` queries or comprehensive aggregation pipelines. |
-| **BE-01** | **P2** | Backend Logic | `apps/aurora-api/src/components/member/member.service.ts:75-87` | Incorrect HTTP 500 error thrown for user authentication errors | `login` throws `InternalServerErrorException(Messages.WRONG_PASSWORD)` and `Messages.MEMBER_NOT_FOUND`. | HTTP 500 triggers false alarm server alerts, masking genuine infrastructure crashes; violates RFC 7235. | Replace with `UnauthorizedException` or `BadRequestException`. |
-| **FE-01** | **P2** | Frontend Performance | `pages/destination/index.tsx`, `pages/tour/index.tsx`, `libs/components/community/index.tsx` | Excessive `network-only` fetch policy bypassing Apollo Cache | Widespread use of `fetchPolicy: 'network-only'` across public catalog lists. | Redundant network roundtrips on every page navigation, high backend load, slow UI rendering. | Switch to `cache-first` or `cache-and-network` with proper mutation cache eviction/refetching. |
-| **FE-02** | **P2** | Frontend / Auth | `pages/mypage/index.tsx`, `pages/chat/index.tsx` | Purely client-side authentication gating without SSR redirects | Checks `!user._id && !getJwtToken()` inside `useEffect` on client mount. | Unauthenticated users experience layout flashes and empty UI before being redirected. | Implement Next.js server-side redirection or a unified route guard wrapper. |
-| **UI-01** | **P3** | CSS / Layout | `scss/pc/mypage/myProfile.scss`, `scss/pc/property/property-detail.scss` | Arbitrary and conflicting `z-index` declarations | Unstandardized z-indexes (`1200`, `9999`, `1000`) across disparate SCSS stylesheets. | Modals, sticky bars, and dropdowns clip or render in incorrect stacking order. | Define a standardized z-index scale in `scss/variables.scss` (`$z-dropdown: 100`, `$z-sticky: 500`, `$z-modal: 1000`). |
-| **QA-01** | **P2** | Quality Assurance | `aurora-next` frontend workspace | Total absence of automated unit and component tests | Zero `*.test.tsx` or `*.spec.tsx` files present across `pages/` and `libs/`. | High regression risk on UI changes, refactorings, or Next.js version upgrades. | Introduce Jest + React Testing Library with smoke tests for critical user journeys. |
-
----
-
-## C. COMPLETE GRAPHQL API MATRIX
-
-Total Discovered Operations: **91** (49 Queries, 42 Mutations)
-
-| Operation Name | Type | Auth Guard | Backend Handler | DB Collection | Status | Frontend Consumer |
-|---|---|---|---|---|---|---|
-| `getMember` | Query | Optional (`WithoutGuard`) | `MemberResolver.getMember` | `members` | ✅ **PASS** | `MemberHeader`, `MyProfile` |
-| `getAllMembers` | Query | Optional | `MemberResolver.getAllMembers` | `members` | ✅ **PASS** | `MemberFollowers`, `Explore` |
-| `getDestinations` | Query | Public | `DestinationResolver.getDestinations` | `destinations` | ✅ **PASS** | `pages/destination/index.tsx` |
-| `getDestination` | Query | Optional | `DestinationResolver.getDestination` | `destinations` | ✅ **PASS** | `pages/destination/detail.tsx` |
-| `getProperties` | Query | Public | `PropertyResolver.getProperties` | `properties` | ✅ **PASS** | `pages/property/index.tsx` |
-| `getProperty` | Query | Optional | `PropertyResolver.getProperty` | `properties` | ✅ **PASS** | `pages/property/detail.tsx` |
-| `getTours` | Query | Public | `TourResolver.getTours` | `tours` | ✅ **PASS** | `pages/tour/index.tsx` |
-| `getTour` | Query | Optional | `TourResolver.getTour` | `tours` | ✅ **PASS** | `pages/tour/detail.tsx` |
-| `getFavorites` | Query | Required (`AuthGuard`) | `LikeResolver.getFavorites` | `likes` + `properties` | ✅ **PASS** | `MyProfileWishlist.tsx` |
-| `getFavoriteTours` | Query | Required (`AuthGuard`) | `LikeResolver.getFavoriteTours` | `likes` + `tours` | ✅ **PASS** | `MyProfileWishlist.tsx` |
-| `getVisited` | Query | Required (`AuthGuard`) | `ViewResolver.getVisited` | `views` + `properties` | ✅ **PASS** | `MyProfileHistory.tsx` |
-| `getVisitedTours` | Query | Required (`AuthGuard`) | `ViewResolver.getVisitedTours` | `views` + `tours` | ✅ **PASS** | `MyProfileVisitedTours.tsx` |
-| `getMyBookings` | Query | Required (`AuthGuard`) | `BookingResolver.getMyBookings` | `bookings` | ✅ **PASS** | `MyProfileBookings.tsx` |
-| `getMyTourBookings` | Query | Required (`AuthGuard`) | `BookingResolver.getMyTourBookings` | `bookings` | ✅ **PASS** | `MyProfileBookings.tsx` |
-| `getAgentProperties` | Query | Roles (`AGENT`) | `PropertyResolver.getAgentProperties` | `properties` | ✅ **PASS** | `libs/components/mypage/agent/MyHotels` |
-| `getAgentTours` | Query | Roles (`AGENT`) | `TourResolver.getAgentTours` | `tours` | ✅ **PASS** | `libs/components/mypage/agent/MyTours` |
-| `getBoardArticles` | Query | Public | `BoardArticleResolver.getBoardArticles` | `boardArticles` | ✅ **PASS** | `pages/community/index.tsx` |
-| `getBoardArticle` | Query | Optional | `BoardArticleResolver.getBoardArticle` | `boardArticles` | ✅ **PASS** | `pages/community/detail.tsx` |
-| `getMyChats` | Query | Required (`AuthGuard`) | `ChatResolver.getMyChats` | `chats` | ✅ **PASS** | `pages/chat/index.tsx` |
-| `getMessages` | Query | Required (`AuthGuard`) | `MessageResolver.getMessages` | `messages` | ✅ **PASS** | `pages/chat/index.tsx` |
-| `getMyNotifications` | Query | Required (`AuthGuard`) | `NotificationResolver.getMyNotifications` | `notifications` | ✅ **PASS** | `MyProfileNotifications.tsx` |
-| `signup` | Mutation | Public | `MemberResolver.signup` | `members` | ✅ **PASS** | `pages/account/signup.tsx` |
-| `login` | Mutation | Public | `MemberResolver.login` | `members` | ✅ **PASS** | `pages/account/login.tsx` |
-| `googleAuth` | Mutation | Public | `MemberResolver.googleAuth` | `members` | ✅ **PASS** | `SocialAuthGoogle.tsx` |
-| `kakaoAuth` | Mutation | Public | `MemberResolver.kakaoAuth` | `members` | ✅ **PASS** | `callback.tsx` |
-| `updateMember` | Mutation | Required (`AuthGuard`) | `MemberResolver.updateMember` | `members` | ✅ **PASS** | `MyProfileSettings.tsx` |
-| `likeTargetProperty` | Mutation | Required (`AuthGuard`) | `LikeResolver.likeTargetProperty` | `likes` + `properties` | ✅ **PASS** | `WishlistPlaceCard`, `detail.tsx` |
-| `likeTargetTour` | Mutation | Required (`AuthGuard`) | `LikeResolver.likeTargetTour` | `likes` + `tours` | ✅ **PASS** | `WishlistPlaceCard`, `detail.tsx` |
-| `likeTargetDestination` | Mutation | Required (`AuthGuard`) | `LikeResolver.likeTargetDestination` | `likes` + `destinations` | ✅ **PASS** | `pages/destination/detail.tsx` |
-| `likeTargetArticle` | Mutation | Required (`AuthGuard`) | `LikeResolver.likeTargetArticle` | `likes` + `boardArticles` | ✅ **PASS** | `CommunityCardArticle.tsx` |
-| `startPropertyPayment` | Mutation | Required (`AuthGuard`) | `PaymentResolver.startPropertyPayment` | `bookings` + `payments` | ✅ **PASS** | `pages/checkout/index.tsx` |
-| `startTourPayment` | Mutation | Required (`AuthGuard`) | `PaymentResolver.startTourPayment` | `bookings` + `payments` | ✅ **PASS** | `pages/checkout/index.tsx` |
-| `cancelBooking` | Mutation | Required (`AuthGuard`) | `PaymentResolver.cancelBooking` | `bookings` | ✅ **PASS** | `MyProfileBookings.tsx` |
-| `cancelTourBooking` | Mutation | Required (`AuthGuard`) | `PaymentResolver.cancelTourBooking` | `bookings` | ✅ **PASS** | `MyProfileBookings.tsx` |
-| `createProperty` | Mutation | Roles (`AGENT`) | `PropertyResolver.createProperty` | `properties` | ✅ **PASS** | `AgentPropertyModal.tsx` |
-| `updateProperty` | Mutation | Roles (`AGENT`) | `PropertyResolver.updateProperty` | `properties` | ✅ **PASS** | `AgentPropertyModal.tsx` |
-| `createTour` | Mutation | Roles (`AGENT`) | `TourResolver.createTour` | `tours` | ✅ **PASS** | `AgentTourModal.tsx` |
-| `updateTour` | Mutation | Roles (`AGENT`) | `TourResolver.updateTour` | `tours` | ✅ **PASS** | `AgentTourModal.tsx` |
-| `createBoardArticle` | Mutation | Required (`AuthGuard`) | `BoardArticleResolver.createBoardArticle` | `boardArticles` | ✅ **PASS** | `WriteStoryModal.tsx` |
-| `updateBoardArticle` | Mutation | Required (`AuthGuard`) | `BoardArticleResolver.updateBoardArticle` | `boardArticles` | ✅ **PASS** | `WriteStoryModal.tsx` |
-| `getAllMembersByAdmin` | Query | Roles (`ADMIN`) | `MemberResolver.getAllMembersByAdmin` | `members` | ✅ **PASS** | `pages/_admin/users/index.tsx` |
-| `updateMemberByAdmin` | Mutation | Roles (`ADMIN`) | `MemberResolver.updateMemberByAdmin` | `members` | ✅ **PASS** | `pages/_admin/users/index.tsx` |
-| `getAllPropertiesByAdmin`| Query | Roles (`ADMIN`) | `PropertyResolver.getAllPropertiesByAdmin` | `properties` | ✅ **PASS** | `pages/_admin/properties/index.tsx` |
-| `getAllBookingsByAdmin` | Query | Roles (`ADMIN`) | `BookingResolver.getAllBookingsByAdmin` | `bookings` | ✅ **PASS** | `pages/_admin/bookings/index.tsx` |
-| `getHello` | Query | Public | `AppResolver.getHello` | None | ⚠️ **UNRESOLVED / UNUSED** | Unused in frontend |
-| `getMyRating` | Query | Required | `ReviewResolver.getMyRating` | `reviews` | ⚠️ **UNRESOLVED / UNUSED** | Unused in frontend |
-| `getMySupportTickets` | Query | Required | `SupportResolver.getMySupportTickets` | `supportTickets`| ⚠️ **UNRESOLVED / UNUSED** | Unused in frontend |
-| `telegramAuth` | Mutation | Public | `MemberResolver.telegramAuth` | `members` | ⚠️ **UNRESOLVED / UNUSED** | Unused in frontend |
-| `submitRating` | Mutation | Required | `ReviewResolver.submitRating` | `reviews` | ⚠️ **UNRESOLVED / UNUSED** | Unused in frontend |
-
----
-
-## D. PAGE-BY-PAGE FINDINGS
-
-### 1. Home (`pages/index.tsx`)
-- **Working:** Hero banner, trending destinations, curated hotels, curated tours, trusted partners marquee carousel.
-- **Issues:**
-  - Header search opens in component state rather than dedicated deep-linked routing.
-  - Trusted Partners marquee animation duration required manual re-synchronization (`25s`).
-  - High initial bundle due to unoptimized Three.js assets.
-
-### 2. Properties Catalog & Detail (`pages/property/index.tsx`, `detail.tsx`)
-- **Working:** Property listing, filtering by price/amenities/city, sticky filter sidebar (fixed to navbar), image carousel, like toggle.
-- **Issues:**
-  - Empty `propertyImages` in database fallback to identical static hero image (`/img/banner/hero-hotels.jpg`).
-  - Review section displays hardcoded aggregate ratings if individual review count is 0.
-
-### 3. Tours Catalog & Detail (`pages/tour/index.tsx`, `detail.tsx`)
-- **Working:** Tour catalog grid, destination filter, capacity verification, start/end date ranges.
-- **Issues:**
-  - Date format parsing lacks defensive check for invalid dates in legacy data, causing UI warnings.
-
-### 4. Community Articles (`pages/community/index.tsx`, `detail.tsx`)
-- **Working:** 2-column grid layout (6 cards/page), pagination, likes counter, comments list, author follow button conditional visibility.
-- **Issues:**
-  - Article cover image deletion previously sent `undefined`, resulting in unsaved changes (patched during session to send empty string `""`).
-  - Category update was disabled in UI despite backend DTO support (patched during session).
-
-### 5. My Page (`pages/mypage/index.tsx`)
-- **Working:** Articles tab, Followers, Following, Wishlist, Bookings, Visited Hotels, Visited Tours, Settings, Agent management.
-- **Issues:**
-  - Followers and Following pages were using unstyled Tailwind classes for `<button>`, breaking visual hierarchy (patched during session with standard `<FollowButton />`).
-  - Travel History previously merged tours and properties into one unordered list without distinction (separated into Visited Hotels and Visited Tours tabs during session).
-
-### 6. Checkout (`pages/checkout/index.tsx`)
-- **Working:** Stripe Elements card input, payment intent creation via `startPropertyPayment` / `startTourPayment`, automatic booking hold creation with 15-minute expiration timer.
-- **Issues:**
-  - Currency conversion rules: KRW requires 0 decimal places while USD requires 2. If client sends non-matching currency symbol, backend rejects with `INVALID_DATA`.
-
-### 7. Chat (`pages/chat/index.tsx`)
-- **Working:** Real-time messaging with Socket.io, direct chat creation, unread badge counters.
-- **Issues:**
-  - WebSocket reconnection appends token query param from `getJwtToken()`; if token expires while tab is open, socket enters silent disconnection loop without triggering re-login prompt.
-
-### 8. Admin Dashboard (`pages/_admin/*`)
-- **Working:** Overview stats, destination CRUD, user role management, agent application approval/rejection, booking management.
-- **Issues:**
-  - Missing server-side role check on page route; if ordinary user knows URL, page renders empty skeleton until client-side GraphQL query fails with `ONLY_SPECIFIC_ROLES`.
-
----
-
-## E. INTEGRATION MISMATCH REPORT
-
-1. **Unused Backend GraphQL Endpoints:**
-   - `getHello` — Dev testing query left in `AppResolver`.
-   - `getMyRating` / `submitRating` — Implemented in backend, but frontend uses standard `createDestinationReview` instead of the rating system.
-   - `getMySupportTickets` — Backend provides full ticket inquiry, but frontend CS page only implements ticket submission (`createSupportTicket`).
-   - `telegramAuth` — Complete Telegram OAuth with PKCE implemented in backend; frontend currently only renders Google and Kakao login buttons.
-
-2. **Enum Harmonization:**
-   - Verified that `BoardArticleCategory`, `BoardArticleStatus`, `PropertyType`, `TourStatus`, `BookingStatus`, and `PaymentStatus` match 100% across frontend types and backend schema definitions.
-
-3. **Field Type Mismatches:**
-   - None currently detected that crash runtime. Dates are consistently serialized as ISO strings and parsed via `new Date()`. ObjectIds are properly coerced to strings in GraphQL output types.
-
----
-
-## F. SECURITY AUDIT FINDINGS
-
-### Vulnerability Analysis
-
-```mermaid
-flowchart TD
-    A["Client Request with 30-Day JWT"] --> B["RolesGuard / AuthGuard"]
-    B --> C["AuthService.verifyToken()"]
-    C --> D{"Cryptographic Signature Valid?"}
-    D -- No --> E["401 Unauthorized"]
-    D -- Yes --> F["Decode Payload (Member ID, Role)"]
-    F --> G["Execute Mutation / Query"]
-    style G fill:#ff6961,stroke:#333,stroke-width:2px
-    note["VULNERABILITY: Database 'Member' record is NEVER checked!<br>Blocked accounts or demoted agents retain full access!"]
-    F -.-> note
-```
-
-1. **Token Invalidation Absence (SEC-01 - P0):**
-   - **Preconditions:** An attacker has a valid JWT, and the administrator subsequently blocks the account or demotes their role.
-   - **Impact:** Attacker retains full operational privileges for up to 30 days.
-   - **Remediation:** In `AuthGuard` and `RolesGuard`, query member active status or validate token issuance timestamp against `tokenInvalidatedAt`.
-
-2. **Permissive CORS Configuration (SEC-02 - P0):**
-   - **Code:** `apps/aurora-api/src/main.ts:15`: `app.enableCors({ origin: true, credentials: true });`
-   - **Impact:** Reflects the `Origin` header of any requesting website and allows cookies/authorization headers, exposing authenticated endpoints to CSRF if browsers send credentials.
-   - **Remediation:** Replace `origin: true` with an explicit list of allowed domains.
-
-3. **Unrestricted File Uploads on Local Storage (SEC-03 - P1):**
-   - **Code:** `graphqlUploadExpress({ maxFileSize: 10_000_000, maxFiles: 10 })` saving to `process.cwd() + '/uploads'`.
-   - **Impact:** High storage denial of service risk; files are saved on application server disk rather than stateless object storage.
-
----
-
-## G. DATABASE AND BOOKING INTEGRITY FINDINGS
-
-### Concurrency & Availability Flow in Bookings
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Traveler
-    participant API as PaymentService
-    participant DB as MongoDB (Tours / Bookings)
-    participant Stripe as Stripe Gateway
-
-    Traveler->>API: startTourPayment(tourId, guests, idempotencyKey)
-    API->>DB: findOneAndUpdate({ reserved + guests <= capacity }, { $inc: reserved })
-    Note over API,DB: Seat hold reserved atomically!
-    API->>DB: bookingModel.create({ status: PENDING, expiresAt: +15min })
-    alt Duplicate Key Error (Code 11000)
-        API->>DB: $inc: { tourReservedSeats: -guests } [BUG: Decrements even if booking already exists!]
-    end
-    API->>Stripe: paymentIntents.create()
-    API-->>Traveler: clientSecret
-    Traveler->>Stripe: Confirm Payment
-    Stripe-->>API: Webhook (payment_intent.succeeded)
-    API->>DB: Transaction: findOneAndUpdate({ PENDING, expiresAt > now }, { CONFIRMED })
-```
-
-1. **Tour Seat Under-counting on Idempotency Conflict (DAT-01):**
-   - In `createTourHold`, handling duplicate submission via code 11000 rolls back `tourReservedSeats` even when returning the existing hold. This leads to seat count drift and over-capacity booking.
-   - **Fix:** In `catch`, check if `existingBooking` exists before decrementing seats.
-
-2. **Missing Database Indexes:**
-   - `bookings`: Queries filter by `{ memberId: 1, bookingCategory: 1, bookingStatus: 1 }`. Schema currently indexes `{ memberId: 1, createdAt: -1 }`. Needs a compound index `{ memberId: 1, bookingCategory: 1, bookingStatus: 1 }`.
-   - `tours`: Text search on `tourName` and `tourDesc` executes via regular expressions (`$regex`), which bypasses B-tree indexes and forces full collection scans. Needs a MongoDB `$text` index.
-
-3. **Unbounded Pagination Memory Risk (DAT-02):**
-   - `like.service.ts`, `property.service.ts`, `tour.service.ts`, `chat.service.ts` allow arbitrary client-supplied `limit` without server-side constraints.
-   - **Fix:** Add `@Max(100)` validation on all `*Inquiry` DTOs.
-
----
-
-## H. DEAD CODE AND UNUSED APIS
-
-1. **Backend Unused Endpoints:**
-   - `AppResolver.getHello` (`apps/aurora-api/src/app.resolver.ts`)
-   - `ReviewResolver.getMyRating` & `submitRating` (`apps/aurora-api/src/components/review/review.resolver.ts`)
-   - `MemberResolver.telegramAuth` (`apps/aurora-api/src/components/member/member.resolver.ts`)
-   - `SupportResolver.getMySupportTickets` (`apps/aurora-api/src/components/support/support.resolver.ts`)
-2. **Frontend Unused / Legacy Code:**
-   - Legacy script files in root: `fix_admin.js`, `fix_admin_index.js`, `fix_agent_page.js`, `fix_badge.js`, `clean_patch.js`, `fix_chat.py`. These were temporary patch utilities and should be safely archived.
-   - `scss/pc/homepage.scss` is redundant as the active stylesheet is imported from `scss/pc/homepage/homepage.scss`.
-
----
-
-## I. TESTING EXECUTION RESULTS
-
-### Commands Executed & Outcomes
-
-| Scope | Command Line | Result | Log / Output Summary |
-|---|---|---|---|
-| **Backend Build** | `npm run build` | ✅ **PASS** | `webpack 5.106.2 compiled successfully in 11910 ms` |
-| **Backend Unit Tests** | `npm test -- --passWithNoTests` | ✅ **PASS** | 3 suites passed, 21 tests passed (`auth.service.spec`, `chat.service.spec`, `message.service.spec`). |
-| **Backend TypeCheck** | `npx tsc --noEmit` | ⚠️ **FAIL** | E2E spec files contain minor type discrepancies (`auth-agent.e2e-spec.ts`). Core application compiles. |
-| **Frontend TypeCheck**| `npx tsc --noEmit` | ✅ **PASS** | Completed with 0 TypeScript compiler errors. |
-| **Frontend Unit Tests**| `npm test` | 🔴 **BLOCKED** | No automated tests exist in `aurora-next` repository. |
-
----
-
-## J. PRODUCTION READINESS ASSESSMENT
-
-### Verdict: **NOT PRODUCTION READY (BLOCKED)**
-
-#### Production Blockers:
-1. **Security Vulnerability SEC-01:** Blocked or demoted members cannot be invalidated from active JWT sessions.
-2. **Security Vulnerability SEC-02:** Wildcard CORS origin with credentials exposes APIs to cross-site invocation.
-3. **Storage Vulnerability SEC-03:** Local disk storage of uploaded media prevents horizontal scaling across multiple container instances and risks disk exhaustion.
-4. **Data Integrity Bug DAT-01:** Concurrency bug in tour booking holds can corrupt seat reservation counts.
-5. **Operational Gap DAT-03:** In-process `setInterval` for travel history and booking hold expiration causes duplicate competing database operations in clustered environments.
-
----
-
-## K. PRIORITIZED REPAIR PLAN
-
-```mermaid
-graph TD
-    Step1["1. Security & Core Auth<br>(SEC-01, SEC-02, SEC-04)"] --> Step2["2. Booking Integrity & DB<br>(DAT-01, DAT-02, DAT-03)"]
-    Step2 --> Step3["3. Asset Storage Migration<br>(SEC-03: S3/Cloud Storage)"]
-    Step3 --> Step4["4. Frontend Cache & Performance<br>(FE-01, FE-02)"]
-    Step4 --> Step5["5. CSS & Layout Polish<br>(UI-01, variables.scss)"]
-    Step5 --> Step6["6. QA Automation & Healthchecks<br>(Health endpoint, Jest tests)"]
-```
-
-### Stage 1: Security & Core Auth Fixes (Immediate)
-- **Files:** `apps/aurora-api/src/components/auth/guards/auth.guard.ts`, `roles.guard.ts`, `apps/aurora-api/src/main.ts`
-- **Action:**
-  1. Add database check in `AuthGuard` to verify `memberStatus === ACTIVE`.
-  2. Configure explicit CORS origin whitelist matching production domains.
-  3. Externalize secrets from `.env` to environment variables.
-- **Risk:** Low. Prevents unauthorized access.
-
-### Stage 2: Booking Concurrency & Database Defense
-- **Files:** `apps/aurora-api/src/components/payment/payment.service.ts`, all `*Inquiry.ts` DTOs
-- **Action:**
-  1. Fix duplicate key seat decrement in `createTourHold`.
-  2. Add `@Max(100)` to all pagination limit inputs.
-  3. Add compound index on `bookings` collection (`{ memberId: 1, bookingCategory: 1, bookingStatus: 1 }`).
-- **Risk:** Low. Eliminates data drift.
-
-### Stage 3: Asset Storage Migration
-- **Files:** `apps/aurora-api/src/components/image-uploader/`
-- **Action:**
-  1. Implement AWS S3 / Cloudflare R2 bucket integration.
-  2. Serve assets via CDN domain rather than local `/uploads` static express server.
-- **Risk:** Medium. Requires cloud credentials setup.
-
-### Stage 4: Frontend Cache & State Management Optimization
-- **Files:** `pages/destination/index.tsx`, `pages/tour/index.tsx`, `libs/components/community/index.tsx`
-- **Action:**
-  1. Replace blanket `fetchPolicy: 'network-only'` with `cache-and-network`.
-  2. Add server-side redirects in `_app.tsx` or middleware for protected routes.
-- **Risk:** Low. Vastly improves page load speeds.
-
-### Stage 5: UI & CSS Architecture Standardization
-- **Files:** `scss/variables.scss`, `scss/pc/**/*.scss`
-- **Action:**
-  1. Create `$z-index` map (`dropdown: 100`, `sticky: 500`, `modal: 1000`).
-  2. Replace arbitrary `z-index: 9999` and `1200` instances.
-  3. Consolidate mobile SCSS files with standard media queries.
-- **Risk:** Low.
-
-### Stage 6: QA Automation & Observability
-- **Files:** `apps/aurora-api/src/main.ts`, `aurora-next`
-- **Action:**
-  1. Add NestJS `@nestjs/terminus` `/health` endpoint checking MongoDB and Redis status.
-  2. Write smoke test suite for user booking and authentication flows in Next.js.
-- **Risk:** None.
-
----
-
-## L. FINAL AUDIT STATISTICS
-
-- **Total Discovered GraphQL Operations:** 91
-- **Active Operations in Frontend:** 86
-- **Unused Backend APIs:** 5
-- **Verified Passing Operations:** 86
-- **Failing / Blocked Operations:** 0
-- **Total Frontend Pages Inspected:** 24 (Public + Admin + Account)
-- **Total Components Inspected:** 78+
-- **Total Confirmed Defects / Deficiencies:** 13
-  - **P0 Critical:** 2 (SEC-01, SEC-02)
-  - **P1 High:** 3 (SEC-03, SEC-04, DAT-01)
-  - **P2 Medium:** 6 (DAT-02, DAT-03, DAT-04, BE-01, FE-01, FE-02, QA-01)
-  - **P3 Low:** 2 (UI-01, Dead code)
-- **Automated Test Coverage:**
-  - Backend: ~15% (3 unit suites, 21 tests)
-  - Frontend: 0%
-
----
-*Report certified by Principal Engineering & Security Audit Team.*
+**Bottom line:** AURORA has working core functionality and substantial verified fixes, but an unrestricted production launch—particularly real-money bookings—should wait for the above operational, payout and policy requirements.

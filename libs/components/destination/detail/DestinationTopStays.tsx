@@ -5,6 +5,7 @@ import { getImageUrl } from '../../../config';
 import { DEFAULT_PROPERTY_IMAGE } from '../../../config';
 import { ApolloError } from '@apollo/client';
 import { useI18n } from '../../../i18n';
+import { RevealOnScroll } from '../../motion/RevealOnScroll';
 
 interface DestinationTopStaysProps {
 	destinationName: string;
@@ -24,22 +25,23 @@ const DestinationTopStays = ({
 	const { t, tEnum } = useI18n();
 	if (!loading && !error && (!properties || properties.length === 0)) return null;
 
-	// Display exactly up to 4 items in 1 row on Desktop
 	const displayProperties = properties.slice(0, 4);
 
 	return (
 		<section className="destination-top-stays-section">
 			{/* Section Header */}
-			<div className="section-header-row">
-				<div>
-					<h2 className="section-main-title">{t('destinations.topStays.title', { destinationName })}</h2>
-					<p className="section-sub-title">{t('destinations.topStays.subtitle')}</p>
+			<RevealOnScroll distance={16} style={{ width: '100%' }}>
+				<div className="section-header-row">
+					<div>
+						<h2 className="section-main-title">{t('destinations.topStays.title', { destinationName })}</h2>
+						<p className="section-sub-title">{t('destinations.topStays.subtitle')}</p>
+					</div>
+					<Link href="/property" className="view-all-header-link">
+						<span>{t('destinations.topStays.viewAllHotels')}</span>
+						<span className="material-symbols-outlined">arrow_forward</span>
+					</Link>
 				</div>
-				<Link href="/property" className="view-all-header-link">
-					<span>{t('destinations.topStays.viewAllHotels')}</span>
-					<span className="material-symbols-outlined">arrow_forward</span>
-				</Link>
-			</div>
+			</RevealOnScroll>
 
 			{/* Exactly 4 Hotel Cards in 1 Row on Desktop */}
 			<div className="stays-cards-grid">

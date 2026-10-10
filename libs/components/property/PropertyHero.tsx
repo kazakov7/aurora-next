@@ -8,18 +8,18 @@ const PropertyHero = () => {
       <img
         alt={t("hotels.hero.imageAlt")}
         className="hero-image"
-        src="/img/banner/hero-hotels.jpg"
+        src="https://images.pexels.com/photos/32755079/pexels-photo-32755079.jpeg"
       />
       <div className="hero-gradient-overlay"></div>
       <div className="hero-content">
         <div className="hero-badge">
           <span className="badge-dot"></span>
-          <span className="badge-text">{t("hotels.hero.curatedSanctuariesResorts")}</span>
+          <span className="badge-text">
+            {t("hotels.hero.curatedSanctuariesResorts")}
+          </span>
         </div>
         <h1 className="hero-title">{t("hotels.hero.findYourPerfectStay")}</h1>
-        <p className="hero-subtitle">
-          {t("hotels.hero.description")}
-        </p>
+        <p className="hero-subtitle">{t("hotels.hero.description")}</p>
       </div>
     </section>
   );

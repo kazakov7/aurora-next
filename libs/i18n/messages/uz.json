@@ -10,7 +10,10 @@
     "customerService": "Yordam",
     "savedWishlist": "Sevimlilar",
     "notifications": "Bildirishnomalar",
-    "profile": "Profil"
+    "profile": "Profil",
+    "openMenu": "Navigatsiya menyusini ochish",
+    "closeMenu": "Navigatsiya menyusini yopish",
+    "mainMenu": "Asosiy navigatsiya"
   },
   "language": {
     "english": "English",
@@ -427,6 +430,9 @@
       "connect": "Bog‘laning va ulashing",
       "connectDescription": "Boshqa sayohatchilar bilan tanishing",
       "curatedGuide": "Saralangan qo‘llanma",
+      "verifiedQuality": "Eksklyuziv maskanlar",
+      "travelerReviews": "2.4k+ sharhlar",
+      "featuredLocation": "Amalfi sohili",
       "stayType": "TURAR JOY TURI",
       "allStays": "Barcha turar joylar",
       "location": "MANZIL",
@@ -528,6 +534,9 @@
     "INVALID_DATA": "Noto‘g‘ri ma’lumot!",
     "DUPLICATE_DATA": "Bu ma’lumot allaqachon mavjud!",
     "WRONG_PASSWORD": "Parol noto‘g‘ri, qayta urinib ko‘ring!",
+    "PASSWORD_CONFIRMATION_MISMATCH": "Yangi parol va tasdiqlash paroli mos kelmadi.",
+    "NEW_PASSWORD_MUST_DIFFER": "Yangi parol joriy paroldan farq qilishi kerak.",
+    "PASSWORD_CHANGE_UNAVAILABLE": "Ijtimoiy tarmoq akkauntida parolni o‘zgartirib bo‘lmaydi.",
     "NOT_AUTHENTICATED": "Tizimga kirmagansiz, avval kiring!",
     "TOKEN_NOT_EXIST": "Avtorizatsiya tokeni yuborilmagan!",
     "TOKEN_EXPIRED": "Sessiya muddati tugadi, qaytadan kiring!",
@@ -1642,7 +1651,27 @@
       "bio": "Bio va qiziqishlar",
       "bioPlaceholder": "Hamjamiyatga sayohat qiziqishlaringiz haqida so‘zlab bering...",
       "saving": "Saqlanmoqda...",
-      "saveProfileChanges": "Profil o‘zgarishlarini saqlash"
+      "saveProfileChanges": "Profil o‘zgarishlarini saqlash",
+      "password": {
+        "title": "Parolni o‘zgartirish",
+        "subtitle": "AURORA akkauntingizga kirishda ishlatiladigan parolni yangilang.",
+        "current": "Joriy parol",
+        "new": "Yangi parol",
+        "confirm": "Yangi parolni tasdiqlash",
+        "currentRequired": "Joriy parolingizni kiriting.",
+        "newRequired": "Yangi parolni kiriting.",
+        "confirmRequired": "Yangi parolni tasdiqlang.",
+        "policy": "AURORA’ning joriy parol siyosatiga muvofiq 5–12 ta belgi ishlating.",
+        "mustDiffer": "Yangi parol joriy paroldan farq qilishi kerak.",
+        "mismatch": "Yangi parollar mos kelmadi.",
+        "show": "Parolni ko‘rsatish",
+        "hide": "Parolni yashirish",
+        "submit": "Parolni yangilash",
+        "updating": "Parol yangilanmoqda...",
+        "updated": "Parol muvaffaqiyatli yangilandi.",
+        "updateFailed": "Parolni yangilab bo‘lmadi.",
+        "socialOnly": "Bu akkaunt {{provider}} orqali kiradi va unda mahalliy AURORA paroli yo‘q. Kirish ma’lumotlarini {{provider}} orqali boshqaring."
+      }
     },
     "sidebar": {
       "agentApplication": "Agentlik arizasi",

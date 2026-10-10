@@ -1,0 +1,233 @@
+.admin-mobile-menu-trigger,
+.admin-mobile-backdrop {
+	display: none;
+}
+
+@media (max-width: 767px) {
+	body:has(#admin-wrap.admin-navigation-open) {
+		overflow: hidden;
+	}
+
+	#admin-wrap {
+		min-width: 0;
+		min-height: 100dvh;
+		overflow-x: clip;
+
+		.admin-mobile-backdrop {
+			position: fixed;
+			inset: 0;
+			z-index: 1090;
+			display: block;
+			width: 100%;
+			height: 100%;
+			min-height: 0;
+			padding: 0;
+			border: 0;
+			background: rgba(9, 19, 29, 0.5);
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 180ms ease;
+		}
+
+		.admin-sidebar {
+			z-index: 1100;
+			width: min(86vw, 310px);
+			max-width: 100%;
+			padding-top: env(safe-area-inset-top);
+			transform: translateX(-105%);
+			visibility: hidden;
+			transition: transform 240ms cubic-bezier(0.4, 0, 0.2, 1), visibility 240ms;
+
+			.sidebar-top {
+				height: 100dvh;
+				overflow-y: auto;
+				overscroll-behavior: contain;
+			}
+		}
+
+		&.admin-navigation-open {
+			.admin-mobile-backdrop {
+				opacity: 1;
+				pointer-events: auto;
+			}
+
+			.admin-sidebar {
+				transform: translateX(0);
+				visibility: visible;
+			}
+		}
+
+		.admin-content-wrapper {
+			width: 100%;
+			min-width: 0;
+			margin-left: 0;
+		}
+
+		.admin-header {
+			left: 0;
+			height: calc(64px + env(safe-area-inset-top));
+			padding: env(safe-area-inset-top) 12px 0;
+
+			.header-left {
+				display: flex;
+				min-width: 0;
+				align-items: center;
+				gap: 8px;
+			}
+
+			.admin-mobile-menu-trigger {
+				display: grid;
+				width: 42px;
+				height: 42px;
+				min-height: 42px;
+				place-items: center;
+				border: 0;
+				border-radius: 50%;
+				background: #f1f5f9;
+				color: #0f172a;
+			}
+
+			.breadcrumb {
+				min-width: 0;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+
+			.user-info,
+			.divider-vertical {
+				display: none;
+			}
+
+			.user-avatar {
+				width: 36px;
+				height: 36px;
+			}
+		}
+
+		.admin-main {
+			width: 100%;
+			padding: calc(82px + env(safe-area-inset-top)) 12px 36px;
+		}
+
+		.dashboard-container,
+		.admin-overview {
+			width: 100%;
+			min-width: 0;
+		}
+
+		.overview-header,
+		.table-header,
+		.header-right,
+		.header-actions {
+			align-items: stretch;
+			flex-direction: column;
+			gap: 12px;
+		}
+
+		.overview-header h1,
+		.header-text h1 {
+			font-size: 26px;
+			line-height: 1.18;
+		}
+
+		.kpi-grid {
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+		}
+
+		.kpi-card,
+		.admin-table-section {
+			padding: 14px;
+			border-radius: 14px;
+		}
+
+		.search-box,
+		.filter-select-group,
+		.filter-select,
+		.reset-filter-btn,
+		.export-btn {
+			width: 100%;
+		}
+
+		.filter-select-group {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 8px;
+		}
+
+		.table-container {
+			width: calc(100% + 28px);
+			overflow-x: auto;
+			margin-inline: -14px;
+			padding-inline: 14px;
+			-webkit-overflow-scrolling: touch;
+			scrollbar-gutter: stable;
+
+			.admin-table,
+			table {
+				min-width: 760px;
+			}
+		}
+
+		.table-footer,
+		.table-pagination {
+			align-items: center;
+			flex-direction: column;
+			gap: 12px;
+		}
+
+		.admin-drawer,
+		.admin-member-drawer {
+			width: min(94vw, 520px);
+			max-width: 100%;
+		}
+
+		.admin-drawer .drawer-body,
+		.admin-member-drawer .drawer-body {
+			padding: 16px;
+		}
+
+		.grid-2-col,
+		.dual-info-row,
+		.dual-field-row,
+		.stats-grid,
+		.info-grid,
+		.property-meta-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.admin-property-modal,
+		.admin-verification-modal {
+			width: calc(100vw - 24px);
+			max-height: calc(100dvh - 24px);
+			margin: 12px;
+			border-radius: 16px;
+		}
+
+		.modal-header,
+		.modal-body,
+		.modal-footer {
+			padding: 16px;
+		}
+
+		.modal-actions-row {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 8px;
+		}
+	}
+}
+
+@media (max-width: 359px) {
+	#admin-wrap .kpi-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#admin-wrap .admin-sidebar,
+	#admin-wrap .admin-mobile-backdrop {
+		transition: none;
+	}
+}

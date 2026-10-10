@@ -9,6 +9,8 @@ import { PropertyStatus } from '../../../enums/property.enum';
 import { sweetErrorAlert } from '../../../sweetAlert';
 import PropertyAvailabilityCalendar from './PropertyAvailabilityCalendar';
 import { useI18n } from '../../../i18n';
+import { motion, AnimatePresence } from 'framer-motion';
+import { appleEase } from '../../../motion/transitions';
 
 interface PropertyReservationWidgetProps {
 	property: Property;
@@ -112,23 +114,39 @@ const PropertyReservationWidget = ({ property, refetchProperty }: PropertyReserv
 								<div><label className="picker-label">{t('hotels.reservation.guests')}</label><div className="picker-val">{t('common.guestCount', { count: guestCount })}</div></div>
 								<span className="material-symbols-outlined chevron">{isGuestDropdownOpen ? 'keyboard_arrow_up' : 'keyboard_arrow_down'}</span>
 							</div>
-							{isGuestDropdownOpen ? (
-								<div className="guest-dropdown-menu">
-									{Array.from({ length: maxGuestsAllowed }, (_, index) => index + 1).map((guestOption) => (
-										<button key={guestOption} type="button" className={`guest-menu-item ${guestCount === guestOption ? 'selected' : ''}`} onClick={() => { setGuestCount(guestOption); setIsGuestDropdownOpen(false); resetCheckout(); }}>
-											<span>{t('common.guestCount', { count: guestOption })}</span>
-											{guestCount === guestOption ? <span className="material-symbols-outlined check-icon">check</span> : null}
-										</button>
-									))}
-								</div>
-							) : null}
+							<AnimatePresence>
+								{isGuestDropdownOpen ? (
+									<motion.div
+										className="guest-dropdown-menu"
+										initial={{ opacity: 0, y: -6, scale: 0.98 }}
+										animate={{ opacity: 1, y: 0, scale: 1 }}
+										exit={{ opacity: 0, y: -6, scale: 0.98 }}
+										transition={{ duration: 0.18, ease: appleEase }}
+									>
+										{Array.from({ length: maxGuestsAllowed }, (_, index) => index + 1).map((guestOption) => (
+											<button key={guestOption} type="button" className={`guest-menu-item ${guestCount === guestOption ? 'selected' : ''}`} onClick={() => { setGuestCount(guestOption); setIsGuestDropdownOpen(false); resetCheckout(); }}>
+												<span>{t('common.guestCount', { count: guestOption })}</span>
+												{guestCount === guestOption ? <span className="material-symbols-outlined check-icon">check</span> : null}
+											</button>
+										))}
+									</motion.div>
+								) : null}
+							</AnimatePresence>
 						</div>
 					</div>
 
-					<button className="reserve-cta-btn" type="button" disabled={paymentStarting || nights < 1 || !isBookable} onClick={handleReserve}>
+					<motion.button
+						className="reserve-cta-btn"
+						type="button"
+						disabled={paymentStarting || nights < 1 || !isBookable}
+						onClick={handleReserve}
+						whileHover={{ scale: 1.015 }}
+						whileTap={{ scale: 0.985 }}
+						transition={{ duration: 0.18, ease: appleEase }}
+					>
 						<span className="material-symbols-outlined lock-icon">lock</span>
 						<span>{paymentStarting ? t('hotels.reservation.preparingSecurePayment') : isBookable ? t('hotels.reservation.reserveHotel') : t('hotels.reservation.unavailable')}</span>
-					</button>
+					</motion.button>
 					<p className="no-charge-note">{t('hotels.reservation.stripeNote')}</p>
 
 					<div className="itemized-breakdown">

@@ -10,6 +10,10 @@ import { I18nProvider } from "../libs/i18n";
 import "../scss/app.scss"; //@ts-ignore
 import "../scss/pc/main.scss"; //@ts-ignore
 import "../scss/mobile/main.scss";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import "swiper/css/effect-fade";
 
 export default function App({ Component, pageProps }: AppProps) {
   const [theme] = useState(createTheme(light));

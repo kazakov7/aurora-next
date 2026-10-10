@@ -113,6 +113,12 @@ export const UPDATE_MEMBER = gql`
 	}
 `;
 
+export const CHANGE_PASSWORD = gql`
+	mutation ChangePassword($input: ChangePasswordInput!) {
+		changePassword(input: $input)
+	}
+`;
+
 export const SUBMIT_AGENT_APPLICATION = gql`
 	mutation SubmitAgentApplication($input: AgentInput!) {
 		submitAgentApplication(input: $input) {

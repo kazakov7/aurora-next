@@ -13,6 +13,9 @@ import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 import { PropertyType } from "../../enums/property.enum";
 import { Destination } from "../../types/destination/destination";
 import { useI18n } from "../../i18n";
+import { motion, AnimatePresence } from "framer-motion";
+import { FadeIn } from "../motion/FadeIn";
+import { appleEase } from "../../motion/transitions";
 
 interface HeroProps {
   destinations: Destination[];
@@ -109,78 +112,102 @@ const Hero = ({ destinations }: HeroProps) => {
           <div className="hero-main-content">
             {/* LEFT COLUMN */}
             <div className="hero-left">
-              <div className="badge-pill">
-                <span className="dot">●</span>
-                <span>{t("home.hero.eyebrow")}</span>
-                <FlightTakeoffIcon className="flight-icon" />
-              </div>
+              <FadeIn delay={0.06} distance={12}>
+                <div className="badge-pill">
+                  <span className="dot">●</span>
+                  <span>{t("home.hero.eyebrow")}</span>
+                  <FlightTakeoffIcon className="flight-icon" />
+                </div>
+              </FadeIn>
 
-              <h1 className="hero-title">
-                {t("home.hero.title")} <span className="plane-accent">✈</span>
-              </h1>
+              <FadeIn delay={0.16} distance={18}>
+                <h1 className="hero-title">
+                  {t("home.hero.title")} <span className="plane-accent">✈</span>
+                </h1>
+              </FadeIn>
 
-              <p className="hero-subtitle">{t("home.hero.description")}</p>
+              <FadeIn delay={0.26} distance={14}>
+                <p className="hero-subtitle">{t("home.hero.description")}</p>
+              </FadeIn>
 
-              <div className="hero-divider"></div>
+              <FadeIn delay={0.34} distance={10}>
+                <div className="hero-divider"></div>
+              </FadeIn>
 
-              <div className="hero-stats">
-                <div className="stat-item">
-                  <div className="stat-value-box">
-                    <ExploreRoundedIcon className="stat-icon" />
-                    <span className="stat-value">
-                      {t("home.hero.discover")}
+              <FadeIn delay={0.38} distance={16}>
+                <div className="hero-stats">
+                  <div className="stat-item">
+                    <div className="stat-value-box">
+                      <ExploreRoundedIcon className="stat-icon" />
+                      <span className="stat-value">
+                        {t("home.hero.discover")}
+                      </span>
+                    </div>
+                    <span className="stat-label">
+                      {t("home.hero.discoverDescription")}
                     </span>
                   </div>
-                  <span className="stat-label">
-                    {t("home.hero.discoverDescription")}
-                  </span>
-                </div>
 
-                <div className="stat-separator" />
+                  <div className="stat-separator" />
 
-                <div className="stat-item">
-                  <div className="stat-value-box">
-                    <EventAvailableRoundedIcon className="stat-icon" />
-                    <span className="stat-value">{t("home.hero.plan")}</span>
+                  <div className="stat-item">
+                    <div className="stat-value-box">
+                      <EventAvailableRoundedIcon className="stat-icon" />
+                      <span className="stat-value">{t("home.hero.plan")}</span>
+                    </div>
+                    <span className="stat-label">
+                      {t("home.hero.planDescription")}
+                    </span>
                   </div>
-                  <span className="stat-label">
-                    {t("home.hero.planDescription")}
-                  </span>
-                </div>
 
-                <div className="stat-separator" />
+                  <div className="stat-separator" />
 
-                <div className="stat-item">
-                  <div className="stat-value-box">
-                    <GroupsRoundedIcon className="stat-icon" />
-                    <span className="stat-value">{t("home.hero.connect")}</span>
+                  <div className="stat-item">
+                    <div className="stat-value-box">
+                      <GroupsRoundedIcon className="stat-icon" />
+                      <span className="stat-value">
+                        {t("home.hero.connect")}
+                      </span>
+                    </div>
+                    <span className="stat-label">
+                      {t("home.hero.connectDescription")}
+                    </span>
                   </div>
-                  <span className="stat-label">
-                    {t("home.hero.connectDescription")}
-                  </span>
                 </div>
-              </div>
+              </FadeIn>
             </div>
 
             {/* RIGHT COLUMN */}
             <div className="hero-right">
-              <div className="hero-img-box">
-                <img
-                  src="/img/banner/hero_traveler.jpg"
-                  alt={t("home.hero.imageAlt")}
-                  className="hero-img"
-                />
+              <FadeIn delay={0.22} distance={20}>
+                <div className="hero-img-box">
+                  <img
+                    src="https://images.pexels.com/photos/11417276/pexels-photo-11417276.jpeg"
+                    alt={t("home.hero.imageAlt")}
+                    className="hero-img"
+                  />
 
-                <div className="curated-badge">
-                  <VerifiedUserIcon className="badge-check" />
-                  <span>{t("home.hero.curatedGuide")}</span>
+                  <motion.div
+                    className="curated-badge"
+                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ delay: 0.45, duration: 0.4, ease: appleEase }}
+                    whileHover={{ scale: 1.04, y: -2 }}
+                  >
+                    <VerifiedUserIcon className="badge-check" />
+                    <span>{t("home.hero.curatedGuide")}</span>
+                  </motion.div>
                 </div>
-              </div>
+              </FadeIn>
             </div>
           </div>
 
           {/* BOTTOM SEARCH FILTER BAR */}
-          <div className="search-filter-container">
+          <FadeIn
+            delay={0.46}
+            distance={20}
+            className="search-filter-container"
+          >
             <div className="filter-bar">
               {/* TYPE FIELD */}
               <div className="search-field-wrapper type-wrapper" ref={typeRef}>
@@ -197,40 +224,51 @@ const Hero = ({ destinations }: HeroProps) => {
                   <div className="item-text">
                     <span className="label">{t("home.hero.stayType")}</span>
                     <span className="value">
-                      {type ? tEnum("propertyType", type) : t("home.hero.allStays")}
+                      {type
+                        ? tEnum("propertyType", type)
+                        : t("home.hero.allStays")}
                     </span>
                   </div>
                 </button>
 
-                {openType ? (
-                  <div className="search-field-dropdown" role="listbox">
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={!type}
-                      onClick={() => {
-                        setType("");
-                        setOpenType(false);
-                      }}
+                <AnimatePresence>
+                  {openType ? (
+                    <motion.div
+                      className="search-field-dropdown"
+                      role="listbox"
+                      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                      transition={{ duration: 0.2, ease: appleEase }}
                     >
-                      {t("home.hero.allStays")}
-                    </button>
-                    {STAY_TYPES.map((stayType) => (
                       <button
                         type="button"
                         role="option"
-                        aria-selected={type === stayType}
+                        aria-selected={!type}
                         onClick={() => {
-                          setType(stayType);
+                          setType("");
                           setOpenType(false);
                         }}
-                        key={stayType}
                       >
-                        <span>{tEnum("propertyType", stayType)}</span>
+                        {t("home.hero.allStays")}
                       </button>
-                    ))}
-                  </div>
-                ) : null}
+                      {STAY_TYPES.map((stayType) => (
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={type === stayType}
+                          onClick={() => {
+                            setType(stayType);
+                            setOpenType(false);
+                          }}
+                          key={stayType}
+                        >
+                          <span>{tEnum("propertyType", stayType)}</span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
               </div>
 
               {/* LOCATION FIELD */}
@@ -256,35 +294,44 @@ const Hero = ({ destinations }: HeroProps) => {
                   </div>
                 </button>
 
-                {openLocation ? (
-                  <div className="search-field-dropdown" role="listbox">
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={!location}
-                      onClick={() => {
-                        setLocation("");
-                        setOpenLocation(false);
-                      }}
+                <AnimatePresence>
+                  {openLocation ? (
+                    <motion.div
+                      className="search-field-dropdown"
+                      role="listbox"
+                      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                      transition={{ duration: 0.2, ease: appleEase }}
                     >
-                      {t("home.hero.anywhere")}
-                    </button>
-                    {locationOptions.map((loc) => (
                       <button
                         type="button"
                         role="option"
-                        aria-selected={location === loc}
+                        aria-selected={!location}
                         onClick={() => {
-                          setLocation(loc);
+                          setLocation("");
                           setOpenLocation(false);
                         }}
-                        key={loc}
                       >
-                        <span>{loc}</span>
+                        {t("home.hero.anywhere")}
                       </button>
-                    ))}
-                  </div>
-                ) : null}
+                      {locationOptions.map((loc) => (
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={location === loc}
+                          onClick={() => {
+                            setLocation(loc);
+                            setOpenLocation(false);
+                          }}
+                          key={loc}
+                        >
+                          <span>{loc}</span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
               </div>
 
               {/* DATES FIELD */}
@@ -296,6 +343,11 @@ const Hero = ({ destinations }: HeroProps) => {
                     <input
                       type="date"
                       value={checkIn}
+                      onClick={(e) => {
+                        try {
+                          e.currentTarget.showPicker?.();
+                        } catch {}
+                      }}
                       onChange={(e) => {
                         setCheckIn(e.target.value);
                         if (checkOut && e.target.value > checkOut) {
@@ -310,6 +362,11 @@ const Hero = ({ destinations }: HeroProps) => {
                       type="date"
                       value={checkOut}
                       min={checkIn || undefined}
+                      onClick={(e) => {
+                        try {
+                          e.currentTarget.showPicker?.();
+                        } catch {}
+                      }}
                       onChange={(e) => setCheckOut(e.target.value)}
                       className="date-input"
                       aria-label={t("home.hero.checkOut")}
@@ -341,44 +398,57 @@ const Hero = ({ destinations }: HeroProps) => {
                   </div>
                 </button>
 
-                {openGuests ? (
-                  <div className="search-field-dropdown" role="listbox">
-                    {[1, 2, 3, 4, 5].map((num) => (
-                      <button
-                        type="button"
-                        role="option"
-                        aria-selected={guests === num}
-                        onClick={() => {
-                          setGuests(num);
-                          setOpenGuests(false);
-                        }}
-                        key={num}
-                      >
-                        <span>
-                          {t(
-                            num > 1
-                              ? "home.hero.guestOptionPlural"
-                              : "home.hero.guestOption",
-                            { count: num },
-                          )}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
+                <AnimatePresence>
+                  {openGuests ? (
+                    <motion.div
+                      className="search-field-dropdown"
+                      role="listbox"
+                      initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                      transition={{ duration: 0.2, ease: appleEase }}
+                    >
+                      {[1, 2, 3, 4, 5].map((num) => (
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={guests === num}
+                          onClick={() => {
+                            setGuests(num);
+                            setOpenGuests(false);
+                          }}
+                          key={num}
+                        >
+                          <span>
+                            {t(
+                              num > 1
+                                ? "home.hero.guestOptionPlural"
+                                : "home.hero.guestOption",
+                              { count: num },
+                            )}
+                          </span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
               </div>
 
               {/* SEARCH ACTION BUTTON */}
-              <button
+              <motion.button
                 type="button"
                 className="search-submit-btn"
                 onClick={searchHandler}
                 aria-label={t("home.hero.searchStays")}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ duration: 0.18, ease: appleEase }}
               >
                 <SearchIcon />
-              </button>
+                <span className="search-btn-text">{t("common.search")}</span>
+              </motion.button>
             </div>
-          </div>
+          </FadeIn>
         </div>
       </div>
     </section>

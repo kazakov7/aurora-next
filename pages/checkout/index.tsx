@@ -11,6 +11,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { sweetErrorAlert, sweetTopSmallSuccessAlert } from "../../libs/sweetAlert";
 import { DEFAULT_PROPERTY_IMAGE, DEFAULT_TOUR_IMAGE, getImageUrl } from "../../libs/config";
 import useAuthSession from "../../libs/hooks/useAuthSession";
+import useDeviceDetect from "../../libs/hooks/useDeviceDetect";
 import { AppLocale, useI18n } from "../../libs/i18n";
 
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
@@ -91,6 +92,7 @@ const CheckoutForm = ({ onPaymentSubmitted, paymentAmount, currency }: CheckoutF
 
 const CheckoutPage = () => {
   const { t, tError, locale } = useI18n();
+  const device = useDeviceDetect();
   const router = useRouter();
   const user = useReactiveVar(userVar);
   const authChecked = useAuthSession();
@@ -198,11 +200,11 @@ const CheckoutPage = () => {
 	};
 
   if (!router.isReady || loading) {
-    return <div className="checkout-page-root"><Top /><main style={{paddingTop: 100, textAlign: 'center'}}>{t("common.loading")}</main></div>;
+    return <div id={device === "mobile" ? "mobile-wrap" : "pc-wrap"} className="checkout-page-root"><Top /><main style={{paddingTop: 100, textAlign: 'center'}}>{t("common.loading")}</main></div>;
   }
 
   if (!item) {
-    return <div className="checkout-page-root"><Top /><main style={{paddingTop: 100, textAlign: 'center'}}>{t("checkout.itemNotFound")}</main></div>;
+    return <div id={device === "mobile" ? "mobile-wrap" : "pc-wrap"} className="checkout-page-root"><Top /><main style={{paddingTop: 100, textAlign: 'center'}}>{t("checkout.itemNotFound")}</main></div>;
   }
 
   const getNights = () => {
@@ -225,7 +227,7 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div id="pc-wrap" className="checkout-page-root">
+    <div id={device === "mobile" ? "mobile-wrap" : "pc-wrap"} className="checkout-page-root">
       <Head>
         <title>{t("checkout.metaTitle")}</title>
       </Head>

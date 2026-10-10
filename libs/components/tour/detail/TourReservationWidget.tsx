@@ -7,6 +7,8 @@ import { Message } from '../../../enums/common.enum';
 import { Tour } from '../../../types/tour/tour';
 import { sweetErrorAlert } from '../../../sweetAlert';
 import { useI18n } from '../../../i18n';
+import { motion } from 'framer-motion';
+import { appleEase } from '../../../motion/transitions';
 
 interface TourReservationWidgetProps {
 	tour: Tour;
@@ -79,7 +81,18 @@ const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps
 						</div>
 					</div>
 
-					<button className="reserve-cta-btn" type="button" disabled={paymentStarting || seatsLeft < 1} onClick={handleReserve}><span className="material-symbols-outlined lock-icon">lock</span><span>{paymentStarting ? t('tours.reservation.preparingSecurePayment') : seatsLeft < 1 ? t('tours.reservation.soldOut') : t('tours.reservation.reserveTour')}</span></button>
+					<motion.button
+						className="reserve-cta-btn"
+						type="button"
+						disabled={paymentStarting || seatsLeft < 1}
+						onClick={handleReserve}
+						whileHover={{ scale: 1.015 }}
+						whileTap={{ scale: 0.985 }}
+						transition={{ duration: 0.18, ease: appleEase }}
+					>
+						<span className="material-symbols-outlined lock-icon">lock</span>
+						<span>{paymentStarting ? t('tours.reservation.preparingSecurePayment') : seatsLeft < 1 ? t('tours.reservation.soldOut') : t('tours.reservation.reserveTour')}</span>
+					</motion.button>
 					<p className="refund-guarantee-note">{t('tours.reservation.stripeNote')}</p>
 					<div className="itemized-breakdown"><div className="breakdown-row"><span className="breakdown-label">{t('tours.reservation.priceBreakdown', { count: travelers, price: tour.tourPrice.toLocaleString('en-US') })}</span><span className="breakdown-value">${totalPrice.toLocaleString('en-US')}</span></div><div className="total-price-box"><span className="total-title">{t('common.total')}</span><span className="total-amount">${totalPrice.toLocaleString('en-US')}</span></div></div>
 				</div>

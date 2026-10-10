@@ -22,6 +22,8 @@ import MyHotels from '../../libs/components/mypage/agent/MyHotels';
 import MyTours from '../../libs/components/mypage/agent/MyTours';
 import Reservations from '../../libs/components/mypage/agent/Reservations';
 import { useI18n } from '../../libs/i18n';
+import { motion, AnimatePresence } from 'framer-motion';
+import { appleEase } from '../../libs/motion/transitions';
 
 const MyPage: NextPage = () => {
 	const { t } = useI18n();
@@ -111,19 +113,29 @@ const MyPage: NextPage = () => {
 
 						{/* Dynamic Content Area */}
 						<main className="profile-content-area">
-							{category === 'articles' && <MyProfileArticles />}
-							{category === 'followers' && <MyProfileFollowers />}
-							{category === 'following' && <MyProfileFollowing />}
-							{category === 'wishlist' && <MyProfileWishlist />}
-							{category === 'bookings' && <MyProfileBookings />}
-							{category === "history" && <MyProfileHistory />}
-							{category === "visitedTours" && <MyProfileVisitedTours />}
-							{category === 'notifications' && <MyProfileNotifications />}
-							{category === 'settings' && <MyProfileSettings />}
-							{category === 'partner' && <AgentApplicationPage />}
-							{category === 'myHotels' && <MyHotels />}
-							{category === 'myTours' && <MyTours />}
-							{category === 'reservations' && <Reservations />}
+							<AnimatePresence mode="wait">
+								<motion.div
+									key={category}
+									initial={{ opacity: 0, y: 8 }}
+									animate={{ opacity: 1, y: 0 }}
+									exit={{ opacity: 0, y: -4 }}
+									transition={{ duration: 0.22, ease: appleEase }}
+								>
+									{category === 'articles' && <MyProfileArticles />}
+									{category === 'followers' && <MyProfileFollowers />}
+									{category === 'following' && <MyProfileFollowing />}
+									{category === 'wishlist' && <MyProfileWishlist />}
+									{category === 'bookings' && <MyProfileBookings />}
+									{category === "history" && <MyProfileHistory />}
+									{category === "visitedTours" && <MyProfileVisitedTours />}
+									{category === 'notifications' && <MyProfileNotifications />}
+									{category === 'settings' && <MyProfileSettings />}
+									{category === 'partner' && <AgentApplicationPage />}
+									{category === 'myHotels' && <MyHotels />}
+									{category === 'myTours' && <MyTours />}
+									{category === 'reservations' && <Reservations />}
+								</motion.div>
+							</AnimatePresence>
 						</main>
 					</div>
 				</div>

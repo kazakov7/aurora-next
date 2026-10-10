@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useQuery, useReactiveVar } from "@apollo/client";
@@ -19,6 +19,9 @@ const withAdminLayout = (Component: any) => {
     const activePath = router.pathname.replace("/_admin/", "");
     const authChecked = useAuthSession();
     const isAdmin = user.memberType === "ADMIN";
+    const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
+    const navigationTriggerRef = useRef<HTMLButtonElement>(null);
+    const navigationDrawerRef = useRef<HTMLElement>(null);
 
     /** APOLLO REQUESTS **/
     const { data: unreadData, refetch: refetchUnread } = useQuery(
@@ -44,6 +47,45 @@ const withAdminLayout = (Component: any) => {
       }
     }, [authChecked, user, router]);
 
+    useEffect(() => {
+      setMobileNavigationOpen(false);
+    }, [router.asPath]);
+
+    useEffect(() => {
+      if (!mobileNavigationOpen) return;
+      const previousOverflow = document.body.style.overflow;
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+          setMobileNavigationOpen(false);
+          navigationTriggerRef.current?.focus();
+          return;
+        }
+        if (event.key === "Tab") {
+          const focusable = navigationDrawerRef.current?.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          );
+          if (!focusable?.length) return;
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+      };
+
+      document.body.style.overflow = "hidden";
+      document.addEventListener("keydown", handleKeyDown);
+      window.requestAnimationFrame(() => navigationDrawerRef.current?.querySelector<HTMLElement>('a[href], button')?.focus());
+      return () => {
+        document.body.style.overflow = previousOverflow;
+        document.removeEventListener("keydown", handleKeyDown);
+      };
+    }, [mobileNavigationOpen]);
+
     if (!user || user.memberType !== "ADMIN") {
       return null;
     }
@@ -53,9 +95,16 @@ const withAdminLayout = (Component: any) => {
         <Head>
           <title>{t("admin.layout.metaTitle")}</title>
         </Head>
-        <div id="admin-wrap">
+        <div id="admin-wrap" className={mobileNavigationOpen ? "admin-navigation-open" : ""}>
+          <button
+            type="button"
+            className="admin-mobile-backdrop"
+            aria-label={t("navigation.closeMenu")}
+            tabIndex={mobileNavigationOpen ? 0 : -1}
+            onClick={() => setMobileNavigationOpen(false)}
+          />
           {/* Fixed Sidebar */}
-          <aside className="admin-sidebar">
+          <aside ref={navigationDrawerRef} className="admin-sidebar" aria-hidden={!mobileNavigationOpen ? undefined : false}>
             <div className="sidebar-top">
               <div className="brand-box">
                 <Link href="/" className="logo-link">
@@ -181,6 +230,16 @@ const withAdminLayout = (Component: any) => {
             {/* Fixed Header */}
             <header className="admin-header">
               <div className="header-left">
+                <button
+                  ref={navigationTriggerRef}
+                  type="button"
+                  className="admin-mobile-menu-trigger"
+                  aria-label={t("navigation.openMenu")}
+                  aria-expanded={mobileNavigationOpen}
+                  onClick={() => setMobileNavigationOpen(true)}
+                >
+                  <span className="material-symbols-outlined">menu</span>
+                </button>
                 <div className="breadcrumb">
                   <span className="material-symbols-outlined">home</span>
                   <span>/</span>

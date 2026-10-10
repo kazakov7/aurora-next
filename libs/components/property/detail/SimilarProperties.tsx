@@ -10,6 +10,10 @@ import { getImageUrl } from '../../../config';
 import { sweetErrorAlert } from '../../../sweetAlert';
 import { Message } from '../../../enums/common.enum';
 import { useI18n } from '../../../i18n';
+import { RevealOnScroll } from '../../motion/RevealOnScroll';
+import { StaggerContainer } from '../../motion/StaggerContainer';
+import { StaggerItem } from '../../motion/StaggerItem';
+import { HoverLift } from '../../motion/HoverLift';
 
 interface SimilarPropertiesProps {
 	currentPropertyId: string;
@@ -53,78 +57,86 @@ const SimilarProperties = ({ currentPropertyId, city }: SimilarPropertiesProps) 
 		}
 	};
 
+	if (!loading && similarList.length === 0) return null;
+
 	return (
 		<section className="similar-properties-section">
-			<div className="section-header-row">
-				<div>
-					<h2 className="section-heading">{t('hotels.similar.similarHotels')}</h2>
-					<p className="section-subtext">{city ? t('hotels.similar.moreStaysIn', { city }) : t('hotels.similar.moreAvailableStays')}</p>
+			<RevealOnScroll distance={16}>
+				<div className="section-header-row">
+					<div>
+						<h2 className="section-heading">{t('hotels.similar.similarHotels')}</h2>
+						<p className="section-subtext">{city ? t('hotels.similar.moreStaysIn', { city }) : t('hotels.similar.moreAvailableStays')}</p>
+					</div>
+					<Link href="/property" className="view-all-link">
+						<span>{t('hotels.similar.viewAllHotels')}</span>
+						<span className="material-symbols-outlined">arrow_forward</span>
+					</Link>
 				</div>
-				<Link href="/property" className="view-all-link">
-					<span>{t('hotels.similar.viewAllHotels')}</span>
-					<span className="material-symbols-outlined">arrow_forward</span>
-				</Link>
-			</div>
+			</RevealOnScroll>
 
-			<div className="similar-grid-row">
+			<StaggerContainer className="similar-grid-row">
 				{similarList.map((item: Property) => {
 					const cardImg = getImageUrl(item.propertyImages?.[0]);
 					const isLiked = item.meLiked && item.meLiked[0]?.myFavorite;
 					const rating = typeof item.propertyRating === 'number' ? item.propertyRating.toFixed(2) : '—';
 
 					return (
-						<article
-							key={item._id}
-							className="similar-card"
-							onClick={() => router.push(`/property/detail?id=${item._id}`)}
-						>
-							<div className="card-image-box">
-								{cardImg ? <img src={cardImg} alt={item.propertyName} className="card-img" /> : <div className="card-image-empty">{t('common.noImageAvailable')}</div>}
-								{item.propertyCity ? <span className="card-city-pill">{item.propertyCity}</span> : null}
-								<button
-									className={`card-heart-btn ${isLiked ? 'liked' : ''}`}
-									type="button"
-									onClick={(e) => handleLike(e, item._id)}
+						<StaggerItem key={item._id} style={{ height: '100%' }}>
+							<HoverLift y={-4} scale={1.01} style={{ height: '100%' }}>
+								<article
+									className="similar-card"
+									onClick={() => router.push(`/property/detail?id=${item._id}`)}
+									style={{ height: '100%' }}
 								>
-									<span
-										className="material-symbols-outlined"
-										style={{ fontVariationSettings: isLiked ? "'FILL' 1" : "'FILL' 0" }}
-									>
-										favorite
-									</span>
-								</button>
-							</div>
-
-							<div className="card-info-box">
-								<div className="card-meta-line">
-									<span className="guests-beds">
-										{t('hotels.similar.guestsBedrooms', { maxGuests: item.maxGuests, bedrooms: item.bedrooms })}
-									</span>
-									<div className="rating-tag">
-										<span
-											className="material-symbols-outlined star-icon"
-											style={{ fontVariationSettings: "'FILL' 1" }}
+									<div className="card-image-box">
+										{cardImg ? <img src={cardImg} alt={item.propertyName} className="card-img" /> : <div className="card-image-empty">{t('common.noImageAvailable')}</div>}
+										{item.propertyCity ? <span className="card-city-pill">{item.propertyCity}</span> : null}
+										<button
+											className={`card-heart-btn ${isLiked ? 'liked' : ''}`}
+											type="button"
+											onClick={(e) => handleLike(e, item._id)}
 										>
-											star
-										</span>
-										<span>{rating}</span>
+											<span
+												className="material-symbols-outlined"
+												style={{ fontVariationSettings: isLiked ? "'FILL' 1" : "'FILL' 0" }}
+											>
+												favorite
+											</span>
+										</button>
 									</div>
-								</div>
 
-								<h3 className="card-title">{item.propertyName}</h3>
-								<p className="card-type">{tEnum('propertyType', item.propertyType)}</p>
+									<div className="card-info-box">
+										<div className="card-meta-line">
+											<span className="guests-beds">
+												{t('hotels.similar.guestsBedrooms', { maxGuests: item.maxGuests, bedrooms: item.bedrooms })}
+											</span>
+											<div className="rating-tag">
+												<span
+													className="material-symbols-outlined star-icon"
+													style={{ fontVariationSettings: "'FILL' 1" }}
+												>
+													star
+												</span>
+												<span>{rating}</span>
+											</div>
+										</div>
 
-								<div className="card-bottom-price">
-									<span className="price-tag">
-										${item.pricePerNight?.toLocaleString('en-US')}
-									</span>
-									<span className="night-tag">{t('common.perNight')}</span>
-								</div>
-							</div>
-						</article>
+										<h3 className="card-title">{item.propertyName}</h3>
+										<p className="card-type">{tEnum('propertyType', item.propertyType)}</p>
+
+										<div className="card-bottom-price">
+											<span className="price-tag">
+												${item.pricePerNight?.toLocaleString('en-US')}
+											</span>
+											<span className="night-tag">{t('common.perNight')}</span>
+										</div>
+									</div>
+								</article>
+							</HoverLift>
+						</StaggerItem>
 					);
 				})}
-			</div>
+			</StaggerContainer>
 		</section>
 	);
 };

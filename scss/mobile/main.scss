@@ -3,9 +3,16 @@
 @import './common/navbar.scss';
 @import './member.scss';
 @import './responsive.scss';
+@import './foundations.scss';
+@import './homepage.scss';
+@import './commerce.scss';
+@import './content.scss';
+@import './account-profile.scss';
+@import './dashboards.scss';
 
 #mobile-wrap {
 	width: 100%;
+	padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
 	.top {
 		height: 80px;
 		display: flex;

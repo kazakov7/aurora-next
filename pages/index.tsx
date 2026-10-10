@@ -41,11 +41,11 @@ const Home: NextPage = () => {
   });
   const properties = useQuery<{ getTopProperties?: RankingList<Property> }>(
     GET_TOP_PROPERTIES,
-    { ...rankingOptions, variables: { input: { limit: 4 } } },
+    { ...rankingOptions, variables: { input: { limit: 8 } } },
   );
   const tours = useQuery<{ getTopTours?: RankingList<Tour> }>(GET_TOP_TOURS, {
     ...rankingOptions,
-    variables: { input: { limit: 4 } },
+    variables: { input: { limit: 8 } },
   });
   const travelers = useQuery<{ getTopTravelers?: RankingList<Member> }>(
     GET_TOP_TRAVELERS,

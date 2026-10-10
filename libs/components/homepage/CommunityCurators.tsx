@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { A11y, Keyboard } from "swiper";
 import { ApolloError, useMutation, useReactiveVar } from "@apollo/client";
 import { SUBSCRIBE, UNSUBSCRIBE } from "../../../apollo/user/mutation";
 import { userVar } from "../../../apollo/store";
@@ -13,6 +15,11 @@ import {
 } from "../../sweetAlert";
 import FollowButton from "../common/FollowButton";
 import { useI18n } from "../../i18n";
+import { RevealOnScroll } from "../motion/RevealOnScroll";
+import { StaggerContainer } from "../motion/StaggerContainer";
+import { StaggerItem } from "../motion/StaggerItem";
+import { HoverLift } from "../motion/HoverLift";
+import useDeviceDetect from "../../hooks/useDeviceDetect";
 
 interface CuratorStat {
   label: string;
@@ -110,118 +117,157 @@ const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps
     }
   };
 
+  const device = useDeviceDetect();
+  const isMobile = device === "mobile";
+
+  const renderCuratorCard = (curator: Member, index: number) => {
+    const backendFollowing = Boolean(
+      curator.meFollowed?.[0]?.myFollowing,
+    );
+    const isFollowing =
+      followOverrides[curator._id] ?? backendFollowing;
+    const isUpdatingFollow = Boolean(updatingFollowIds[curator._id]);
+    const avatarUrl = getImageUrl(
+      curator.memberImage,
+      DEFAULT_USER_AVATAR,
+    );
+    const isSelf = curator._id === user?._id;
+    const stats = buildStats({
+      ...curator,
+      memberFollowers:
+        (curator.memberFollowers ?? 0) +
+        (followerDeltas[curator._id] ?? 0),
+    }, {
+      followers: t("home.community.followers"),
+      stays: t("home.community.stays"),
+      tours: t("home.community.tours"),
+      articles: t("home.community.articles"),
+    });
+
+    return (
+      <article className="curator-card" style={{ height: "100%" }}>
+        <div className="curator-portrait">
+          <img
+            src={avatarUrl}
+            alt={curator.memberFullName || curator.memberNick}
+            className="curator-img"
+            onError={(event) => {
+              event.currentTarget.src = DEFAULT_USER_AVATAR;
+            }}
+          />
+          <span className="portrait-sheen" aria-hidden="true" />
+          <span className="curator-index" aria-hidden="true">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+        </div>
+
+        <div className="curator-body">
+          {curator.memberType ? (
+            <span className="curator-overline">
+              {tEnum("memberType", curator.memberType)}
+            </span>
+          ) : null}
+
+          <h3 className="curator-name">
+            <Link
+              href={isSelf ? "/mypage" : `/member?memberId=${curator._id}`}
+              className="curator-link"
+            >
+              {curator.memberFullName || curator.memberNick}
+            </Link>
+          </h3>
+
+          {curator.memberDesc ? (
+            <p className="curator-desc">{curator.memberDesc}</p>
+          ) : null}
+
+          <div className="curator-footer">
+            <span className="curator-stats">
+              {stats.map((stat, statIndex) => (
+                <React.Fragment key={stat.label}>
+                  {statIndex > 0 ? (
+                    <span className="stat-dot" aria-hidden="true" />
+                  ) : null}
+                  <span className="stat">
+                    <span className="stat-value">{stat.value}</span>
+                    <span className="stat-label">{stat.label}</span>
+                  </span>
+                </React.Fragment>
+              ))}
+            </span>
+
+            {!isSelf ? (
+              <span className="curator-action">
+                <FollowButton
+                  isFollowing={isFollowing}
+                  isLoading={isUpdatingFollow}
+                  onClick={(event) =>
+                    followHandler(event, curator._id, isFollowing)
+                  }
+                  size="sm"
+                />
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </article>
+    );
+  };
+
   return (
     <section className="curators-section">
       <div className="section-container">
-        <div className="section-header">
-          <div>
-            <span className="section-tag">{t("home.community.eyebrow")}</span>
-            <h2 className="section-title">
-              {t("home.community.title")}
-            </h2>
+        <RevealOnScroll distance={16}>
+          <div className="section-header">
+            <div>
+              <span className="section-tag">{t("home.community.eyebrow")}</span>
+              <h2 className="section-title">
+                {t("home.community.title")}
+              </h2>
+            </div>
+            <Link href="/community" className="section-link">
+              <span>{t("home.community.explore")}</span>
+              <span className="material-symbols-outlined">arrow_forward</span>
+            </Link>
           </div>
-          <Link href="/community" className="section-link">
-            <span>{t("home.community.explore")}</span>
-            <span className="material-symbols-outlined">arrow_forward</span>
-          </Link>
-        </div>
+        </RevealOnScroll>
 
-        <div className="curators-grid">
-		  {loading && !curators.length ? <p className="curators-empty-state">{t("home.community.loading")}</p> : null}
-		  {!loading && error ? <p className="curators-empty-state">{t("home.community.unavailable")}</p> : null}
-          {curators.map((curator: Member, index: number) => {
-            const backendFollowing = Boolean(
-              curator.meFollowed?.[0]?.myFollowing,
-            );
-            const isFollowing =
-              followOverrides[curator._id] ?? backendFollowing;
-            const isUpdatingFollow = Boolean(updatingFollowIds[curator._id]);
-            const avatarUrl = getImageUrl(
-              curator.memberImage,
-              DEFAULT_USER_AVATAR,
-            );
-            const isSelf = curator._id === user?._id;
-            const stats = buildStats({
-              ...curator,
-              memberFollowers:
-                (curator.memberFollowers ?? 0) +
-                (followerDeltas[curator._id] ?? 0),
-            }, { followers: t("home.community.followers"), stays: t("home.community.stays"), tours: t("home.community.tours"), articles: t("home.community.articles") });
+        {loading && !curators.length ? <p className="curators-empty-state">{t("home.community.loading")}</p> : null}
+        {!loading && error ? <p className="curators-empty-state">{t("home.community.unavailable")}</p> : null}
 
-            return (
-              <article key={curator._id} className="curator-card">
-                <div className="curator-portrait">
-                  <img
-                    src={avatarUrl}
-                    alt={curator.memberFullName || curator.memberNick}
-                    className="curator-img"
-                    onError={(event) => {
-                      event.currentTarget.src = DEFAULT_USER_AVATAR;
-                    }}
-                  />
-                  <span className="portrait-sheen" aria-hidden="true" />
-                  <span className="curator-index" aria-hidden="true">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                </div>
+        {isMobile ? (
+          <div className="curators-mobile-swiper">
+            <Swiper
+              modules={[A11y, Keyboard]}
+              keyboard={{ enabled: true }}
+              spaceBetween={14}
+              slidesPerView={1.22}
+              slidesOffsetBefore={16}
+              slidesOffsetAfter={16}
+              className="curators-swiper"
+            >
+              {curators.map((curator: Member, index: number) => (
+                <SwiperSlide key={curator._id}>
+                  {renderCuratorCard(curator, index)}
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          </div>
+        ) : (
+          <StaggerContainer className="curators-grid">
+            {curators.map((curator: Member, index: number) => (
+              <StaggerItem key={curator._id}>
+                <HoverLift style={{ height: "100%" }}>
+                  {renderCuratorCard(curator, index)}
+                </HoverLift>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
+        )}
 
-                <div className="curator-body">
-                  {curator.memberType ? (
-                    <span className="curator-overline">
-                      {tEnum("memberType", curator.memberType)}
-                    </span>
-                  ) : null}
-
-                  <h3 className="curator-name">
-                    <Link
-                      href={isSelf ? "/mypage" : `/member?memberId=${curator._id}`}
-                      className="curator-link"
-                    >
-                      {curator.memberFullName || curator.memberNick}
-                    </Link>
-                  </h3>
-
-                  {curator.memberDesc ? (
-                    <p className="curator-desc">{curator.memberDesc}</p>
-                  ) : null}
-
-                  <div className="curator-footer">
-                    <span className="curator-stats">
-                      {stats.map((stat, statIndex) => (
-                        <React.Fragment key={stat.label}>
-                          {statIndex > 0 ? (
-                            <span className="stat-dot" aria-hidden="true" />
-                          ) : null}
-                          <span className="stat">
-                            <span className="stat-value">{stat.value}</span>
-                            <span className="stat-label">{stat.label}</span>
-                          </span>
-                        </React.Fragment>
-                      ))}
-                    </span>
-
-                    {!isSelf ? (
-                      <span className="curator-action">
-                        <FollowButton
-                          isFollowing={isFollowing}
-                          isLoading={isUpdatingFollow}
-                          onClick={(event) =>
-                            followHandler(event, curator._id, isFollowing)
-                          }
-                          size="sm"
-                        />
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              </article>
-            );
-          })}
-
-          {!loading && !error && curators.length === 0 ? (
-			<p className="curators-empty-state">{t("home.community.empty")}</p>
-          ) : null}
-        </div>
+        {!loading && !error && curators.length === 0 ? (
+          <p className="curators-empty-state">{t("home.community.empty")}</p>
+        ) : null}
       </div>
     </section>
   );

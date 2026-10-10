@@ -4,6 +4,7 @@ import { Tour } from '../../../types/tour/tour';
 import { sweetTopSmallSuccessAlert } from '../../../sweetAlert';
 import { getDurationDays } from '../../../utils';
 import { useI18n } from '../../../i18n';
+import { FadeIn } from '../../motion/FadeIn';
 
 interface TourHeaderProps {
 	tour: Tour;
@@ -31,7 +32,7 @@ const TourHeader = ({ tour, isLiked, likeHandler }: TourHeaderProps) => {
 	};
 
 	return (
-		<div className="tour-header-section">
+		<FadeIn distance={12} className="tour-header-section">
 			{/* 1. Breadcrumbs */}
 			<nav aria-label={t('common.breadcrumb')} className="breadcrumbs-nav">
 				<Link href="/" className="crumb-link">
@@ -106,7 +107,7 @@ const TourHeader = ({ tour, isLiked, likeHandler }: TourHeaderProps) => {
 					</button>
 				</div>
 			</div>
-		</div>
+		</FadeIn>
 	);
 };
 

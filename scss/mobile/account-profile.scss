@@ -1,0 +1,389 @@
+#mobile-wrap#mobile-wrap {
+	.auth-page-container {
+		min-height: calc(100dvh - 116px);
+		padding: 20px 12px 40px;
+
+		.auth-split-card {
+			width: 100%;
+			max-width: 520px;
+			margin-inline: auto;
+			border-radius: 20px;
+		}
+
+		.form-panel {
+			width: 100%;
+			padding: 24px 18px;
+		}
+
+		.heading-group h1 {
+			font-size: 29px;
+		}
+
+		.two-cols,
+		.social-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.form-input,
+		input,
+		select {
+			font-size: 16px;
+		}
+
+		.utilities-row,
+		.bottom-redirect {
+			align-items: flex-start;
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+	}
+
+	#my-profile-page {
+		padding: 20px 0 48px;
+
+		.my-profile-container {
+			width: 100%;
+			padding-inline: 16px;
+		}
+
+		.profile-header-card {
+			padding: 20px;
+			border-radius: 18px;
+
+			.header-content-wrapper,
+			.header-left-bio,
+			.header-right-section {
+				align-items: flex-start;
+				flex-direction: column;
+				width: 100%;
+				gap: 16px;
+			}
+
+			.bio-details,
+			.action-buttons,
+			.btn-primary {
+				width: 100%;
+			}
+
+			.key-metrics {
+				display: grid;
+				width: 100%;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 8px;
+			}
+
+			.metric-divider {
+				display: none;
+			}
+		}
+
+		.profile-main-layout {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 18px;
+		}
+
+		.profile-sidebar {
+			position: static;
+			width: 100%;
+
+			.sidebar-nav-box {
+				display: flex;
+				overflow-x: auto;
+				gap: 6px;
+				padding: 8px;
+				scroll-snap-type: x proximity;
+			}
+
+			.sidebar-item-btn,
+			.logout-btn {
+				width: auto;
+				min-width: max-content;
+				scroll-snap-align: start;
+			}
+
+			.sidebar-section-title,
+			.sidebar-nav-divider,
+			.atelier-concierge-card {
+				display: none;
+			}
+		}
+
+		.profile-content-area {
+			min-width: 0;
+		}
+
+		.section-top-bar,
+		.bar-actions,
+		.filter-toolbar,
+		.booking-filter-bar {
+			align-items: stretch;
+			flex-direction: column;
+			gap: 12px;
+		}
+
+		.search-box,
+		.custom-select-box,
+		.primary-action-btn,
+		.select-box {
+			width: 100%;
+		}
+
+		.category-pills,
+		.status-subnav,
+		.filter-tabs {
+			overflow-x: auto;
+			flex-wrap: nowrap;
+			padding-bottom: 6px;
+			scrollbar-width: none;
+		}
+
+		.wishlist-cards-grid,
+		.article-cards-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.booking-card-item,
+		.list-row-item,
+		.notification-item {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 14px;
+			padding: 16px;
+
+			.card-img-box,
+			.card-middle-info,
+			.card-right-status,
+			.item-left,
+			.item-right,
+			.actions-right {
+				width: 100%;
+			}
+
+			.action-btns {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				width: 100%;
+			}
+		}
+
+		.agent-management-page {
+			.agent-header-card {
+				padding: 16px;
+			}
+
+			.header-top,
+			.filter-toolbar,
+			.pagination-footer {
+				align-items: stretch;
+				flex-direction: column;
+				gap: 12px;
+			}
+
+			.add-btn {
+				width: 100%;
+			}
+
+			.table-responsive {
+				overflow-x: auto;
+				-webkit-overflow-scrolling: touch;
+
+				table {
+					min-width: 720px;
+				}
+			}
+		}
+
+		.agent-listing-modal-card {
+			width: calc(100vw - 24px);
+			max-height: calc(100dvh - 24px);
+			margin: 12px;
+
+			.form-row,
+			.inline-pair {
+				grid-template-columns: 1fr;
+			}
+		}
+
+		.change-password-card {
+			max-width: none;
+			padding: 20px 16px;
+
+			.change-password-heading {
+				gap: 11px;
+			}
+
+			.password-input-wrap input {
+				font-size: 16px;
+			}
+
+			.change-password-submit {
+				width: 100%;
+			}
+		}
+	}
+
+	.member-profile-page {
+		padding: 22px 16px 48px;
+
+		.member-layout {
+			display: grid;
+			grid-template-columns: 1fr;
+			gap: 18px;
+		}
+
+		.member-header-card {
+			padding: 20px;
+
+			.header-content-wrapper,
+			.header-left-bio,
+			.header-right-section {
+				align-items: flex-start;
+				flex-direction: column;
+				width: 100%;
+			}
+		}
+
+		.member-sidebar {
+			position: static;
+		}
+
+		.sidebar-nav-card {
+			display: flex;
+			overflow-x: auto;
+			padding: 8px;
+
+			.nav-tab-btn {
+				min-width: max-content;
+			}
+		}
+
+		.credentials-card {
+			display: none;
+		}
+	}
+
+	#chat-page {
+		padding: 12px 0 max(12px, env(safe-area-inset-bottom));
+
+		.messenger-container {
+			width: 100%;
+			padding-inline: 10px;
+		}
+
+		.messenger-grid {
+			display: grid;
+			grid-template-columns: 1fr;
+			height: calc(100dvh - 140px);
+			min-height: 520px;
+		}
+
+		.chat-sidebar,
+		.chat-thread-panel {
+			min-width: 0;
+		}
+
+		.chat-dossier-panel {
+			display: none;
+		}
+
+		.thread-header,
+		.thread-composer {
+			padding-inline: 12px;
+		}
+
+		.thread-messages-feed {
+			padding: 14px 12px;
+		}
+
+		.message-bubble {
+			max-width: 84%;
+		}
+
+		.composer-inner {
+			gap: 8px;
+		}
+
+		.composer-input {
+			min-width: 0;
+			font-size: 16px;
+		}
+
+		.shortcut-hint {
+			display: none;
+		}
+	}
+
+	&.checkout-page-root {
+		.checkout-main {
+			padding: 24px 0 48px;
+		}
+
+		.checkout-container {
+			width: 100%;
+			padding-inline: 16px;
+		}
+
+		.checkout-top-context h1 {
+			font-size: 30px;
+			line-height: 1.15;
+		}
+
+		.step-content.two-columns {
+			display: grid !important;
+			grid-template-columns: 1fr;
+			gap: 16px !important;
+		}
+
+		.left-column,
+		.right-column {
+			width: 100%;
+			min-width: 0;
+			flex-basis: auto !important;
+		}
+
+		.booking-section,
+		.summary-card {
+			padding: 18px;
+			border-radius: 16px;
+		}
+
+		.summary-card {
+			position: static !important;
+		}
+
+		.prop-micro {
+			align-items: flex-start;
+		}
+
+		.payment-element,
+		.StripeElement,
+		iframe {
+			max-width: 100%;
+		}
+
+		.checkout-footer .footer-container {
+			padding-inline: 16px;
+		}
+	}
+
+	.property-payment-modal {
+		padding: 0;
+
+		.payment-modal-content {
+			max-height: 92dvh;
+			padding: 20px 16px calc(18px + env(safe-area-inset-bottom));
+			border-radius: 22px 22px 0 0;
+
+			.payment-modal-actions {
+				grid-template-columns: 1fr;
+			}
+		}
+	}
+}
+
+@media (max-width: 430px) {
+	#mobile-wrap#mobile-wrap #my-profile-page .profile-header-card .key-metrics {
+		grid-template-columns: 1fr;
+	}
+}

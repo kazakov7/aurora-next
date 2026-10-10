@@ -10,7 +10,10 @@
     "customerService": "고객센터",
     "savedWishlist": "저장한 위시리스트",
     "notifications": "알림",
-    "profile": "프로필"
+    "profile": "프로필",
+    "openMenu": "탐색 메뉴 열기",
+    "closeMenu": "탐색 메뉴 닫기",
+    "mainMenu": "주요 탐색"
   },
   "language": {
     "english": "English",
@@ -427,6 +430,9 @@
       "connect": "소통 및 공유",
       "connectDescription": "다른 여행자를 만나보세요",
       "curatedGuide": "큐레이션 가이드",
+      "verifiedQuality": "엄선된 럭셔리 컬렉션",
+      "travelerReviews": "2.4k+ 여행 후기",
+      "featuredLocation": "아말피 해안",
       "stayType": "숙소 유형",
       "allStays": "모든 숙소",
       "location": "위치",
@@ -528,6 +534,9 @@
     "INVALID_DATA": "잘못된 데이터입니다.",
     "DUPLICATE_DATA": "이미 존재하는 데이터입니다.",
     "WRONG_PASSWORD": "비밀번호가 올바르지 않습니다. 다시 시도해 주세요.",
+    "PASSWORD_CONFIRMATION_MISMATCH": "새 비밀번호와 확인 비밀번호가 일치하지 않습니다.",
+    "NEW_PASSWORD_MUST_DIFFER": "새 비밀번호는 현재 비밀번호와 달라야 합니다.",
+    "PASSWORD_CHANGE_UNAVAILABLE": "소셜 계정에서는 비밀번호를 변경할 수 없습니다.",
     "NOT_AUTHENTICATED": "로그인이 필요합니다. 먼저 로그인해 주세요.",
     "TOKEN_NOT_EXIST": "인증 토큰이 제공되지 않았습니다.",
     "TOKEN_EXPIRED": "세션이 만료되었습니다. 다시 로그인해 주세요.",
@@ -1642,7 +1651,27 @@
       "bio": "소개글 & 관심 분야",
       "bioPlaceholder": "나의 여행 이야기를 커뮤니티에 소개해 주세요...",
       "saving": "저장 중...",
-      "saveProfileChanges": "프로필 변경 사항 저장"
+      "saveProfileChanges": "프로필 변경 사항 저장",
+      "password": {
+        "title": "비밀번호 변경",
+        "subtitle": "AURORA 계정 로그인에 사용하는 비밀번호를 변경합니다.",
+        "current": "현재 비밀번호",
+        "new": "새 비밀번호",
+        "confirm": "새 비밀번호 확인",
+        "currentRequired": "현재 비밀번호를 입력해 주세요.",
+        "newRequired": "새 비밀번호를 입력해 주세요.",
+        "confirmRequired": "새 비밀번호를 한 번 더 입력해 주세요.",
+        "policy": "AURORA의 현재 비밀번호 정책에 따라 5~12자를 사용해 주세요.",
+        "mustDiffer": "새 비밀번호는 현재 비밀번호와 달라야 합니다.",
+        "mismatch": "새 비밀번호가 일치하지 않습니다.",
+        "show": "비밀번호 표시",
+        "hide": "비밀번호 숨기기",
+        "submit": "비밀번호 변경",
+        "updating": "비밀번호 변경 중...",
+        "updated": "비밀번호가 변경되었습니다.",
+        "updateFailed": "비밀번호를 변경하지 못했습니다.",
+        "socialOnly": "이 계정은 {{provider}}로 로그인하며 AURORA 로컬 비밀번호가 없습니다. 로그인 자격 증명은 {{provider}}에서 관리해 주세요."
+      }
     },
     "sidebar": {
       "agentApplication": "에이전트 신청",

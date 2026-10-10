@@ -3,6 +3,8 @@ import { Elements, PaymentElement, useElements, useStripe } from '@stripe/react-
 import { loadStripe } from '@stripe/stripe-js';
 import { sweetErrorAlert, sweetTopSmallSuccessAlert } from '../../../sweetAlert';
 import { AppLocale, useI18n } from '../../../i18n';
+import { motion } from 'framer-motion';
+import { appleEase } from '../../../motion/transitions';
 
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
@@ -84,8 +86,21 @@ const PropertyPaymentModal = ({ clientSecret, paymentAmount, onClose, onPaymentC
 
 	return (
 		<div className="property-payment-modal" role="dialog" aria-modal="true" aria-label={t('hotels.paymentModal.securePayment')}>
-			<div className="payment-modal-backdrop" />
-			<div className="payment-modal-content">
+			<motion.div
+				className="payment-modal-backdrop"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				exit={{ opacity: 0 }}
+				transition={{ duration: 0.25, ease: appleEase }}
+				onClick={!submitting ? onClose : undefined}
+			/>
+			<motion.div
+				className="payment-modal-content"
+				initial={{ opacity: 0, scale: 0.95, y: 16 }}
+				animate={{ opacity: 1, scale: 1, y: 0 }}
+				exit={{ opacity: 0, scale: 0.97, y: 8 }}
+				transition={{ duration: 0.28, ease: appleEase }}
+			>
 				<div className="payment-modal-heading">
 					<div>
 						<span className="payment-modal-eyebrow">{t('hotels.paymentModal.secureStripeCheckout')}</span>
@@ -103,7 +118,7 @@ const PropertyPaymentModal = ({ clientSecret, paymentAmount, onClose, onPaymentC
 						onSubmittingChange={setSubmitting}
 					/>
 				</Elements>
-			</div>
+			</motion.div>
 		</div>
 	);
 };

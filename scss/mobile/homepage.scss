@@ -1,0 +1,610 @@
+#mobile-wrap {
+	.home-page-container {
+		/* ==========================================================================
+		   1. HERO SECTION (COMPACT APP STYLE)
+		   ========================================================================== */
+		.hero-section {
+			min-height: 0;
+			padding: 16px 0 14px;
+			overflow: hidden;
+
+			.hero-banner {
+				min-height: 0;
+			}
+
+			.hero-content-container {
+				width: 100%;
+				padding-inline: 14px;
+			}
+
+			.hero-main-content {
+				display: flex;
+				flex-direction: column;
+				gap: 0;
+			}
+
+			.hero-left {
+				width: 100%;
+				max-width: 100%;
+			}
+
+			/* Mobileda o'ng tarafdagi ulkan rasm kerak emas */
+			.hero-right {
+				display: none !important;
+			}
+
+			.badge-pill {
+				display: inline-flex;
+				align-items: center;
+				gap: 5px;
+				padding: 4px 10px;
+				border-radius: 999px;
+				background: #e0f2fe;
+				color: #006194;
+				font-size: 11px;
+				font-weight: 600;
+				margin-bottom: 8px;
+
+				.dot {
+					font-size: 7px;
+					color: #006194;
+				}
+
+				.flight-icon {
+					font-size: 14px;
+				}
+			}
+
+			.hero-title {
+				font-size: clamp(24px, 7vw, 30px);
+				line-height: 1.15;
+				letter-spacing: -0.035em;
+				font-weight: 800;
+				color: #0f172a;
+				margin: 0 0 6px;
+
+				.plane-accent {
+					color: #006194;
+					font-size: 0.88em;
+				}
+			}
+
+			.hero-subtitle {
+				max-width: 100%;
+				font-size: 13px;
+				line-height: 1.45;
+				color: #64748b;
+				margin: 0;
+			}
+
+			/* Mobileda ortiqcha marketing bo'shliqlari yashiriladi */
+			.hero-divider,
+			.hero-stats {
+				display: none !important;
+			}
+
+			/* ==========================================================================
+			   COMPACT TOUCH SEARCH CARD (TELEFON EKRANIGA MOSLASHGAN)
+			   ========================================================================== */
+			.search-filter-container {
+				position: relative;
+				width: 100%;
+				margin: 14px 0 0;
+				padding: 8px;
+				border-radius: 16px;
+				background: #ffffff;
+				box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04);
+				border: 1px solid rgba(226, 232, 240, 0.85);
+
+				.filter-bar {
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					gap: 6px;
+
+					.search-field-wrapper {
+						position: relative;
+						width: 100%;
+					}
+
+					/* Joylashuv (Manzil) - 1-qator to'liq kenglik */
+					.location-wrapper {
+						order: 1;
+						grid-column: 1 / -1;
+					}
+
+					/* Sanalar - 2-qator to'liq kenglik */
+					.date-item {
+						order: 2;
+						grid-column: 1 / -1;
+					}
+
+					/* Turar joy turi - 3-qator chap ustun (50%) */
+					.type-wrapper {
+						order: 3;
+						grid-column: 1;
+					}
+
+					/* Sayohatchilar - 3-qator o'ng ustun (50%) */
+					.guests-wrapper {
+						order: 4;
+						grid-column: 2;
+					}
+
+					.filter-item {
+						width: 100%;
+						min-height: 42px;
+						padding: 5px 10px;
+						border-radius: 10px;
+						background: #f8fafc;
+						border: 1px solid rgba(226, 232, 240, 0.75);
+						display: flex;
+						align-items: center;
+						gap: 8px;
+						box-sizing: border-box;
+						transition: background 0.15s ease, border-color 0.15s ease;
+
+						&.active {
+							background: #f0f7fc;
+							border-color: #006194;
+						}
+
+						.item-icon {
+							font-size: 18px;
+							color: #006194;
+							flex-shrink: 0;
+						}
+
+						.item-text {
+							display: flex;
+							flex-direction: column;
+							align-items: flex-start;
+							text-align: left;
+							flex: 1;
+							min-width: 0;
+
+							.label {
+								font-size: 9px;
+								font-weight: 700;
+								color: #64748b;
+								text-transform: uppercase;
+								letter-spacing: 0.04em;
+								line-height: 1;
+								margin-bottom: 2px;
+							}
+
+							.value {
+								font-size: 12.5px;
+								font-weight: 600;
+								color: #0f172a;
+								line-height: 1.2;
+								white-space: nowrap;
+								overflow: hidden;
+								text-overflow: ellipsis;
+								max-width: 100%;
+							}
+
+							.date-inputs {
+								display: flex;
+								align-items: center;
+								gap: 4px;
+								width: 100%;
+
+								.date-input {
+									font-size: 12px;
+									font-weight: 600;
+									color: #0f172a;
+									border: none;
+									background: transparent;
+									outline: none;
+									width: 88px;
+									padding: 0;
+									font-family: inherit;
+								}
+
+								.date-separator {
+									color: #94a3b8;
+									font-size: 12px;
+								}
+							}
+						}
+					}
+
+					.search-field-dropdown {
+						position: absolute;
+						left: 0;
+						right: 0;
+						top: calc(100% + 4px);
+						background: #ffffff;
+						border-radius: 12px;
+						box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+						border: 1px solid rgba(226, 232, 240, 0.9);
+						padding: 6px;
+						z-index: 1000;
+						max-height: 200px;
+						overflow-y: auto;
+						width: 100%;
+						box-sizing: border-box;
+
+						button {
+							width: 100%;
+							padding: 8px 10px;
+							border-radius: 6px;
+							border: none;
+							background: transparent;
+							text-align: left;
+							font-size: 12.5px;
+							font-weight: 500;
+							color: #1e293b;
+
+							&:active,
+							&[aria-selected="true"] {
+								background: #e0f2fe;
+								color: #006194;
+								font-weight: 600;
+							}
+						}
+					}
+
+					/* Qidirish tugmasi - 4-qator to'liq kenglik */
+					.search-submit-btn {
+						order: 5;
+						grid-column: 1 / -1;
+						width: 100%;
+						height: 42px;
+						border-radius: 10px;
+						background: #006194;
+						color: #ffffff;
+						border: none;
+						display: flex;
+						align-items: center;
+						justify-content: center;
+						gap: 6px;
+						font-weight: 600;
+						font-size: 14px;
+						cursor: pointer;
+						box-shadow: 0 4px 12px rgba(0, 97, 148, 0.25);
+						margin-top: 2px;
+
+						svg {
+							font-size: 20px;
+						}
+
+						.search-btn-text {
+							display: inline-block;
+							font-size: 14px;
+							font-weight: 600;
+							letter-spacing: -0.01em;
+						}
+					}
+				}
+			}
+		}
+
+		/* ==========================================================================
+		   2. COMMON SECTION LAYOUT ON MOBILE
+		   ========================================================================== */
+		.trending-destinations-section,
+		.special-stays-section,
+		.experiences-section,
+		.curators-section,
+		.live-dispatches-section,
+		.travel-partners-section {
+			padding-block: 28px;
+
+			.section-container {
+				width: 100%;
+				padding-inline: 14px;
+			}
+
+			.section-header,
+			.partners-header {
+				display: flex;
+				align-items: flex-end;
+				justify-content: space-between;
+				margin-bottom: 14px;
+				text-align: left;
+
+				.section-tag {
+					font-size: 10.5px;
+					font-weight: 700;
+					text-transform: uppercase;
+					letter-spacing: 0.05em;
+					color: #006194;
+					display: block;
+					margin-bottom: 2px;
+				}
+
+				.section-title {
+					font-size: 20px;
+					font-weight: 800;
+					line-height: 1.2;
+					letter-spacing: -0.03em;
+					color: #0f172a;
+					margin: 0;
+				}
+
+				.section-subtitle {
+					font-size: 12.5px;
+					line-height: 1.45;
+					color: #64748b;
+					margin-top: 3px;
+				}
+
+				.section-link {
+					font-size: 12px;
+					font-weight: 600;
+					color: #006194;
+					display: inline-flex;
+					align-items: center;
+					gap: 2px;
+					text-decoration: none;
+					white-space: nowrap;
+
+					.material-symbols-outlined {
+						font-size: 15px;
+					}
+				}
+			}
+		}
+
+		/* ==========================================================================
+		   3. MOBILE SWIPER CAROUSELS
+		   ========================================================================== */
+		.trending-mobile-swiper {
+			overflow: visible;
+			margin-inline: -14px;
+
+			.swiper {
+				overflow: visible;
+			}
+
+			.swiper-slide {
+				height: auto;
+			}
+
+			.bento-card {
+				width: 100%;
+				min-height: 230px;
+				height: 250px;
+				border-radius: 18px;
+				position: relative;
+				overflow: hidden;
+				display: flex;
+				flex-direction: column;
+				justify-content: space-between;
+				padding: 14px;
+			}
+		}
+
+		.aurora-swiper-container {
+			overflow: visible;
+			margin-inline: -14px;
+
+			.swiper {
+				overflow: visible;
+			}
+
+			.swiper-slide {
+				height: auto;
+			}
+		}
+
+		.curators-mobile-swiper {
+			overflow: visible;
+			margin-inline: -14px;
+
+			.swiper {
+				overflow: visible;
+			}
+
+			.swiper-slide {
+				height: auto;
+			}
+
+			.curator-card {
+				width: 100%;
+				border-radius: 16px;
+				background: #ffffff;
+				border: 1px solid rgba(226, 232, 240, 0.8);
+				box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+				overflow: hidden;
+				display: flex;
+				flex-direction: column;
+				height: 100%;
+
+				.curator-portrait {
+					position: relative;
+					width: 100%;
+					height: 160px;
+					overflow: hidden;
+
+					.curator-img {
+						width: 100%;
+						height: 100%;
+						object-fit: cover;
+					}
+
+					.curator-index {
+						position: absolute;
+						top: 8px;
+						right: 8px;
+						font-size: 10.5px;
+						font-weight: 700;
+						background: rgba(15, 23, 42, 0.6);
+						backdrop-filter: blur(8px);
+						color: #ffffff;
+						padding: 2px 6px;
+						border-radius: 999px;
+					}
+				}
+
+				.curator-body {
+					padding: 12px;
+					display: flex;
+					flex-direction: column;
+					flex: 1;
+
+					.curator-overline {
+						font-size: 10px;
+						font-weight: 700;
+						text-transform: uppercase;
+						color: #006194;
+						letter-spacing: 0.04em;
+						margin-bottom: 2px;
+					}
+
+					.curator-name {
+						font-size: 15px;
+						font-weight: 700;
+						color: #0f172a;
+						margin: 0 0 4px;
+					}
+
+					.curator-desc {
+						font-size: 11.5px;
+						line-height: 1.4;
+						color: #64748b;
+						display: -webkit-box;
+						-webkit-line-clamp: 2;
+						-webkit-box-orient: vertical;
+						overflow: hidden;
+						margin-bottom: 10px;
+					}
+
+					.curator-footer {
+						margin-top: auto;
+						display: flex;
+						align-items: center;
+						justify-content: space-between;
+						gap: 6px;
+						padding-top: 8px;
+						border-top: 1px solid #f1f5f9;
+
+						.curator-stats {
+							display: flex;
+							align-items: center;
+							gap: 5px;
+							font-size: 10.5px;
+
+							.stat {
+								display: flex;
+								align-items: baseline;
+								gap: 2px;
+
+								.stat-value {
+									font-weight: 700;
+									color: #0f172a;
+								}
+								.stat-label {
+									color: #64748b;
+								}
+							}
+
+							.stat-dot {
+								width: 3px;
+								height: 3px;
+								border-radius: 50%;
+								background: #cbd5e1;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		.dispatches-mobile-swiper {
+			overflow: visible;
+			margin-inline: -14px;
+
+			.swiper {
+				overflow: visible;
+			}
+
+			.swiper-slide {
+				height: auto;
+			}
+
+			.dispatch-mobile-card-wrap {
+				width: 100%;
+				height: 220px;
+				border-radius: 16px;
+				overflow: hidden;
+				position: relative;
+
+				.traveler-destination-card {
+					width: 100%;
+					height: 100%;
+					position: relative;
+					border: none;
+					padding: 0;
+					background: #0f172a;
+					display: block;
+					cursor: pointer;
+					text-align: left;
+
+					img {
+						width: 100%;
+						height: 100%;
+						object-fit: cover;
+						display: block;
+					}
+
+					.destination-scrim {
+						position: absolute;
+						inset: 0;
+						background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 30%, rgba(15, 23, 42, 0.85) 100%);
+					}
+
+					.destination-info {
+						position: absolute;
+						bottom: 0;
+						left: 0;
+						right: 0;
+						padding: 14px;
+						z-index: 2;
+
+						.top-pick-label {
+							display: inline-block;
+							padding: 2px 7px;
+							border-radius: 999px;
+							background: #f59e0b;
+							color: #ffffff;
+							font-size: 9.5px;
+							font-weight: 700;
+							text-transform: uppercase;
+							letter-spacing: 0.04em;
+							margin-bottom: 5px;
+						}
+
+						h3 {
+							font-size: 16px;
+							font-weight: 700;
+							color: #ffffff;
+							margin: 0 0 2px;
+							letter-spacing: -0.02em;
+						}
+
+						p {
+							font-size: 11.5px;
+							color: rgba(255, 255, 255, 0.8);
+							margin: 0;
+						}
+					}
+				}
+			}
+		}
+
+		.partners-marquee-area {
+			margin-inline: -14px;
+			padding-block: 6px;
+		}
+	}
+}
+
+@media (max-width: 359px) {
+	#mobile-wrap .home-page-container .hero-section {
+		.hero-title {
+			font-size: 23px;
+		}
+	}
+}

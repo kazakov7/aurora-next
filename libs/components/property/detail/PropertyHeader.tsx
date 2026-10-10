@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Property } from '../../../types/property/property';
 import { sweetTopSmallSuccessAlert } from '../../../sweetAlert';
 import { useI18n } from '../../../i18n';
+import { FadeIn } from '../../motion/FadeIn';
 
 interface PropertyHeaderProps {
 	property: Property;
@@ -27,7 +28,7 @@ const PropertyHeader = ({ property, isLiked, likeHandler }: PropertyHeaderProps)
 	};
 
 	return (
-		<div className="property-header-section">
+		<FadeIn distance={12} className="property-header-section">
 			{/* 1. Breadcrumbs */}
 			<nav aria-label={t('common.breadcrumb')} className="breadcrumbs-nav">
 				<Link href="/" className="crumb-link">
@@ -93,7 +94,7 @@ const PropertyHeader = ({ property, isLiked, likeHandler }: PropertyHeaderProps)
 					</button>
 				</div>
 			</div>
-		</div>
+		</FadeIn>
 	);
 };
 

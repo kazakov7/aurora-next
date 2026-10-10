@@ -2,6 +2,7 @@ import React from 'react';
 import Head from 'next/head';
 import Top from '../Top';
 import Footer from '../Footer';
+import MobileBottomNav from '../common/MobileBottomNav';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import useAuthSession from '../../hooks/useAuthSession';
 import { useI18n } from '../../i18n';
@@ -25,6 +26,7 @@ const withLayoutBasic = (Component: any) => {
 							<Component {...props} />
 						</main>
 						<Footer />
+						<MobileBottomNav />
 					</div>
 				</>
 			);

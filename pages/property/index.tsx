@@ -16,6 +16,7 @@ import { LIKE_TARGET_PROPERTY } from "../../apollo/user/mutation";
 import { userVar } from "../../apollo/store";
 import { sweetMixinErrorAlert } from "../../libs/sweetAlert";
 import { useI18n } from "../../libs/i18n";
+import MobileFilterPanel from "../../libs/components/common/MobileFilterPanel";
 
 const defaultInput: PropertiesInquiry = {
   page: 1,
@@ -233,11 +234,13 @@ const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
       <div className="property-main-container">
         <div className="property-layout-flex">
           {/* Left Sidebar Filter */}
-          <Filter
-            searchFilter={searchFilter}
-            setSearchFilter={setSearchFilter}
-            initialInput={initialInput}
-          />
+          <MobileFilterPanel title={t("hotels.filter.filters")}>
+            <Filter
+              searchFilter={searchFilter}
+              setSearchFilter={setSearchFilter}
+              initialInput={initialInput}
+            />
+          </MobileFilterPanel>
 
           {/* Right Column Listing */}
           <main className="property-listing-main">

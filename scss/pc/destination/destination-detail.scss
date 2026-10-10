@@ -1293,10 +1293,13 @@
 		.destination-top-stays-section,
 		.destination-popular-tours-section {
 			width: 100%;
-			padding: 64px 0;
+			padding: 64px 24px;
+			box-sizing: border-box;
 
 			.section-header-row {
 				max-width: $container-width;
+				width: 100%;
+				box-sizing: border-box;
 				margin: 0 auto 32px;
 				
 				display: flex;
@@ -1341,22 +1344,28 @@
 			.stays-cards-grid,
 			.tours-cards-grid {
 				max-width: $container-width;
+				width: 100%;
+				box-sizing: border-box;
 				margin: 0 auto;
+				min-width: 0;
 				
 				display: grid;
-				grid-template-columns: repeat(4, 1fr);
+				grid-template-columns: repeat(4, minmax(0, 1fr));
 				gap: 24px;
 
-				@media (max-width: 1100px) {
-					grid-template-columns: repeat(2, 1fr);
+				@media (max-width: 1200px) {
+					grid-template-columns: repeat(2, minmax(0, 1fr));
 				}
 
-				@media (max-width: 600px) {
+				@media (max-width: 640px) {
 					grid-template-columns: 1fr;
 				}
 
 				.stay-card-item,
 				.tour-card-item {
+					min-width: 0;
+					width: 100%;
+					box-sizing: border-box;
 					background: $surface-container-lowest;
 					border-radius: 16px;
 					overflow: hidden;
@@ -1462,6 +1471,7 @@
 						flex-direction: column;
 						justify-content: space-between;
 						flex: 1;
+						min-width: 0;
 
 						.location-rating-row {
 							display: flex;
@@ -1470,6 +1480,16 @@
 							font-size: 12px;
 							color: $on-surface-variant;
 							margin-bottom: 6px;
+							min-width: 0;
+							gap: 8px;
+
+							.location-text {
+								overflow: hidden;
+								text-overflow: ellipsis;
+								white-space: nowrap;
+								min-width: 0;
+								flex: 1;
+							}
 
 							.rating-badge {
 								display: flex;
@@ -1477,6 +1497,7 @@
 								gap: 2px;
 								font-weight: 600;
 								color: $on-surface;
+								flex-shrink: 0;
 
 								.icon-star {
 									font-size: 14px;
@@ -1500,6 +1521,8 @@
 							overflow: hidden;
 							text-overflow: ellipsis;
 							white-space: nowrap;
+							min-width: 0;
+							width: 100%;
 						}
 
 						.stay-specs-desc {
@@ -1510,6 +1533,8 @@
 							overflow: hidden;
 							text-overflow: ellipsis;
 							white-space: nowrap;
+							min-width: 0;
+							width: 100%;
 						}
 
 						.inclusions-chips-group {
@@ -1535,10 +1560,14 @@
 							padding-top: 12px;
 							border-top: 1px solid $surface-container;
 							display: flex;
-							align-items: baseline;
+							align-items: center;
 							justify-content: space-between;
+							gap: 8px;
+							min-width: 0;
 
 							.price-box {
+								min-width: 0;
+
 								.price-amount {
 									font-size: 18px;
 									font-weight: 700;
@@ -1557,6 +1586,8 @@
 								font-weight: 600;
 								color: $primary;
 								text-decoration: none;
+								white-space: nowrap;
+								flex-shrink: 0;
 
 								&:hover {
 									text-decoration: underline;

@@ -10,7 +10,10 @@
     "customerService": "CS",
     "savedWishlist": "Saved wishlist",
     "notifications": "Notifications",
-    "profile": "Profile"
+    "profile": "Profile",
+    "openMenu": "Open navigation menu",
+    "closeMenu": "Close navigation menu",
+    "mainMenu": "Main navigation"
   },
   "language": {
     "english": "English",
@@ -427,6 +430,9 @@
       "connect": "Connect & Share",
       "connectDescription": "Meet fellow travelers",
       "curatedGuide": "Curated Guide",
+      "verifiedQuality": "Exclusive Collection",
+      "travelerReviews": "2.4k+ reviews",
+      "featuredLocation": "Amalfi Coast",
       "stayType": "STAY TYPE",
       "allStays": "All stays",
       "location": "LOCATION",
@@ -528,6 +534,9 @@
     "INVALID_DATA": "Invalid data!",
     "DUPLICATE_DATA": "Data already exists!",
     "WRONG_PASSWORD": "Wrong password, try again!",
+    "PASSWORD_CONFIRMATION_MISMATCH": "New password and confirmation do not match.",
+    "NEW_PASSWORD_MUST_DIFFER": "Your new password must be different from your current password.",
+    "PASSWORD_CHANGE_UNAVAILABLE": "Password changes are unavailable for this social account.",
     "NOT_AUTHENTICATED": "You are not authenticated, please login first!",
     "TOKEN_NOT_EXIST": "Bearer token is not provided!",
     "TOKEN_EXPIRED": "Your session has expired, please login again!",
@@ -1642,7 +1651,27 @@
       "bio": "Explorer Bio & Editorial Focus",
       "bioPlaceholder": "Tell the community about your travel pursuits...",
       "saving": "Saving...",
-      "saveProfileChanges": "Save Profile Changes"
+      "saveProfileChanges": "Save Profile Changes",
+      "password": {
+        "title": "Change Password",
+        "subtitle": "Update the password used to sign in to your AURORA account.",
+        "current": "Current Password",
+        "new": "New Password",
+        "confirm": "Confirm New Password",
+        "currentRequired": "Enter your current password.",
+        "newRequired": "Enter a new password.",
+        "confirmRequired": "Confirm your new password.",
+        "policy": "Use 5–12 characters, following AURORA’s current password policy.",
+        "mustDiffer": "Your new password must be different from your current password.",
+        "mismatch": "The new passwords do not match.",
+        "show": "Show password",
+        "hide": "Hide password",
+        "submit": "Update Password",
+        "updating": "Updating Password...",
+        "updated": "Password updated successfully.",
+        "updateFailed": "Password could not be updated.",
+        "socialOnly": "This account signs in with {{provider}} and does not have a local AURORA password. Manage your sign-in credentials with {{provider}}."
+      }
     },
     "sidebar": {
       "agentApplication": "Agent Application",

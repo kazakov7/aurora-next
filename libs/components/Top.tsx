@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useQuery, useReactiveVar } from "@apollo/client";
@@ -9,6 +9,7 @@ import { useNotificationRealtime } from "../hooks/useNotificationRealtime";
 import AuroraLogo3D from "./AuroraLogo3D";
 import GlobalSearch from "./common/GlobalSearch";
 import { APP_LOCALES, AppLocale, useI18n } from "../i18n";
+import useDeviceDetect from "../hooks/useDeviceDetect";
 
 const LOCALE_CONFIG: Record<
   AppLocale,
@@ -21,9 +22,13 @@ const LOCALE_CONFIG: Record<
 
 const Top = () => {
   const router = useRouter();
+  const device = useDeviceDetect();
   const { locale, t, changeLocale } = useI18n();
   const user = useReactiveVar(userVar);
   const [activePath, setActivePath] = useState("home");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileDrawerRef = useRef<HTMLElement>(null);
   const { data: unreadData, refetch: refetchUnread } = useQuery(
     GET_UNREAD_NOTIFICATION_COUNT,
     { skip: !user?._id, fetchPolicy: "network-only" },
@@ -49,6 +54,51 @@ const Top = () => {
     else if (pathname.startsWith("/chat")) setActivePath("chat");
     else if (pathname.startsWith("/cs")) setActivePath("customer-service");
   }, [router.pathname]);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [router.asPath]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileMenuOpen(false);
+        menuTriggerRef.current?.focus();
+        return;
+      }
+      if (event.key === "Tab") {
+        const focusable = mobileDrawerRef.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), select:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
+        if (!focusable?.length) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+    window.requestAnimationFrame(() => {
+      mobileDrawerRef.current?.querySelector<HTMLElement>('button, a[href], select')?.focus();
+    });
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [mobileMenuOpen]);
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
     <header className="header-navbar">
@@ -202,8 +252,116 @@ const Top = () => {
               />
             </Link>
           )}
+
+          {device === "mobile" && (
+            <button
+              ref={menuTriggerRef}
+              type="button"
+              className="mobile-menu-trigger"
+              aria-label={t("navigation.openMenu")}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation-drawer"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">menu</span>
+            </button>
+          )}
         </div>
       </div>
+
+      {device === "mobile" && (
+        <>
+          <button
+            type="button"
+            className={`mobile-nav-backdrop ${mobileMenuOpen ? "open" : ""}`}
+            aria-label={t("common.close")}
+            tabIndex={mobileMenuOpen ? 0 : -1}
+            onClick={closeMobileMenu}
+          />
+          <aside
+            ref={mobileDrawerRef}
+            id="mobile-navigation-drawer"
+            className={`mobile-navigation-drawer ${mobileMenuOpen ? "open" : ""}`}
+            aria-hidden={!mobileMenuOpen}
+            aria-label={t("navigation.mainMenu")}
+          >
+            <div className="mobile-drawer-header">
+              <Link href="/" className="mobile-drawer-brand" onClick={closeMobileMenu}>
+                AURORA
+              </Link>
+              <button
+                type="button"
+                className="mobile-drawer-close"
+                aria-label={t("navigation.closeMenu")}
+                onClick={() => {
+                  closeMobileMenu();
+                  menuTriggerRef.current?.focus();
+                }}
+              >
+                <span className="material-symbols-outlined" aria-hidden="true">close</span>
+              </button>
+            </div>
+
+            <nav className="mobile-drawer-links">
+              {[
+                ["home", "/", t("navigation.home"), "home"],
+                ["hotels", "/property", t("navigation.hotels"), "hotel"],
+                ["tours", "/tour", t("navigation.tours"), "explore"],
+                ["destinations", "/destination", t("navigation.destinations"), "map"],
+                ["community", "/community", t("navigation.community"), "forum"],
+                ["chat", "/chat", t("navigation.chat"), "chat_bubble"],
+                ["customer-service", "/cs", t("navigation.customerService"), "support_agent"],
+              ].map(([key, href, label, icon]) => (
+                <Link
+                  key={key}
+                  href={href}
+                  className={`mobile-drawer-link ${activePath === key ? "active" : ""}`}
+                  onClick={closeMobileMenu}
+                >
+                  <span className="material-symbols-outlined" aria-hidden="true">{icon}</span>
+                  <span>{label}</span>
+                </Link>
+              ))}
+              {user?._id && (
+                <Link
+                  href="/mypage"
+                  className={`mobile-drawer-link ${activePath === "my-page" ? "active" : ""}`}
+                  onClick={closeMobileMenu}
+                >
+                  <span className="material-symbols-outlined" aria-hidden="true">person</span>
+                  <span>{t("navigation.myPage")}</span>
+                </Link>
+              )}
+              {user?.memberType === "ADMIN" && (
+                <Link href="/_admin" className="mobile-drawer-link" onClick={closeMobileMenu}>
+                  <span className="material-symbols-outlined" aria-hidden="true">admin_panel_settings</span>
+                  <span>{t("admin.layout.administrationPortal")}</span>
+                </Link>
+              )}
+            </nav>
+
+            <div className="mobile-drawer-footer">
+              <label htmlFor="mobile-language-selector">{t("language.select")}</label>
+              <select
+                id="mobile-language-selector"
+                value={locale}
+                onChange={(event) => void changeLocale(event.target.value as AppLocale)}
+              >
+                {APP_LOCALES.map((code) => (
+                  <option value={code} key={code}>{LOCALE_CONFIG[code].full}</option>
+                ))}
+              </select>
+              <Link
+                href={user?._id ? "/mypage" : "/account/join"}
+                className="mobile-account-link"
+                onClick={closeMobileMenu}
+              >
+                {user?._id ? t("navigation.profile") : t("auth.login")}
+              </Link>
+            </div>
+          </aside>
+        </>
+      )}
     </header>
   );
 };

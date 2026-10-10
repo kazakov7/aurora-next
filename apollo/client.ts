@@ -18,6 +18,7 @@ const SILENT_ERROR_OPERATIONS = [
 	'GoogleAuth',
 	'KakaoAuth',
 	'TelegramAuth',
+	'ChangePassword',
 	'LikeTargetProperty',
 	'LikeTargetTour',
 	'LikeTargetDestination',

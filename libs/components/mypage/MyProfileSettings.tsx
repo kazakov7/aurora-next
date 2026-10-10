@@ -9,6 +9,7 @@ import {
 } from "../../sweetAlert";
 import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
 import { useI18n } from "../../i18n";
+import ChangePasswordSection from "./ChangePasswordSection";
 
 const MyProfileSettings: React.FC = () => {
   const { t, tError } = useI18n();
@@ -120,7 +121,7 @@ const MyProfileSettings: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="profile-settings-page">
       <div className="section-top-bar">
         <div className="title-group">
           <h2>{t("profile.settings.accountSettings")}</h2>
@@ -331,6 +332,8 @@ const MyProfileSettings: React.FC = () => {
           </div>
         </form>
       </div>
+
+      <ChangePasswordSection />
     </div>
   );
 };

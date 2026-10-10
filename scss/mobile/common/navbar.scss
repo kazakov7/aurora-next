@@ -124,4 +124,94 @@
       }
     }
   }
+
+  /* ==========================================================================
+     MOBILE BOTTOM APP NAVIGATION BAR
+     ========================================================================== */
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 -4px 20px rgba(15, 23, 42, 0.08);
+    z-index: 1000;
+    box-sizing: content-box;
+
+    .mobile-bottom-nav-inner {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 4px;
+    }
+
+    .mobile-bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      flex: 1;
+      height: 100%;
+      text-decoration: none;
+      color: #64748b;
+      transition: color 0.18s ease;
+      -webkit-tap-highlight-color: transparent;
+
+      .icon-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 26px;
+
+        .nav-icon {
+          font-size: 24px;
+          transition: transform 0.18s ease;
+        }
+
+        .active-dot {
+          position: absolute;
+          bottom: -2px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background: #006194;
+        }
+      }
+
+      .nav-label {
+        font-size: 10.5px;
+        font-weight: 500;
+        letter-spacing: -0.01em;
+        line-height: 1.1;
+      }
+
+      &.active {
+        color: #006194;
+
+        .nav-icon {
+          transform: translateY(-1px) scale(1.06);
+          font-variation-settings: 'FILL' 1;
+        }
+
+        .nav-label {
+          font-weight: 700;
+        }
+      }
+
+      &:active {
+        transform: scale(0.92);
+      }
+    }
+  }
 }

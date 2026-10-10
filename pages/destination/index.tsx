@@ -18,12 +18,12 @@ import { useI18n } from '../../libs/i18n';
 
 const continentCountryMap: Record<string, string> = {
 	all: '',
-	asia: 'Japan|South Korea',
-	europe: 'Switzerland|Germany',
-	africa: 'Africa|Morocco|Egypt|South Africa|Tanzania',
+	asia: 'Asia|Japan|South Korea|Indonesia|Malaysia|Singapore|Thailand|Vietnam|United Arab Emirates|China|India|Philippines',
+	europe: 'Europe|Switzerland|Germany|France|Italy|Spain|Netherlands|Portugal|Czech Republic|United Kingdom|Turkey|Greece|Austria|Norway|Sweden',
+	africa: 'Africa|Morocco|Egypt|South Africa|Tanzania|Kenya|Nigeria',
 	'north-america': 'North America|Canada|United States|Mexico',
-	'south-america': 'South America|Peru|Brazil|Chile|Argentina',
-	oceania: 'Oceania|Australia|New Zealand',
+	'south-america': 'South America|Peru|Brazil|Chile|Argentina|Colombia',
+	oceania: 'Oceania|Australia|New Zealand|Fiji',
 };
 
 const defaultInput: DestinationsInquiry = {
@@ -57,14 +57,9 @@ const DestinationList: NextPage = () => {
 
 	/** LIFECYCLES **/
 	useEffect(() => {
-		const list: Destination[] = data?.getDestinations?.list;
-		const meta = data?.getDestinations?.metaCounter?.[0]?.total;
-
-		if (list) {
-			setDestinations(list);
-		}
-		if (meta !== undefined) {
-			setTotal(meta);
+		if (data?.getDestinations) {
+			setDestinations(data.getDestinations.list ?? []);
+			setTotal(data.getDestinations.metaCounter?.[0]?.total ?? 0);
 		}
 	}, [data]);
 
@@ -82,8 +77,28 @@ const DestinationList: NextPage = () => {
 					text: textFilter,
 				},
 			}));
+		} else if (router.query.search && typeof router.query.search === 'string') {
+			setSelectedContinent('all');
+			setSearchFilter((prev) => ({
+				...prev,
+				page: 1,
+				search: {
+					...prev.search,
+					text: router.query.search as string,
+				},
+			}));
+		} else if (router.isReady && !router.query.continent && !router.query.search && selectedContinent !== 'all') {
+			setSelectedContinent('all');
+			setSearchFilter((prev) => ({
+				...prev,
+				page: 1,
+				search: {
+					...prev.search,
+					text: undefined,
+				},
+			}));
 		}
-	}, [router.query.continent]);
+	}, [router.isReady, router.query.continent, router.query.search]);
 
 	/** HANDLERS: REAKTIV FILTRLASH & SARALASH (NO APPLY BUTTON) **/
 	const handleSelectContinent = async (continent: string) => {

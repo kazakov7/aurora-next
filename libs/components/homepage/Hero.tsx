@@ -12,6 +12,7 @@ import EventAvailableRoundedIcon from "@mui/icons-material/EventAvailableRounded
 import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 import { PropertyType } from "../../enums/property.enum";
 import { Destination } from "../../types/destination/destination";
+import { useI18n } from "../../i18n";
 
 interface HeroProps {
   destinations: Destination[];
@@ -27,6 +28,7 @@ const STAY_TYPES: PropertyType[] = [
 
 const Hero = ({ destinations }: HeroProps) => {
   const router = useRouter();
+  const { t } = useI18n();
   const [type, setType] = useState("");
   const [location, setLocation] = useState("");
   const [guests, setGuests] = useState(2);
@@ -42,9 +44,14 @@ const Hero = ({ destinations }: HeroProps) => {
   const guestsRef = useRef<HTMLDivElement>(null);
 
   /** Destinations API'dan keladigan real manzillar **/
-  const locationOptions = destinations
-    .map((d) => d.destinationName)
-    .filter(Boolean);
+  const locationOptions = [
+    "Seoul",
+    "Tokyo",
+    "Paris",
+    "Osaka",
+    "Bangkok",
+    "Fukuoka",
+  ];
 
   /** LIFECYCLES **/
   useEffect(() => {
@@ -104,20 +111,15 @@ const Hero = ({ destinations }: HeroProps) => {
             <div className="hero-left">
               <div className="badge-pill">
                 <span className="dot">●</span>
-                <span>LET'S MAKE THE BEST TRIP EVER</span>
+                <span>{t("home.hero.eyebrow")}</span>
                 <FlightTakeoffIcon className="flight-icon" />
               </div>
 
               <h1 className="hero-title">
-                Make your Hassle Free Vacation plans now!{" "}
-                <span className="plane-accent">✈</span>
+                {t("home.hero.title")} <span className="plane-accent">✈</span>
               </h1>
 
-              <p className="hero-subtitle">
-                Invest in unforgettable luxury travel experiences curated across
-                the world's most breathtaking horizons with discrete 24/7
-                concierge guidance.
-              </p>
+              <p className="hero-subtitle">{t("home.hero.description")}</p>
 
               <div className="hero-divider"></div>
 
@@ -125,10 +127,12 @@ const Hero = ({ destinations }: HeroProps) => {
                 <div className="stat-item">
                   <div className="stat-value-box">
                     <ExploreRoundedIcon className="stat-icon" />
-                    <span className="stat-value">Discover Places</span>
+                    <span className="stat-value">
+                      {t("home.hero.discover")}
+                    </span>
                   </div>
                   <span className="stat-label">
-                    Explore amazing destinations
+                    {t("home.hero.discoverDescription")}
                   </span>
                 </div>
 
@@ -137,9 +141,11 @@ const Hero = ({ destinations }: HeroProps) => {
                 <div className="stat-item">
                   <div className="stat-value-box">
                     <EventAvailableRoundedIcon className="stat-icon" />
-                    <span className="stat-value">Plan & Book</span>
+                    <span className="stat-value">{t("home.hero.plan")}</span>
                   </div>
-                  <span className="stat-label">Book stays & experiences</span>
+                  <span className="stat-label">
+                    {t("home.hero.planDescription")}
+                  </span>
                 </div>
 
                 <div className="stat-separator" />
@@ -147,9 +153,11 @@ const Hero = ({ destinations }: HeroProps) => {
                 <div className="stat-item">
                   <div className="stat-value-box">
                     <GroupsRoundedIcon className="stat-icon" />
-                    <span className="stat-value">Connect & Share</span>
+                    <span className="stat-value">{t("home.hero.connect")}</span>
                   </div>
-                  <span className="stat-label">Meet fellow travelers</span>
+                  <span className="stat-label">
+                    {t("home.hero.connectDescription")}
+                  </span>
                 </div>
               </div>
             </div>
@@ -159,13 +167,13 @@ const Hero = ({ destinations }: HeroProps) => {
               <div className="hero-img-box">
                 <img
                   src="/img/banner/hero_traveler.jpg"
-                  alt="Traveler"
+                  alt={t("common.traveler")}
                   className="hero-img"
                 />
 
                 <div className="curated-badge">
                   <VerifiedUserIcon className="badge-check" />
-                  <span>Curated Guide</span>
+                  <span>{t("home.hero.curatedGuide")}</span>
                 </div>
               </div>
             </div>
@@ -187,8 +195,10 @@ const Hero = ({ destinations }: HeroProps) => {
                 >
                   <ApartmentIcon className="item-icon" />
                   <div className="item-text">
-                    <span className="label">STAY TYPE</span>
-                    <span className="value">{type || "All Stays"}</span>
+                    <span className="label">{t("home.hero.stayType")}</span>
+                    <span className="value">
+                      {type || t("home.hero.allStays")}
+                    </span>
                   </div>
                 </button>
 
@@ -203,7 +213,7 @@ const Hero = ({ destinations }: HeroProps) => {
                         setOpenType(false);
                       }}
                     >
-                      All Stays
+                      {t("home.hero.allStays")}
                     </button>
                     {STAY_TYPES.map((t) => (
                       <button
@@ -239,8 +249,10 @@ const Hero = ({ destinations }: HeroProps) => {
                 >
                   <LocationOnIcon className="item-icon" />
                   <div className="item-text">
-                    <span className="label">LOCATION</span>
-                    <span className="value">{location || "Anywhere"}</span>
+                    <span className="label">{t("home.hero.location")}</span>
+                    <span className="value">
+                      {location || t("home.hero.anywhere")}
+                    </span>
                   </div>
                 </button>
 
@@ -255,7 +267,7 @@ const Hero = ({ destinations }: HeroProps) => {
                         setOpenLocation(false);
                       }}
                     >
-                      Anywhere
+                      {t("home.hero.anywhere")}
                     </button>
                     {locationOptions.map((loc) => (
                       <button
@@ -279,7 +291,7 @@ const Hero = ({ destinations }: HeroProps) => {
               <div className="filter-item date-item">
                 <CalendarMonthIcon className="item-icon" />
                 <div className="item-text">
-                  <span className="label">DATES</span>
+                  <span className="label">{t("home.hero.dates")}</span>
                   <div className="date-inputs">
                     <input
                       type="date"
@@ -291,7 +303,7 @@ const Hero = ({ destinations }: HeroProps) => {
                         }
                       }}
                       className="date-input"
-                      aria-label="Check-in date"
+                      aria-label={t("home.hero.checkIn")}
                     />
                     <span className="date-separator">—</span>
                     <input
@@ -300,7 +312,7 @@ const Hero = ({ destinations }: HeroProps) => {
                       min={checkIn || undefined}
                       onChange={(e) => setCheckOut(e.target.value)}
                       className="date-input"
-                      aria-label="Check-out date"
+                      aria-label={t("home.hero.checkOut")}
                     />
                   </div>
                 </div>
@@ -322,8 +334,10 @@ const Hero = ({ destinations }: HeroProps) => {
                 >
                   <GroupIcon className="item-icon" />
                   <div className="item-text">
-                    <span className="label">TRAVELERS</span>
-                    <span className="value">{guests} Guests</span>
+                    <span className="label">{t("home.hero.travelers")}</span>
+                    <span className="value">
+                      {t("home.hero.guests", { count: guests })}
+                    </span>
                   </div>
                 </button>
 
@@ -341,7 +355,12 @@ const Hero = ({ destinations }: HeroProps) => {
                         key={num}
                       >
                         <span>
-                          {num}+ Guest{num > 1 ? "s" : ""}
+                          {t(
+                            num > 1
+                              ? "home.hero.guestOptionPlural"
+                              : "home.hero.guestOption",
+                            { count: num },
+                          )}
                         </span>
                       </button>
                     ))}
@@ -354,7 +373,7 @@ const Hero = ({ destinations }: HeroProps) => {
                 type="button"
                 className="search-submit-btn"
                 onClick={searchHandler}
-                aria-label="Search stays"
+                aria-label={t("home.hero.searchStays")}
               >
                 <SearchIcon />
               </button>

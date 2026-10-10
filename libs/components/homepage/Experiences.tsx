@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Tour } from "../../types/tour/tour";
 import { getImageUrl } from "../../config";
+import { useI18n } from "../../i18n";
 
 interface ExperiencesProps {
   tours: Tour[];
@@ -9,31 +10,32 @@ interface ExperiencesProps {
   error?: Error;
 }
 
-const formatUsd = (price?: number) =>
-  typeof price === "number" ? `$${price.toLocaleString()}` : "Price on request";
+const formatUsd = (price: number | undefined, fallback: string) =>
+  typeof price === "number" ? `$${price.toLocaleString()}` : fallback;
 
 const Experiences = ({ tours, loading, error }: ExperiencesProps) => {
+  const { t } = useI18n();
   return (
     <section className="experiences-section">
       <div className="section-container">
         <div className="section-header">
           <div>
-            <span className="section-tag">Guided Immersions</span>
-            <h2 className="section-title">Experiences Worth Taking</h2>
+            <span className="section-tag">{t("home.experiences.eyebrow")}</span>
+            <h2 className="section-title">{t("home.experiences.title")}</h2>
           </div>
           <Link href="/tour" className="section-link">
-            <span>View curated tours</span>
+            <span>{t("home.experiences.browse")}</span>
             <span className="material-symbols-outlined">arrow_forward</span>
           </Link>
         </div>
 
         <div className="tours-grid">
           {loading ? (
-            <p className="tours-empty-state">Loading top tours…</p>
+            <p className="tours-empty-state">{t("home.experiences.loading")}</p>
           ) : null}
           {!loading && error ? (
             <p className="tours-empty-state">
-              Top tours are unavailable right now.
+              {t("home.experiences.unavailable")}
             </p>
           ) : null}
           {tours.map((tour) => {
@@ -45,7 +47,7 @@ const Experiences = ({ tours, loading, error }: ExperiencesProps) => {
               .filter(Boolean)
               .join(", ");
             const destination = tour.tourDestinationCity
-              ? ` · To ${tour.tourDestinationCity}`
+              ? ` · ${t("home.experiences.to", { city: tour.tourDestinationCity })}`
               : "";
 
             return (
@@ -67,8 +69,8 @@ const Experiences = ({ tours, loading, error }: ExperiencesProps) => {
                   ) : null}
                   <span className="duration-badge">
                     {typeof tour.tourCapacity === "number"
-                      ? `${tour.tourCapacity} Guests Max`
-                      : "Capacity unavailable"}
+                      ? t("home.experiences.capacity", { count: tour.tourCapacity })
+                      : t("home.experiences.capacityUnavailable")}
                   </span>
                 </div>
                 <div className="card-body">
@@ -92,9 +94,9 @@ const Experiences = ({ tours, loading, error }: ExperiencesProps) => {
                   ) : null}
                   <div className="tour-footer">
                     <div className="price-col">
-                      <span className="from-text">From</span>
+                      <span className="from-text">{t("home.experiences.from")}</span>
                       <span className="price-text">
-                        {formatUsd(tour.tourPrice)}
+                        {formatUsd(tour.tourPrice, t("home.experiences.priceOnRequest"))}
                       </span>
                     </div>
                     <span className="feature-badge">{tour.tourStatus}</span>
@@ -104,7 +106,7 @@ const Experiences = ({ tours, loading, error }: ExperiencesProps) => {
             );
           })}
           {!loading && !error && tours.length === 0 ? (
-            <p className="tours-empty-state">No ranked tours available yet.</p>
+            <p className="tours-empty-state">{t("home.experiences.empty")}</p>
           ) : null}
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { Destination } from '../../types/destination/destination';
 import { getImageUrl } from '../../config';
 import { ApolloError } from '@apollo/client';
+import { useI18n } from '../../i18n';
 
 interface LiveDispatchesProps {
 	destinations: Destination[];
@@ -19,6 +20,7 @@ const formatViewCount = (views: number) => {
 
 const LiveDispatches = ({ destinations, loading, error }: LiveDispatchesProps) => {
 	const router = useRouter();
+	const { t } = useI18n();
 
 	/** HANDLERS **/
 	const navigateToDestination = (destinationId: string) => {
@@ -32,14 +34,14 @@ const LiveDispatches = ({ destinations, loading, error }: LiveDispatchesProps) =
 		<section className="live-dispatches-section">
 			<div className="section-container">
 				<div className="section-header">
-					<span className="section-tag">Live Dispatches</span>
-					<h2 className="section-title">Where Travelers Are Going</h2>
-					<p className="section-subtitle">Discover the destinations attracting AURORA travelers right now.</p>
+					<span className="section-tag">{t('home.dispatches.eyebrow')}</span>
+					<h2 className="section-title">{t('home.dispatches.title')}</h2>
+					<p className="section-subtitle">{t('home.dispatches.description')}</p>
 				</div>
 
 				<div className="travelers-destination-grid">
-					{loading ? <p className="destinations-empty-state">Loading destinations…</p> : null}
-					{!loading && error ? <p className="destinations-empty-state">Popular destinations are unavailable right now.</p> : null}
+					{loading ? <p className="destinations-empty-state">{t('home.dispatches.loading')}</p> : null}
+					{!loading && error ? <p className="destinations-empty-state">{t('home.dispatches.unavailable')}</p> : null}
 					{destinations.map((destination, index) => {
 						const imageUrl = getImageUrl(destination.destinationImages?.[0]);
 						const cardSize = destinationCardSizes[index] ?? 'small';
@@ -54,16 +56,16 @@ const LiveDispatches = ({ destinations, loading, error }: LiveDispatchesProps) =
 								{imageUrl ? <img src={imageUrl} alt={destination.destinationName} /> : null}
 								<div className="destination-scrim" />
 								<div className="destination-info">
-									{cardSize === 'featured' ? <span className="top-pick-label">Top Pick</span> : null}
+									{cardSize === 'featured' ? <span className="top-pick-label">{t('home.dispatches.topPick')}</span> : null}
 									<h3>{destination.destinationName}</h3>
 									<p>
-										{destination.destinationCountry} · {formatViewCount(destination.destinationViews)} views
+										{destination.destinationCountry} · {t('home.dispatches.views', { count: formatViewCount(destination.destinationViews) })}
 									</p>
 								</div>
 							</button>
 						);
 					})}
-					{!loading && !error && destinations.length === 0 && <p className="destinations-empty-state">No ranked destinations available yet.</p>}
+					{!loading && !error && destinations.length === 0 && <p className="destinations-empty-state">{t('home.dispatches.empty')}</p>}
 				</div>
 			</div>
 		</section>

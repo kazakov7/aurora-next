@@ -8,6 +8,7 @@ import { Message } from '../../enums/common.enum';
 import { getImageUrl } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 import LikeButton from '../common/LikeButton';
+import { useI18n } from '../../i18n';
 
 interface SpecialStaysProps {
 	properties: Property[];
@@ -15,9 +16,10 @@ interface SpecialStaysProps {
 	error?: Error;
 }
 
-const formatUsd = (price?: number) => (typeof price === 'number' ? `$${price.toLocaleString()}` : 'Price on request');
+const formatUsd = (price: number | undefined, fallback: string) => (typeof price === 'number' ? `$${price.toLocaleString()}` : fallback);
 
 const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
+	const { t } = useI18n();
 	const user = useReactiveVar(userVar);
 	const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
 	const [updatingFavoriteIds, setUpdatingFavoriteIds] = useState<Record<string, boolean>>({});
@@ -50,16 +52,16 @@ const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
 			<div className="section-container">
 				<div className="section-header">
 					<div>
-						<span className="section-tag">Sanctuaries &amp; Retreats</span>
-						<h2 className="section-title">Stay Somewhere Special</h2>
-						<p className="section-subtitle">Architectural marvels and tranquil sanctuaries curated for silence and form.</p>
+						<span className="section-tag">{t('home.stays.eyebrow')}</span>
+						<h2 className="section-title">{t('home.stays.title')}</h2>
+						<p className="section-subtitle">{t('home.stays.description')}</p>
 					</div>
-					<Link href="/property" className="section-link"><span>Browse all stays</span><span className="material-symbols-outlined">arrow_forward</span></Link>
+					<Link href="/property" className="section-link"><span>{t('home.stays.browse')}</span><span className="material-symbols-outlined">arrow_forward</span></Link>
 				</div>
 
 				<div className="stays-grid">
-					{loading && !properties.length ? <p className="stays-empty-state">Loading top stays…</p> : null}
-					{!loading && error ? <p className="stays-empty-state">Top stays are unavailable right now.</p> : null}
+					{loading && !properties.length ? <p className="stays-empty-state">{t('home.stays.loading')}</p> : null}
+					{!loading && error ? <p className="stays-empty-state">{t('home.stays.unavailable')}</p> : null}
 					{properties.map((stay) => {
 						const isLiked = favoriteOverrides[stay._id] ?? Boolean(stay.meLiked?.[0]?.myFavorite);
 						const imageUrl = getImageUrl(stay.propertyImages?.[0]);
@@ -68,7 +70,7 @@ const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
 							<Link key={stay._id} href={{ pathname: '/property/detail', query: { id: stay._id } }} className="stay-card">
 								<div className="card-image-box">
 									{imageUrl ? <img src={imageUrl} alt={stay.propertyName} className="stay-img" onError={(event) => { event.currentTarget.style.display = 'none'; }} /> : null}
-									<span className="location-badge">{stay.propertyCity || stay.propertyAddress || 'Location unavailable'}</span>
+									<span className="location-badge">{stay.propertyCity || stay.propertyAddress || t('home.stays.locationUnavailable')}</span>
 									<span className="like-btn-wrapper">
 										<LikeButton
 											isLiked={isLiked}
@@ -84,14 +86,14 @@ const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
 									</div>
 									{stay.propertyDesc ? <p className="stay-desc">{stay.propertyDesc}</p> : null}
 									<div className="card-bottom-row">
-										<div className="price-box"><span className="price-val">{formatUsd(stay.pricePerNight)}</span><span className="price-unit"> / night</span></div>
-										<button className="reserve-btn" type="button" onClick={(event) => { event.stopPropagation(); }}>Reserve</button>
+										<div className="price-box"><span className="price-val">{formatUsd(stay.pricePerNight, t('home.stays.priceOnRequest'))}</span><span className="price-unit"> {t('common.perNight')}</span></div>
+										<button className="reserve-btn" type="button" onClick={(event) => { event.stopPropagation(); }}>{t('booking.reserve')}</button>
 									</div>
 								</div>
 							</Link>
 						);
 					})}
-					{!loading && !error && properties.length === 0 ? <p className="stays-empty-state">No ranked stays available yet.</p> : null}
+					{!loading && !error && properties.length === 0 ? <p className="stays-empty-state">{t('home.stays.empty')}</p> : null}
 				</div>
 			</div>
 		</section>

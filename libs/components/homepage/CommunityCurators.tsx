@@ -12,6 +12,7 @@ import {
   sweetMixinErrorAlert,
 } from "../../sweetAlert";
 import FollowButton from "../common/FollowButton";
+import { useI18n } from "../../i18n";
 
 interface CuratorStat {
   label: string;
@@ -19,12 +20,12 @@ interface CuratorStat {
 }
 
 /** Faqat backend qaytargan raqamlarni ko'rsatadi — bo'sh joy sun'iy to'ldirilmaydi **/
-const buildStats = (curator: Member): CuratorStat[] => {
+const buildStats = (curator: Member, labels: Record<string, string>): CuratorStat[] => {
   const candidates: CuratorStat[] = [
-    { label: "Followers", value: curator.memberFollowers },
-    { label: "Stays", value: curator.memberProperties },
-    { label: "Tours", value: curator.memberTours },
-    { label: "Articles", value: curator.memberArticles },
+    { label: labels.followers, value: curator.memberFollowers },
+    { label: labels.stays, value: curator.memberProperties },
+    { label: labels.tours, value: curator.memberTours },
+    { label: labels.articles, value: curator.memberArticles },
   ];
 
   return candidates
@@ -39,6 +40,7 @@ interface CommunityCuratorsProps {
 }
 
 const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps) => {
+	const { t } = useI18n();
   const router = useRouter();
   const user = useReactiveVar(userVar);
   const [followOverrides, setFollowOverrides] = useState<
@@ -113,20 +115,20 @@ const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps
       <div className="section-container">
         <div className="section-header">
           <div>
-            <span className="section-tag">Community Curators</span>
+            <span className="section-tag">{t("home.community.eyebrow")}</span>
             <h2 className="section-title">
-              Meet the creative minds behind our success
+              {t("home.community.title")}
             </h2>
           </div>
           <Link href="/community" className="section-link">
-            <span>Explore community</span>
+            <span>{t("home.community.explore")}</span>
             <span className="material-symbols-outlined">arrow_forward</span>
           </Link>
         </div>
 
         <div className="curators-grid">
-		  {loading && !curators.length ? <p className="curators-empty-state">Loading top travelers…</p> : null}
-		  {!loading && error ? <p className="curators-empty-state">Top travelers are unavailable right now.</p> : null}
+		  {loading && !curators.length ? <p className="curators-empty-state">{t("home.community.loading")}</p> : null}
+		  {!loading && error ? <p className="curators-empty-state">{t("home.community.unavailable")}</p> : null}
           {curators.map((curator: Member, index: number) => {
             const backendFollowing = Boolean(
               curator.meFollowed?.[0]?.myFollowing,
@@ -144,7 +146,7 @@ const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps
               memberFollowers:
                 (curator.memberFollowers ?? 0) +
                 (followerDeltas[curator._id] ?? 0),
-            });
+            }, { followers: t("home.community.followers"), stays: t("home.community.stays"), tours: t("home.community.tours"), articles: t("home.community.articles") });
 
             return (
               <article key={curator._id} className="curator-card">
@@ -217,7 +219,7 @@ const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps
           })}
 
           {!loading && !error && curators.length === 0 ? (
-			<p className="curators-empty-state">No ranked travelers available yet.</p>
+			<p className="curators-empty-state">{t("home.community.empty")}</p>
           ) : null}
         </div>
       </div>

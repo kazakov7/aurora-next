@@ -8,17 +8,18 @@ import { SupportCategory } from '../../enums/support.enum';
 import { SupportTicketInput } from '../../types/support/support.input';
 import { SupportTicket } from '../../types/support/support';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
+import { useI18n } from '../../i18n';
 
 const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 const ALLOWED_ATTACHMENT_TYPES = ['image/png', 'image/jpg', 'image/jpeg'];
 
-const CATEGORY_OPTIONS: { value: SupportCategory; label: string }[] = [
-	{ value: SupportCategory.BOOKING, label: 'Booking Issue' },
-	{ value: SupportCategory.PROPERTY, label: 'Hotel & Stay Issue' },
-	{ value: SupportCategory.TOUR, label: 'Tour & Experience Issue' },
-	{ value: SupportCategory.ACCOUNT, label: 'Account & Security Issue' },
-	{ value: SupportCategory.TECHNICAL, label: 'Technical Problem' },
-	{ value: SupportCategory.OTHER, label: 'Other Request' },
+const CATEGORY_OPTIONS: { value: SupportCategory; labelKey: string }[] = [
+	{ value: SupportCategory.BOOKING, labelKey: 'support.booking' },
+	{ value: SupportCategory.PROPERTY, labelKey: 'support.property' },
+	{ value: SupportCategory.TOUR, labelKey: 'support.tour' },
+	{ value: SupportCategory.ACCOUNT, labelKey: 'support.account' },
+	{ value: SupportCategory.TECHNICAL, labelKey: 'support.technical' },
+	{ value: SupportCategory.OTHER, labelKey: 'support.other' },
 ];
 
 const emptyInput: SupportTicketInput = {
@@ -30,6 +31,7 @@ const emptyInput: SupportTicketInput = {
 };
 
 const CsContactForm = () => {
+	const { t } = useI18n();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -169,11 +171,11 @@ const CsContactForm = () => {
 						<span className="material-symbols-outlined">lock</span>
 					</div>
 					<div className="text-wrapper">
-						<h4>Sign in to contact support</h4>
-						<p>Support requests are available to registered members so we can follow up on your bookings and reply in your notifications.</p>
+						<h4>{t('support.signInRequired')}</h4>
+						<p>{t('support.signInDescription')}</p>
 					</div>
 					<button className="submit-another-btn" type="button" onClick={() => router.push('/account/login')}>
-						Sign In
+						{t('auth.login')}
 					</button>
 				</div>
 			</div>
@@ -188,11 +190,11 @@ const CsContactForm = () => {
 						<span className="material-symbols-outlined">task_alt</span>
 					</div>
 					<div className="text-wrapper">
-						<h4>Ticket #{createdTicket._id.slice(-8).toUpperCase()} Submitted</h4>
-						<p>Thank you! Your request "{createdTicket.ticketSubject}" has been sent to our support team. You will be notified as soon as an admin replies.</p>
+						<h4>{t('support.ticketSubmitted', { id: createdTicket._id.slice(-8).toUpperCase() })}</h4>
+						<p>{t('support.ticketSuccess')}</p>
 					</div>
 					<button className="submit-another-btn" type="button" onClick={handleReset}>
-						Submit Another Inquiry
+						{t('support.submitAnother')}
 					</button>
 				</div>
 			</div>
@@ -204,7 +206,7 @@ const CsContactForm = () => {
 			<form onSubmit={handleSubmit} className="support-form">
 				<div className="form-row">
 					<div className="form-group">
-						<label>Full Name</label>
+						<label>{t('support.fullName')}</label>
 						<input
 							type="text"
 							placeholder="e.g. Elena Rostova"
@@ -216,7 +218,7 @@ const CsContactForm = () => {
 						/>
 					</div>
 					<div className="form-group">
-						<label>Email Address</label>
+						<label>{t('support.email')}</label>
 						<input
 							type="email"
 							placeholder="e.g. elena@example.com"
@@ -228,20 +230,20 @@ const CsContactForm = () => {
 				</div>
 				<div className="form-row">
 					<div className="form-group">
-						<label>Request Category</label>
+						<label>{t('support.category')}</label>
 						<select value={input.ticketCategory} onChange={(e) => handleChange('ticketCategory', e.target.value)} required>
 							{CATEGORY_OPTIONS.map((option) => (
 								<option key={option.value} value={option.value}>
-									{option.label}
+									{t(option.labelKey)}
 								</option>
 							))}
 						</select>
 					</div>
 					<div className="form-group">
-						<label>Subject</label>
+						<label>{t('support.subject')}</label>
 						<input
 							type="text"
-							placeholder="Brief summary of inquiry"
+							placeholder={t('support.subjectPlaceholder')}
 							value={input.ticketSubject}
 							onChange={(e) => handleChange('ticketSubject', e.target.value)}
 							minLength={3}
@@ -251,10 +253,10 @@ const CsContactForm = () => {
 					</div>
 				</div>
 				<div className="form-group">
-					<label>Detailed Message</label>
+					<label>{t('support.message')}</label>
 					<textarea
 						rows={5}
-						placeholder="Please provide detailed information and booking reference IDs if applicable..."
+						placeholder={t('support.messagePlaceholder')}
 						value={input.ticketMessage}
 						onChange={(e) => handleChange('ticketMessage', e.target.value)}
 						minLength={10}
@@ -263,14 +265,14 @@ const CsContactForm = () => {
 					></textarea>
 				</div>
 				<div className="form-group">
-					<label>Optional Attachment</label>
+					<label>{t('support.attachment')}</label>
 					<div className="drop-zone" onClick={() => !uploading && fileInputRef.current?.click()}>
 						<span className="material-symbols-outlined">{uploading ? 'sync' : 'attach_file'}</span>
 						<div className="drop-text">
 							<p className={fileName ? 'has-file' : ''}>
-								{uploading ? 'Uploading...' : fileName || 'Attach a screenshot (max 10MB)'}
+								{uploading ? t('support.uploading') : fileName || t('support.attachmentHint')}
 							</p>
-							<p className="subtitle">Supported: JPG, PNG</p>
+							<p className="subtitle">{t('support.supportedFiles')}</p>
 						</div>
 						{fileName && !uploading && (
 							<span className="material-symbols-outlined remove-attachment" onClick={handleRemoveAttachment}>
@@ -282,16 +284,16 @@ const CsContactForm = () => {
 				</div>
 
 				<div className="form-actions">
-					<p className="secure-text">Your request is linked to your account as @{user.memberNick}.</p>
+					<p className="secure-text">{t('support.linkedAccount', { nickname: user.memberNick ?? '' })}</p>
 					<button type="submit" className="submit-btn" disabled={submitting || uploading}>
 						{submitting ? (
 							<>
 								<span className="material-symbols-outlined spin">sync</span>
-								<span>Sending...</span>
+								<span>{t('support.sending')}</span>
 							</>
 						) : (
 							<>
-								<span>Submit Request</span>
+								<span>{t('support.submit')}</span>
 								<span className="material-symbols-outlined">arrow_forward</span>
 							</>
 						)}

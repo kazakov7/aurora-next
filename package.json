@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "i18n:check": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
     "@apollo/client": "^3.11.8",

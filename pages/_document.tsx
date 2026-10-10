@@ -1,8 +1,18 @@
-import { Html, Head, Main, NextScript } from "next/document";
+import Document, { DocumentContext, Head, Html, Main, NextScript } from "next/document";
 
-export default function Document() {
-  return (
-    <Html lang="en" className="scroll-smooth">
+interface AuroraDocumentProps {
+  locale?: string;
+}
+
+export default class AuroraDocument extends Document<AuroraDocumentProps> {
+  static async getInitialProps(ctx: DocumentContext) {
+    const initialProps = await Document.getInitialProps(ctx);
+    return { ...initialProps, locale: ctx.locale ?? "en" };
+  }
+
+  render() {
+    return (
+    <Html lang={this.props.locale} className="scroll-smooth">
       <Head>
         <meta charSet="utf-8" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -30,5 +40,6 @@ export default function Document() {
         <NextScript />
       </body>
     </Html>
-  );
+    );
+  }
 }

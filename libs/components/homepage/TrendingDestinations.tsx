@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Destination } from "../../types/destination/destination";
 import { getImageUrl } from "../../config";
 import { ApolloError } from "@apollo/client";
+import { useI18n } from "../../i18n";
 
 interface TrendingDestinationsProps {
   destinations: Destination[];
@@ -33,6 +34,7 @@ const TrendingDestinations = ({
   loading,
   error,
 }: TrendingDestinationsProps) => {
+  const { t } = useI18n();
   const spans = buildSpans(destinations.length);
 
   return (
@@ -40,22 +42,22 @@ const TrendingDestinations = ({
       <div className="section-container">
         <div className="section-header">
           <div>
-            <span className="section-tag">Curation Grid</span>
-            <h2 className="section-title">Trending Destinations</h2>
+            <span className="section-tag">{t("home.trending.eyebrow")}</span>
+            <h2 className="section-title">{t("home.trending.title")}</h2>
           </div>
           <Link href="/destination" className="section-link">
-            <span>Explore all destinations</span>
+            <span>{t("home.trending.exploreAll")}</span>
             <span className="material-symbols-outlined">arrow_forward</span>
           </Link>
         </div>
 
         <div className="bento-grid">
           {loading ? (
-            <p className="bento-empty-state">Loading destinations…</p>
+            <p className="bento-empty-state">{t("home.trending.loading")}</p>
           ) : null}
           {!loading && error ? (
             <p className="bento-empty-state">
-              Destinations are unavailable right now.
+              {t("home.trending.unavailable")}
             </p>
           ) : null}
           {destinations.map((destination, index) => {
@@ -88,7 +90,7 @@ const TrendingDestinations = ({
                 <div className="card-top-bar">
                   <span className="card-chip-country">
                     <span className="material-symbols-outlined chip-icon">location_on</span>
-                    {destination.destinationCountry || "Global"}
+                    {destination.destinationCountry || t("home.trending.global")}
                   </span>
                   <span className="card-chip-index">
                     {String(index + 1).padStart(2, "0")}
@@ -103,9 +105,9 @@ const TrendingDestinations = ({
 
                   <div className="card-footer">
                     <div className="card-stats">
-                      <span className="stat">{stays} Stays</span>
+                      <span className="stat">{t("home.trending.stays", { count: stays })}</span>
                       <span className="stat-dot" aria-hidden="true" />
-                      <span className="stat">{tours} Tours</span>
+                      <span className="stat">{t("home.trending.tours", { count: tours })}</span>
                     </div>
 
                     <span className="card-action-btn" aria-hidden="true">
@@ -121,7 +123,7 @@ const TrendingDestinations = ({
 
           {!loading && !error && destinations.length === 0 ? (
             <p className="bento-empty-state">
-              No ranked destinations available yet.
+              {t("home.trending.empty")}
             </p>
           ) : null}
         </div>

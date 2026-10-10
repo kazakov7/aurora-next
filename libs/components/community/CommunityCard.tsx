@@ -133,11 +133,12 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 			{featuredImage && (
 				<div className="card-featured-media">
 					<img className="featured-image" src={featuredImage} alt={article.articleTitle} />
-					<div className="location-pill-overlay">
-						<span className="material-symbols-outlined pin-icon">location_on</span>
-						<span>{categoryBadge}</span>
-					</div>
-
+					{article.memberData?.memberAddress && (
+						<div className="location-pill-overlay">
+							<span className="material-symbols-outlined pin-icon">location_on</span>
+							<span>{article.memberData.memberAddress}</span>
+						</div>
+					)}
 				</div>
 			)}
 

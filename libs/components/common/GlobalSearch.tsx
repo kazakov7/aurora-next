@@ -127,7 +127,7 @@ const GlobalSearch = () => {
 					}}
 					onFocus={() => setOpen(true)}
 					onKeyDown={handleKeyDown}
-					placeholder="Search destinations, stays, tours…"
+					placeholder="Search…"
 					className="search-input"
 					aria-label="Search AURORA"
 					aria-expanded={open && canSearch}

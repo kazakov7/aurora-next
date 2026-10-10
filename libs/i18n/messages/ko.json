@@ -1,0 +1,77 @@
+{
+  "navigation": {
+    "home": "홈",
+    "hotels": "호텔",
+    "tours": "투어",
+    "destinations": "여행지",
+    "community": "커뮤니티",
+    "myPage": "마이 페이지",
+    "chat": "채팅",
+    "customerService": "고객센터",
+    "savedWishlist": "저장한 위시리스트",
+    "notifications": "알림",
+    "profile": "프로필"
+  },
+  "language": {
+    "english": "English",
+    "korean": "한국어",
+    "uzbek": "O‘zbekcha",
+    "select": "언어 선택"
+  },
+  "footer": {
+    "description": "특별한 여행을 간결하게 큐레이션합니다. 세련된 현대 여행자를 위한 품격 있는 전 세계 숙소와 경험을 만나보세요.",
+    "explore": "둘러보기",
+    "company": "회사",
+    "legal": "법적 고지",
+    "about": "AURORA 소개",
+    "contact": "문의하기",
+    "helpCenter": "고객 지원",
+    "privacy": "개인정보 처리방침",
+    "terms": "서비스 이용약관",
+    "trust": "신뢰와 안전",
+    "rights": "© {{year}} AURORA. 모든 권리 보유."
+  },
+  "common": {
+    "loading": "불러오는 중…",
+    "error": "문제가 발생했습니다.",
+    "retry": "다시 시도",
+    "viewAll": "전체 보기",
+    "save": "저장",
+    "cancel": "취소",
+    "close": "닫기",
+    "search": "검색",
+    "noResults": "검색 결과가 없습니다.",
+    "night": "박",
+    "nights": "박",
+    "perNight": "/ 1박",
+    "traveler": "여행자",
+    "travelers": "여행자"
+  },
+  "booking": {
+    "bookNow": "예약하기",
+    "reserve": "예약하기",
+    "confirmed": "예약 확정",
+    "pending": "결제 대기",
+    "cancelled": "취소됨",
+    "completed": "여행 완료"
+  },
+  "payment": {
+    "securePayment": "안전한 결제",
+    "priceSummary": "요금 요약",
+    "totalDue": "총 결제 금액",
+    "pay": "{{amount}} 결제",
+    "processing": "처리 중…"
+  },
+  "auth": { "login": "로그인", "signup": "회원가입", "logout": "로그아웃" },
+  "support": { "fullName": "성명", "email": "이메일 주소", "category": "문의 유형", "subject": "제목", "message": "상세 내용", "attachment": "선택 첨부파일", "submit": "문의 보내기", "sending": "보내는 중…", "uploading": "업로드 중…", "attachmentHint": "스크린샷 첨부(최대 10MB)", "supportedFiles": "지원 형식: JPG, PNG", "subjectPlaceholder": "문의 내용을 간단히 적어주세요", "messagePlaceholder": "예약 번호를 포함해 자세한 내용을 입력해 주세요…", "linkedAccount": "이 요청은 @{{nickname}} 계정에 연결됩니다.", "booking": "예약 문제", "property": "호텔 및 숙소 문제", "tour": "투어 및 체험 문제", "account": "계정 및 보안 문제", "technical": "기술적 문제", "other": "기타 문의", "signInRequired": "고객 지원에 문의하려면 로그인하세요", "signInDescription": "예약 확인과 알림 답변을 위해 고객 지원 문의는 가입한 회원만 이용할 수 있습니다.", "submitAnother": "다른 문의 보내기", "ticketSubmitted": "문의 #{{id}}가 접수되었습니다", "ticketSuccess": "문의가 고객 지원팀에 전달되었습니다. 관리자가 답변하면 알림으로 알려드립니다." },
+  "availability": { "title": "예약 가능 여부", "available": "예약 가능", "unavailable": "예약됨", "checkIn": "체크인", "checkOut": "체크아웃", "selectDates": "날짜를 선택하세요", "clearDates": "날짜 지우기", "selectedNights": "{{count}}박 선택됨", "selectedNightsPlural": "{{count}}박 선택됨", "dateUnavailable": "예약할 수 없는 날짜", "chooseDifferentDates": "다른 날짜를 선택하세요", "loading": "예약 가능 여부 확인 중…", "error": "예약 가능 여부를 불러올 수 없습니다. 다시 시도해 주세요.", "previousMonth": "이전 달", "nextMonth": "다음 달", "calendarLabel": "숙소 예약 가능 달력", "pastDate": "지난 날짜" },
+  "home": {
+    "hero": { "eyebrow": "최고의 여행을 시작하세요", "title": "걱정 없는 휴가를 지금 계획하세요!", "description": "24시간 컨시어지의 세심한 안내와 함께 세계에서 가장 아름다운 곳의 잊지 못할 럭셔리 여행을 만나보세요.", "discover": "여행지 발견", "discoverDescription": "매력적인 여행지를 둘러보세요", "plan": "계획 및 예약", "planDescription": "숙소와 경험을 예약하세요", "connect": "소통 및 공유", "connectDescription": "다른 여행자를 만나보세요", "curatedGuide": "큐레이션 가이드", "stayType": "숙소 유형", "allStays": "모든 숙소", "location": "위치", "anywhere": "어디든", "dates": "날짜", "travelers": "여행자", "guests": "여행자 {{count}}명", "guestOption": "{{count}}명 이상", "guestOptionPlural": "{{count}}명 이상", "checkIn": "체크인 날짜", "checkOut": "체크아웃 날짜", "searchStays": "숙소 검색" },
+    "trending": { "eyebrow": "큐레이션 그리드", "title": "인기 여행지", "exploreAll": "모든 여행지 보기", "loading": "여행지를 불러오는 중…", "unavailable": "지금은 여행지를 불러올 수 없습니다.", "empty": "아직 순위가 있는 여행지가 없습니다.", "stays": "숙소 {{count}}곳", "tours": "투어 {{count}}개", "global": "글로벌" },
+    "stays": { "eyebrow": "휴식처와 리트리트", "title": "특별한 곳에 머무르세요", "description": "고요함과 아름다움을 위해 엄선한 건축적 명소와 평온한 휴식처입니다.", "browse": "모든 숙소 보기", "loading": "인기 숙소를 불러오는 중…", "unavailable": "지금은 인기 숙소를 불러올 수 없습니다.", "empty": "아직 순위가 있는 숙소가 없습니다.", "locationUnavailable": "위치 정보 없음", "priceOnRequest": "가격 문의" },
+    "experiences": { "eyebrow": "가이드 체험", "title": "꼭 경험해 볼 투어", "browse": "추천 투어 보기", "loading": "인기 투어를 불러오는 중…", "unavailable": "지금은 인기 투어를 불러올 수 없습니다.", "empty": "아직 순위가 있는 투어가 없습니다.", "priceOnRequest": "가격 문의", "from": "최저", "capacity": "최대 {{count}}명", "capacityUnavailable": "정원 정보 없음", "to": "{{city}}까지" },
+    "community": { "eyebrow": "커뮤니티 큐레이터", "title": "AURORA를 이끄는 창의적인 사람들을 만나보세요", "explore": "커뮤니티 둘러보기", "loading": "인기 여행자를 불러오는 중…", "unavailable": "지금은 인기 여행자를 불러올 수 없습니다.", "empty": "아직 순위가 있는 여행자가 없습니다.", "followers": "팔로워", "stays": "숙소", "tours": "투어", "articles": "게시글" },
+    "partners": { "eyebrow": "글로벌 파트너십", "title": "신뢰할 수 있는 여행 파트너", "description": "가장 최근에 발행된 여행 순위에 따른 AURORA 인증 파트너입니다.", "loading": "신뢰할 수 있는 파트너를 불러오는 중…", "unavailable": "지금은 파트너를 불러올 수 없습니다.", "empty": "아직 순위가 있는 파트너가 없습니다.", "hotelPartner": "호텔 파트너", "tourPartner": "투어 파트너", "approved": "AURORA 인증 파트너" },
+    "dispatches": { "eyebrow": "실시간 여행 소식", "title": "여행자들이 향하는 곳", "description": "지금 AURORA 여행자들의 관심을 받고 있는 여행지를 만나보세요.", "loading": "여행지를 불러오는 중…", "unavailable": "지금은 인기 여행지를 불러올 수 없습니다.", "empty": "아직 순위가 있는 여행지가 없습니다.", "topPick": "추천", "views": "조회 {{count}}회" }
+  }
+}

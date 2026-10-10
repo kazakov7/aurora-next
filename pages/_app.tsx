@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { light } from "../scss/MaterialTheme";
 import { ApolloProvider } from "@apollo/client";
 import { useApollo } from "../apollo/client";
+import { I18nProvider } from "../libs/i18n";
 //@ts-ignore
 import "../scss/app.scss"; //@ts-ignore
 import "../scss/pc/main.scss"; //@ts-ignore
@@ -15,11 +16,13 @@ export default function App({ Component, pageProps }: AppProps) {
   const client = useApollo(pageProps.initialApolloState);
 
   return (
-    <ApolloProvider client={client}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <Component {...pageProps} />
-      </ThemeProvider>
-    </ApolloProvider>
+    <I18nProvider>
+      <ApolloProvider client={client}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <Component {...pageProps} />
+        </ThemeProvider>
+      </ApolloProvider>
+    </I18nProvider>
   );
 }

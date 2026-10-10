@@ -1,5 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
+import { useQuery } from '@apollo/client';
+import { GET_PROPERTY_CITIES } from '../../../apollo/user/query';
+import { PRICE_FILTER_MAX, PRICE_FILTER_MIN, PRICE_FILTER_STEP, PROPERTY_AMENITY_OPTIONS } from '../../config';
+import { Property } from '../../types/property/property';
 import { PropertiesInquiry } from '../../types/property/property.input';
 import { PropertyType } from '../../enums/property.enum';
 
@@ -9,14 +13,15 @@ interface FilterProps {
 	initialInput: PropertiesInquiry;
 }
 
-const destinationsList = ['Busan', 'Seoul', 'Jeju', 'Japan', 'Greece', 'Switzerland', 'Italy'];
-
 const propertyTypes = [
-	{ label: 'Luxury Hotel', value: PropertyType.HOTEL, count: 4 },
-	{ label: 'Resort', value: PropertyType.RESORT, count: 1 },
-	{ label: 'Private Villa', value: PropertyType.VILLA, count: 1 },
-	{ label: 'Design Apartment', value: PropertyType.APARTMENT, count: 3 },
-	{ label: 'Guesthouse Lodge', value: PropertyType.GUESTHOUSE, count: 2 },
+	{ label: 'Hotel', value: PropertyType.HOTEL },
+	{ label: 'Resort', value: PropertyType.RESORT },
+	{ label: 'Villa', value: PropertyType.VILLA },
+	{ label: 'Apartment', value: PropertyType.APARTMENT },
+	{ label: 'Guesthouse', value: PropertyType.GUESTHOUSE },
+	{ label: 'Motel', value: PropertyType.MOTEL },
+	{ label: 'Hostel', value: PropertyType.HOSTEL },
+	{ label: 'Other', value: PropertyType.OTHER },
 ];
 
 const guestOptions = [
@@ -26,13 +31,7 @@ const guestOptions = [
 	{ label: '5+ Guests', value: 5 },
 ];
 
-const amenitiesList = [
-	{ label: 'WiFi', value: 'WiFi' },
-	{ label: 'Breakfast', value: 'Breakfast' },
-	{ label: 'Ocean View', value: 'Ocean View' },
-	{ label: 'Parking', value: 'Parking' },
-	{ label: 'Gym', value: 'Gym' },
-];
+const amenitiesList = PROPERTY_AMENITY_OPTIONS.map((value) => ({ label: value, value }));
 
 const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) => {
 	const router = useRouter();
@@ -47,11 +46,25 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 		searchFilter?.search?.minGuests ?? null,
 	);
 	const [maxPrice, setMaxPrice] = useState<number>(
-		searchFilter?.search?.pricePerNightRange?.end || 500000,
+		searchFilter?.search?.pricePerNightRange?.end || PRICE_FILTER_MAX,
 	);
 	const [selectedAmenities, setSelectedAmenities] = useState<string[]>(
 		searchFilter?.search?.amenities || [],
 	);
+
+	/** APOLLO REQUESTS **/
+	const { data: cityData } = useQuery(GET_PROPERTY_CITIES, {
+		fetchPolicy: 'cache-and-network',
+		variables: { input: { page: 1, limit: 100, search: {} } },
+	});
+	const cityList = useMemo(() => {
+		const cities = new Set<string>();
+		(cityData?.getProperties?.list ?? []).forEach((item: Property) => {
+			if (item.propertyCity) cities.add(item.propertyCity);
+		});
+		if (selectedCity) cities.add(selectedCity);
+		return Array.from(cities).sort((a, b) => a.localeCompare(b));
+	}, [cityData, selectedCity]);
 
 	/** LIFECYCLES **/
 	useEffect(() => {
@@ -60,9 +73,7 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 		setSelectedTypes(searchFilter?.search?.propertyTypeList || []);
 		setSelectedGuests(searchFilter?.search?.minGuests ?? null);
 		setSelectedAmenities(searchFilter?.search?.amenities || []);
-		if (searchFilter?.search?.pricePerNightRange?.end) {
-			setMaxPrice(searchFilter.search.pricePerNightRange.end);
-		}
+		setMaxPrice(searchFilter?.search?.pricePerNightRange?.end || PRICE_FILTER_MAX);
 	}, [searchFilter]);
 
 	/** ROUTER UPDATE HELPER **/
@@ -113,7 +124,7 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 			page: 1,
 			search: {
 				...searchFilter.search,
-				pricePerNightRange: price < 500000 ? { start: 0, end: price } : undefined,
+				pricePerNightRange: price < PRICE_FILTER_MAX ? { start: 0, end: price } : undefined,
 			},
 		};
 		applyFilterImmediately(newFilter);
@@ -176,7 +187,7 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 		setSelectedCity('');
 		setSelectedTypes([]);
 		setSelectedGuests(null);
-		setMaxPrice(500000);
+		setMaxPrice(PRICE_FILTER_MAX);
 		setSelectedAmenities([]);
 		applyFilterImmediately(initialInput);
 	};
@@ -208,7 +219,7 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 					/>
 				</div>
 				<div className="destination-chips">
-					{destinationsList.map((city) => (
+					{cityList.map((city) => (
 						<button
 							key={city}
 							type="button"
@@ -225,14 +236,14 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 			<div className="filter-section">
 				<div className="price-label-row">
 					<label className="section-label">Price per night</label>
-					<span className="currency-label">USD / KRW</span>
+					<span className="currency-label">USD ($)</span>
 				</div>
 				<div className="price-slider-box">
 					<input
 						type="range"
-						min="50000"
-						max="500000"
-						step="10000"
+						min={PRICE_FILTER_MIN}
+						max={PRICE_FILTER_MAX}
+						step={PRICE_FILTER_STEP}
 						value={maxPrice}
 						className="price-slider"
 						onChange={(e) => priceRangeChangeHandler(Number(e.target.value))}
@@ -241,15 +252,15 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 				<div className="price-display-row">
 					<div className="price-box-col">
 						<span className="box-tag">Min</span>
-						<span className="box-val">₩50,000</span>
+						<span className="box-val">${PRICE_FILTER_MIN.toLocaleString()}</span>
 					</div>
 					<span className="price-dash">—</span>
 					<div className="price-box-col">
 						<span className="box-tag">Max</span>
 						<span className="box-val">
-							{maxPrice >= 500000
-								? 'Max (All)'
-								: `₩${maxPrice.toLocaleString()}`}
+							{maxPrice >= PRICE_FILTER_MAX
+								? `$${PRICE_FILTER_MAX.toLocaleString()}+`
+								: `$${maxPrice.toLocaleString()}`}
 						</span>
 					</div>
 				</div>
@@ -270,54 +281,8 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 								/>
 								<span className="checkbox-text">{item.label}</span>
 							</div>
-							<span className="item-count">{item.count}</span>
 						</label>
 					))}
-				</div>
-			</div>
-
-			{/* Star Rating */}
-			<div className="filter-section">
-				<label className="section-label">Star Rating</label>
-				<div className="checkbox-list">
-					<label className="checkbox-item">
-						<div className="checkbox-left">
-							<input
-								type="checkbox"
-								defaultChecked
-								className="checkbox-input"
-								onChange={(e) => {
-									if (e.target.checked) {
-										applyFilterImmediately({
-											...searchFilter,
-											page: 1,
-											sort: 'propertyRating',
-										});
-									}
-								}}
-							/>
-							<span className="checkbox-text">
-								5 Stars <span className="star-gold">★★★★★</span>
-							</span>
-						</div>
-						<span className="item-count">98</span>
-					</label>
-					<label className="checkbox-item">
-						<div className="checkbox-left">
-							<input type="checkbox" className="checkbox-input" />
-							<span className="checkbox-text">
-								4 Stars <span className="star-gold">★★★★</span>
-							</span>
-						</div>
-						<span className="item-count">26</span>
-					</label>
-					<label className="checkbox-item">
-						<div className="checkbox-left">
-							<input type="checkbox" className="checkbox-input" />
-							<span className="checkbox-text">Boutique / Other</span>
-						</div>
-						<span className="item-count">12</span>
-					</label>
 				</div>
 			</div>
 

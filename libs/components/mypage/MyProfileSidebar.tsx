@@ -57,7 +57,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
     queryOptions,
   );
   const { data: agentData } = useQuery(GET_MY_AGENT_APPLICATIONS, {
-    fetchPolicy: "network-only",
+    ...queryOptions,
     variables: {
       input: {
         page: 1,

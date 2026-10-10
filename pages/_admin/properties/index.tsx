@@ -307,7 +307,7 @@ const AdminPropertiesPage: NextPage = () => {
 											</div>
 										</td>
 										<td>
-											<span style={{ fontWeight: 600, color: '#006194' }}>{property.currency === 'KRW' ? '₩' : '$'}{property.pricePerNight.toLocaleString()}</span>
+											<span style={{ fontWeight: 600, color: '#006194' }}>{property.currency === 'USD' ? '$' : '$'}{property.pricePerNight.toLocaleString()}</span>
 										</td>
 										<td>
 											<div style={{ display: 'flex', gap: 12, fontSize: 12, color: '#707881' }}>
@@ -457,14 +457,14 @@ const AdminPropertiesPage: NextPage = () => {
 								/>
 								<div className="banner-overlay">
 									<span className="type-tag">
-										{selectedProperty.propertyType?.replace(/_/g, ' ') || 'LUXURY HOTEL'}
+										{selectedProperty.propertyType?.replace(/_/g, ' ') || 'Property'}
 									</span>
 									<h3 className="banner-title">{selectedProperty.propertyName}</h3>
 									<p className="banner-subtitle">
 										ID: #{selectedProperty._id.slice(-6).toUpperCase()} ·{' '}
 										{[selectedProperty.propertyCity, selectedProperty.propertyAddress]
 											.filter(Boolean)
-											.join(', ') || 'Global'}
+											.join(', ') || 'Location not provided'}
 									</p>
 								</div>
 							</div>
@@ -544,7 +544,7 @@ const AdminPropertiesPage: NextPage = () => {
 								<div className="meta-card">
 									<span className="meta-label">Location</span>
 									<span className="meta-value" title={[selectedProperty.propertyCity, selectedProperty.propertyAddress].filter(Boolean).join(', ')}>
-										{[selectedProperty.propertyCity, selectedProperty.propertyAddress].filter(Boolean).join(', ') || 'Zermatt, Switzerland'}
+										{[selectedProperty.propertyCity, selectedProperty.propertyAddress].filter(Boolean).join(', ') || 'Location not provided'}
 									</span>
 								</div>
 
@@ -552,7 +552,7 @@ const AdminPropertiesPage: NextPage = () => {
 								<div className="meta-card">
 									<span className="meta-label">Base Price</span>
 									<span className="meta-value price">
-										{selectedProperty.currency === 'KRW' ? '₩' : '$'}
+										{selectedProperty.currency === 'USD' ? '$' : '$'}
 										{selectedProperty.pricePerNight?.toLocaleString() || '680'} / night
 									</span>
 								</div>

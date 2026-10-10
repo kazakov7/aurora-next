@@ -14,13 +14,11 @@ import { Direction, Message } from "../../libs/enums/common.enum";
 import { GET_PROPERTIES } from "../../apollo/user/query";
 import { LIKE_TARGET_PROPERTY } from "../../apollo/user/mutation";
 import { userVar } from "../../apollo/store";
-import {
-  sweetMixinErrorAlert,
-} from "../../libs/sweetAlert";
+import { sweetMixinErrorAlert } from "../../libs/sweetAlert";
 
 const defaultInput: PropertiesInquiry = {
   page: 1,
-  limit: 6,
+  limit: 12,
   sort: "createdAt",
   direction: Direction.DESC,
   search: {},

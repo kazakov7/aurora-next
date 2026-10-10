@@ -43,6 +43,48 @@ export const GET_MEMBER = gql`
 	}
 `;
 
+/** Own-profile read used to verify a stored JWT; the server returns accessToken only when it authenticated the token **/
+export const VERIFY_MEMBER_SESSION = gql`
+	query VerifyMemberSession($input: String!) {
+		getMember(input: $input) {
+			_id
+			memberType
+			memberStatus
+			memberAuthType
+			memberPhone
+			memberEmail
+			memberNick
+			memberFullName
+			memberImage
+			memberDesc
+			memberAddress
+			memberFollowers
+			memberFollowings
+			memberLikes
+			memberViews
+			memberComments
+			memberProperties
+			memberTours
+			memberArticles
+			memberPoints
+			memberRank
+			accessToken
+		}
+	}
+`;
+
+/** Lightweight listing scan used to build real city filter chips (no distinct-city API exists) **/
+export const GET_PROPERTY_CITIES = gql`
+	query GetPropertyCities($input: PropertiesInquiry!) {
+		getProperties(input: $input) {
+			list {
+				_id
+				propertyCity
+			}
+		}
+	}
+`;
+
 export const GET_PROPERTY_HOST = gql`
 	query GetPropertyHost($input: String!) {
 		getMember(input: $input) {
@@ -469,7 +511,14 @@ export const GET_AGENT_PROPERTIES = gql`
 		getAgentProperties(input: $input) {
 			list {
 				_id
+				destinationId
 				propertyType
+				propertyDesc
+				maxGuests
+				bedrooms
+				beds
+				bathrooms
+				amenities
 				propertyName
 				propertyCity
 				propertyAddress
@@ -640,7 +689,14 @@ export const GET_AGENT_TOURS = gql`
 		getAgentTours(input: $input) {
 			list {
 				_id
+				destinationId
 				tourName
+				tourDesc
+				tourDepartureCountry
+				tourDepartureCity
+				tourDeparturePlace
+				tourDestinationCity
+				tourAdditionalInfo
 				tourStatus
 				tourPrice
 				tourCurrency
@@ -1045,53 +1101,9 @@ export const GET_MY_TRAVEL_HISTORIES = gql`
 				_id
 				memberId
 				bookingId
+				destinationId
+				visitedAt
 				createdAt
-				updatedAt
-			}
-			metaCounter {
-				total
-			}
-		}
-	}
-`;
-
-export const GET_AGENTS = gql`
-	query GetAgents($input: AgentsInquiry!) {
-		getAgents(input: $input) {
-			list {
-				_id
-				memberType
-				memberStatus
-				memberAuthType
-				memberPhone
-				memberNick
-				memberFullName
-				memberImage
-				memberEmail
-				memberDesc
-				memberAddress
-				memberFollowers
-				memberFollowings
-				memberArticles
-				memberPoints
-				memberLikes
-				memberViews
-				memberComments
-				memberProperties
-				memberTours
-				memberRank
-				meLiked {
-					memberId
-					likeRefId
-					myFavorite
-				}
-				meFollowed {
-					followingId
-					followerId
-					myFollowing
-				}
-				createdAt
-				updatedAt
 			}
 			metaCounter {
 				total

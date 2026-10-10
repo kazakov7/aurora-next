@@ -142,7 +142,7 @@ const MemberArticles: React.FC<MemberArticlesProps> = ({ member, onArticlesCount
 									<div className="gradient-overlay"></div>
 
 									{/* Category Pill Tag */}
-									<span className="category-badge">{article.articleCategory || 'Expedition'}</span>
+									<span className="category-badge">{article.articleCategory || 'Uncategorized'}</span>
 
 									{/* Bookmark Button */}
 									<button
@@ -165,7 +165,7 @@ const MemberArticles: React.FC<MemberArticlesProps> = ({ member, onArticlesCount
 									<div className="card-text-group">
 										<h3 className="article-title">{article.articleTitle}</h3>
 										<p className="article-excerpt">
-											{article.articleContent || 'Photographic study and chronicle from the AURA archives.'}
+											{article.articleContent}
 										</p>
 									</div>
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { ToursInquiry } from '../../types/tour/tour.input';
+import { PRICE_FILTER_MAX, PRICE_FILTER_MIN, PRICE_FILTER_STEP } from '../../config';
 
 interface TourFilterProps {
 	searchFilter: ToursInquiry;
@@ -22,7 +23,7 @@ const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterP
 		searchFilter?.search?.minAvailableSeats ?? null,
 	);
 	const [maxPrice, setMaxPrice] = useState<number>(
-		searchFilter?.search?.tourPriceRange?.end || 1000000,
+		searchFilter?.search?.tourPriceRange?.end || PRICE_FILTER_MAX,
 	);
 	const [departureDate, setDepartureDate] = useState<string>(
 		searchFilter?.search?.tourStartDateRange?.start || '',
@@ -38,7 +39,7 @@ const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterP
 		if (searchFilter?.search?.tourPriceRange?.end) {
 			setMaxPrice(searchFilter.search.tourPriceRange.end);
 		} else {
-			setMaxPrice(1000000);
+			setMaxPrice(PRICE_FILTER_MAX);
 		}
 		if (searchFilter?.search?.tourStartDateRange?.start) {
 			setDepartureDate(searchFilter.search.tourStartDateRange.start);
@@ -84,7 +85,7 @@ const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterP
 			search: {
 				...searchFilter.search,
 				tourPriceRange:
-					val >= 1000000
+					val >= PRICE_FILTER_MAX
 						? undefined
 						: {
 								start: 0,
@@ -140,7 +141,7 @@ const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterP
 	const clearAllHandler = () => {
 		setSearchText('');
 		setSelectedTravelers(null);
-		setMaxPrice(1000000);
+		setMaxPrice(PRICE_FILTER_MAX);
 		setDepartureDate('');
 		setReturnDate('');
 		applyFilterImmediately(initialInput);
@@ -179,32 +180,32 @@ const TourFilter = ({ searchFilter, setSearchFilter, initialInput }: TourFilterP
 				<div className="filter-section">
 					<div className="price-header-row">
 						<label className="filter-section-label">Price Range</label>
-						<span className="price-sub-label">Per person (KRW)</span>
+						<span className="price-sub-label">Per person (USD)</span>
 					</div>
 					<div className="slider-wrapper">
 						<input
 							type="range"
-							min={50000}
-							max={1000000}
-							step={10000}
+							min={PRICE_FILTER_MIN}
+							max={PRICE_FILTER_MAX}
+							step={PRICE_FILTER_STEP}
 							value={maxPrice}
 							onChange={priceChangeHandler}
 							className="price-slider"
 						/>
 						<div className="slider-labels">
-							<span>₩50,000</span>
-							<span>₩1,000,000+</span>
+							<span>${PRICE_FILTER_MIN.toLocaleString()}</span>
+							<span>${PRICE_FILTER_MAX.toLocaleString()}+</span>
 						</div>
 					</div>
 					<div className="price-inputs-grid">
 						<div className="price-box">
 							<span className="box-label">Min</span>
-							<span className="box-val">₩50k</span>
+							<span className="box-val">${PRICE_FILTER_MIN.toLocaleString()}</span>
 						</div>
 						<div className="price-box">
 							<span className="box-label">Max</span>
 							<span className="box-val">
-								{maxPrice >= 1000000 ? 'Max (All)' : `₩${Math.round(maxPrice / 1000)}k`}
+								{maxPrice >= PRICE_FILTER_MAX ? 'Max (All)' : `$${maxPrice.toLocaleString()}`}
 							</span>
 						</div>
 					</div>

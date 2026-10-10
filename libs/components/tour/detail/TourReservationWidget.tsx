@@ -65,7 +65,7 @@ const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps
 			<aside className="tour-reservation-widget">
 				<div className="widget-card">
 					<div className="price-header-row">
-						<div className="price-tags-group"><span className="price-current">₩{tour.tourPrice.toLocaleString()}</span><span className="price-unit">/ person</span></div>
+						<div className="price-tags-group"><span className="price-current">${tour.tourPrice.toLocaleString()}</span><span className="price-unit">/ person</span></div>
 						<div className="rating-badge-inline"><span className="material-symbols-outlined star-icon" style={{ fontVariationSettings: "'FILL' 1" }}>star</span><span className="score">{rating}</span><span className="count">({reviews})</span></div>
 					</div>
 
@@ -80,7 +80,7 @@ const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps
 
 					<button className="reserve-cta-btn" type="button" disabled={paymentStarting || seatsLeft < 1} onClick={handleReserve}><span className="material-symbols-outlined lock-icon">lock</span><span>{paymentStarting ? 'Preparing secure payment...' : seatsLeft < 1 ? 'Sold out' : 'Reserve tour'}</span></button>
 					<p className="refund-guarantee-note">A secure Stripe payment form opens before any charge is confirmed.</p>
-					<div className="itemized-breakdown"><div className="breakdown-row"><span className="breakdown-label">₩{tour.tourPrice.toLocaleString()} × {travelers} traveler{travelers === 1 ? '' : 's'}</span><span className="breakdown-value">₩{totalPrice.toLocaleString()}</span></div><div className="total-price-box"><span className="total-title">Total</span><span className="total-amount">₩{totalPrice.toLocaleString()}</span></div></div>
+					<div className="itemized-breakdown"><div className="breakdown-row"><span className="breakdown-label">${tour.tourPrice.toLocaleString()} × {travelers} traveler{travelers === 1 ? '' : 's'}</span><span className="breakdown-value">${totalPrice.toLocaleString()}</span></div><div className="total-price-box"><span className="total-title">Total</span><span className="total-amount">${totalPrice.toLocaleString()}</span></div></div>
 				</div>
 			</aside>
 			

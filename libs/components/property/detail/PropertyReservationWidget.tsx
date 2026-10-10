@@ -121,7 +121,7 @@ const PropertyReservationWidget = ({ property, refetchProperty }: PropertyReserv
 				<div className="widget-card">
 					<div className="price-header-row">
 						<div className="price-tag-group">
-							<span className="price-value">₩{pricePerNight.toLocaleString()}</span>
+							<span className="price-value">${pricePerNight.toLocaleString()}</span>
 							<span className="price-unit">/ night</span>
 						</div>
 						<div className="rating-badge-inline">
@@ -168,9 +168,9 @@ const PropertyReservationWidget = ({ property, refetchProperty }: PropertyReserv
 					<p className="no-charge-note">A secure Stripe payment form opens before any charge is confirmed.</p>
 
 					<div className="itemized-breakdown">
-						<div className="breakdown-row"><span className="breakdown-label">₩{pricePerNight.toLocaleString()} × {nights} night{nights === 1 ? '' : 's'}</span><span className="breakdown-value">₩{total.toLocaleString()}</span></div>
+						<div className="breakdown-row"><span className="breakdown-label">${pricePerNight.toLocaleString()} × {nights} night{nights === 1 ? '' : 's'}</span><span className="breakdown-value">${total.toLocaleString()}</span></div>
 						<div className="breakdown-divider" />
-						<div className="breakdown-row total-row"><span className="total-label">Total</span><span className="total-value">₩{total.toLocaleString()}</span></div>
+						<div className="breakdown-row total-row"><span className="total-label">Total</span><span className="total-value">${total.toLocaleString()}</span></div>
 					</div>
 				</div>
 			</aside>

@@ -9,7 +9,7 @@ import { START_PROPERTY_PAYMENT, START_TOUR_PAYMENT } from "../../apollo/user/mu
 import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { sweetErrorAlert, sweetTopSmallSuccessAlert } from "../../libs/sweetAlert";
-import { getImageUrl } from "../../libs/config";
+import { DEFAULT_PROPERTY_IMAGE, DEFAULT_TOUR_IMAGE, getImageUrl } from "../../libs/config";
 import useAuthSession from "../../libs/hooks/useAuthSession";
 
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
@@ -79,7 +79,7 @@ const CheckoutForm = ({ onPaymentSubmitted, paymentAmount, currency }: CheckoutF
           cursor: submitting ? 'not-allowed' : 'pointer'
         }}
       >
-        {submitting ? 'Processing...' : `Pay ${currency === 'KRW' ? '₩' : '$'}${paymentAmount.toLocaleString()}`}
+        {submitting ? 'Processing...' : `Pay $${paymentAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
       </button>
     </form>
   );
@@ -88,7 +88,7 @@ const CheckoutForm = ({ onPaymentSubmitted, paymentAmount, currency }: CheckoutF
 const CheckoutPage = () => {
   const router = useRouter();
   const user = useReactiveVar(userVar);
-  useAuthSession();
+  const authChecked = useAuthSession();
   const type = typeof router.query.type === 'string' ? router.query.type : '';
   const id = typeof router.query.id === 'string' ? router.query.id : '';
   const checkIn = typeof router.query.checkIn === 'string' ? router.query.checkIn : '';
@@ -117,6 +117,15 @@ const CheckoutPage = () => {
   const [initializing, setInitializing] = useState(false);
   const [initializationError, setInitializationError] = useState('');
   const [paymentSubmitted, setPaymentSubmitted] = useState(false);
+  // Amount/currency charged by the server (authoritative); the client estimate is only a preview
+  const [serverCharge, setServerCharge] = useState<{ amount: number; currency: string } | null>(null);
+  const hasValidStayDates = !isProperty || (!!checkIn && !!checkOut && new Date(checkOut).getTime() > new Date(checkIn).getTime());
+
+  /** Checkout requires a signed-in member: send guests to login and come back here afterwards **/
+  useEffect(() => {
+    if (!router.isReady || !authChecked || user?._id) return;
+    void router.replace({ pathname: '/account/login', query: { referrer: router.asPath } });
+  }, [authChecked, router, user?._id]);
   const idempotencyKeyRef = useRef<string>('');
 	const paymentInitializationRef = useRef(false);
 
@@ -142,6 +151,8 @@ const CheckoutPage = () => {
             }
           });
           if (data?.startPropertyPayment?.clientSecret) {
+            const payment = data.startPropertyPayment.payment;
+            if (payment?.paymentAmount) setServerCharge({ amount: payment.paymentAmount, currency: payment.paymentCurrency });
             setClientSecret(data.startPropertyPayment.clientSecret);
 					} else {
 						setInitializationError('Secure payment could not be initialized. Please try again.');
@@ -157,6 +168,8 @@ const CheckoutPage = () => {
             }
           });
           if (data?.startTourPayment?.clientSecret) {
+            const payment = data.startTourPayment.payment;
+            if (payment?.paymentAmount) setServerCharge({ amount: payment.paymentAmount, currency: payment.paymentCurrency });
             setClientSecret(data.startTourPayment.clientSecret);
 					} else {
 						setInitializationError('Secure payment could not be initialized. Please try again.');
@@ -188,7 +201,7 @@ const CheckoutPage = () => {
   }
 
   const getNights = () => {
-    if (!isProperty) return 0;
+    if (!isProperty || !hasValidStayDates) return 0;
     const start = new Date(`${checkIn}T00:00:00`);
     const end = new Date(`${checkOut}T00:00:00`);
     const difference = end.getTime() - start.getTime();
@@ -197,8 +210,8 @@ const CheckoutPage = () => {
 
   const nights = isProperty ? getNights() : 0;
   const price = isProperty ? item.pricePerNight : item.tourPrice;
-  const currency = isProperty ? item.currency : item.tourCurrency;
-  const totalAmount = isProperty ? price * nights : price * Number(guests);
+  const currency = serverCharge?.currency || (isProperty ? item.currency : item.tourCurrency);
+  const totalAmount = serverCharge?.amount ?? (isProperty ? price * nights : price * Number(guests));
 
   const handlePaymentSubmitted = async () => {
     // Stripe's client response is not the booking authority. The webhook confirms it server-side.
@@ -267,6 +280,13 @@ const CheckoutPage = () => {
                     
                     {!stripePromise ? (
                       <p style={{ color: 'red' }}>Stripe is not configured in this environment.</p>
+									) : !hasValidStayDates ? (
+										<div>
+											<p style={{ color: '#b42318' }}>Select valid check-in and check-out dates before paying.</p>
+											<button type="button" onClick={() => router.push({ pathname: '/property/detail', query: { id } })} style={{ padding: '10px 16px', backgroundColor: '#006194', color: '#fff', border: 0, borderRadius: '8px', cursor: 'pointer' }}>
+												Back to property
+											</button>
+										</div>
 									) : initializationError ? (
 										<div>
 											<p style={{ color: '#b42318' }}>{initializationError}</p>
@@ -297,22 +317,22 @@ const CheckoutPage = () => {
                     </div>
                     <div className="prop-micro">
                       <img
-                        src={getImageUrl(isProperty ? item.propertyImages?.[0] : item.tourImages?.[0], '/img/placeholder.png')}
+                        src={getImageUrl(isProperty ? item.propertyImages?.[0] : item.tourImages?.[0], isProperty ? DEFAULT_PROPERTY_IMAGE : DEFAULT_TOUR_IMAGE)}
                         alt="Thumbnail"
                       />
                       <div className="micro-info">
                         <p className="title">{isProperty ? item.propertyName : item.tourName}</p>
-                        <p className="desc">{isProperty ? `${nights} nights` : 'Curated Tour'} • {guests} {Number(guests) === 1 ? 'guest' : 'guests'}</p>
+                        <p className="desc">{isProperty ? `${nights} nights` : 'Tour'} • {guests} {Number(guests) === 1 ? 'guest' : 'guests'}</p>
                       </div>
                     </div>
                     <div className="calc-row">
-                      <span>{currency === 'KRW' ? '₩' : '$'}{price.toLocaleString()} × {isProperty ? `${nights} nights` : `${guests} travelers`}</span>
-                      <strong>{currency === 'KRW' ? '₩' : '$'}{totalAmount.toLocaleString()}</strong>
+                      <span>${price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} × {isProperty ? `${nights} nights` : `${guests} travelers`}</span>
+                      <strong>${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
                     </div>
                     <div className="total-module">
                       <div className="total-header">
                         <span>Total Due</span>
-                        <strong>{currency === 'KRW' ? '₩' : '$'}{totalAmount.toLocaleString()}</strong>
+                        <strong>${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
                       </div>
                     </div>
                   </aside>
@@ -325,7 +345,7 @@ const CheckoutPage = () => {
       
       <footer className="checkout-footer">
         <div className="footer-container">
-          <p>© 2025 AURA Travel Technologies, Inc. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} AURORA. All rights reserved.</p>
         </div>
       </footer>
     </div>

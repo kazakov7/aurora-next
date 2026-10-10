@@ -78,6 +78,22 @@ export const KAKAO_AUTH = gql`
 	}
 `;
 
+export const TELEGRAM_AUTH = gql`
+	mutation TelegramAuth($input: TelegramAuthInput!) {
+		telegramAuth(input: $input) {
+			_id
+			memberType
+			memberStatus
+			memberAuthType
+			memberEmail
+			memberNick
+			memberFullName
+			memberImage
+			accessToken
+		}
+	}
+`;
+
 export const UPDATE_MEMBER = gql`
 	mutation UpdateMember($input: MemberUpdate!) {
 		updateMember(input: $input) {
@@ -327,6 +343,8 @@ export const START_PROPERTY_PAYMENT = gql`
 				_id
 				bookingId
 				paymentStatus
+				paymentAmount
+				paymentCurrency
 			}
 		}
 	}
@@ -340,6 +358,8 @@ export const START_TOUR_PAYMENT = gql`
 				_id
 				bookingId
 				paymentStatus
+				paymentAmount
+				paymentCurrency
 			}
 		}
 	}
@@ -497,13 +517,13 @@ export const CREATE_SUPPORT_TICKET = gql`
  *************************/
 
 export const IMAGE_UPLOADER = gql`
-	mutation ImageUploader($file: Upload!, $target: String) {
+	mutation ImageUploader($file: Upload!, $target: String!) {
 		imageUploader(file: $file, target: $target)
 	}
 `;
 
 export const IMAGES_UPLOADER = gql`
-	mutation ImagesUploader($files: [Upload!]!, $target: String) {
+	mutation ImagesUploader($files: [Upload!]!, $target: String!) {
 		imagesUploader(files: $files, target: $target)
 	}
 `;

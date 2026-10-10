@@ -1,4 +1,5 @@
-#pc-wrap {
+#pc-wrap,
+#mobile-wrap {
   .home-page-container {
     width: 100%;
     display: flex;
@@ -414,21 +415,20 @@
 	   ========================================================================== */
   .trending-destinations-section {
     width: 100%;
-    padding: 80px 0;
+    padding: 52px 0;
     background: $surface;
 
     .section-container {
       width: 100%;
       max-width: $container-width;
       margin: 0 auto;
-      // 
 
       .section-header {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
         align-items: flex-end;
-        margin-bottom: 40px;
+        margin-bottom: 24px;
 
         .section-tag {
           font-size: 11px;
@@ -439,8 +439,8 @@
         }
 
         .section-title {
-          font-size: 40px;
-          line-height: 48px;
+          font-size: 36px;
+          line-height: 44px;
           font-weight: 600;
           letter-spacing: -0.025em;
           color: $on-surface;
@@ -462,46 +462,39 @@
         }
       }
 
-      /* --- Bento grid: editorial destination kartalari --- */
+      /* --- Bento grid: modern 6-destination cards --- */
       .bento-grid {
         display: grid;
         grid-template-columns: repeat(12, 1fr);
-        gap: 20px;
+        gap: 16px;
 
         .bento-card {
           position: relative;
           isolation: isolate;
           display: flex;
           overflow: hidden;
-          border-radius: 8px;
+          border-radius: 16px;
           background: $surface-container-high;
           cursor: pointer;
           color: #ffffff;
           text-decoration: none;
+          min-height: 250px;
+          height: 250px;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          box-shadow: 0 4px 16px -4px rgba(20, 27, 43, 0.12);
+          transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+            border-color 0.4s ease;
 
           &:focus-visible {
             outline: 2px solid $primary;
             outline-offset: 3px;
           }
 
-          box-shadow: 0 1px 2px rgba(20, 27, 43, 0.06),
-            0 14px 34px -20px rgba(20, 27, 43, 0.3);
-          transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-            box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1);
-
-          // Ustun kengliklari TSX'dagi buildSpans() natijasiga mos keladi
           @for $i from 1 through 12 {
             &.span-#{$i} {
               grid-column: span #{$i};
             }
-          }
-
-          &.is-feature {
-            min-height: 480px;
-          }
-          &.is-wide,
-          &.is-compact {
-            min-height: 380px;
           }
 
           /* --- Rasm qatlami --- */
@@ -513,81 +506,71 @@
             background-size: cover;
             background-position: center;
             transform: scale(1.02);
-            filter: saturate(0.94) contrast(1.04);
-            transition: transform 1.25s cubic-bezier(0.22, 1, 0.36, 1);
+            filter: saturate(0.96) contrast(1.04);
+            transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1);
           }
 
-          /* --- Scrim: ko'p to'xtamli (banding yo'q) va yorug' rasmlarda ham
-                 oq matn WCAG AA'dan o'tadigan darajada quyuq --- */
+          /* --- Scrim overlay --- */
           .card-scrim {
             position: absolute;
             inset: 0;
             z-index: 1;
-            background:
-              // tartib raqami o'qilishi uchun yuqoridan yengil soya
-              linear-gradient(
-                to bottom,
-                rgba(10, 15, 26, 0.42) 0%,
-                rgba(10, 15, 26, 0.12) 15%,
-                rgba(10, 15, 26, 0) 28%
-              ),
-              linear-gradient(
-                to top,
-                rgba(10, 15, 26, 0.95) 0%,
-                rgba(10, 15, 26, 0.88) 14%,
-                rgba(10, 15, 26, 0.74) 30%,
-                rgba(10, 15, 26, 0.52) 46%,
-                rgba(10, 15, 26, 0.24) 66%,
-                rgba(10, 15, 26, 0) 88%
-              );
-          }
-
-          &.is-wide .card-scrim {
             background: linear-gradient(
-                to bottom,
-                rgba(10, 15, 26, 0.42) 0%,
-                rgba(10, 15, 26, 0.12) 15%,
-                rgba(10, 15, 26, 0) 28%
-              ),
-              linear-gradient(
-                to right,
-                rgba(10, 15, 26, 0.94) 0%,
-                rgba(10, 15, 26, 0.86) 26%,
-                rgba(10, 15, 26, 0.6) 48%,
-                rgba(10, 15, 26, 0.24) 68%,
-                rgba(10, 15, 26, 0) 88%
-              ),
-              linear-gradient(
-                to top,
-                rgba(10, 15, 26, 0.5) 0%,
-                rgba(10, 15, 26, 0.16) 32%,
-                rgba(10, 15, 26, 0) 60%
-              );
+              to top,
+              rgba(10, 15, 26, 0.94) 0%,
+              rgba(10, 15, 26, 0.6) 40%,
+              rgba(10, 15, 26, 0.1) 70%,
+              rgba(10, 15, 26, 0.4) 100%
+            );
+            transition: opacity 0.4s ease;
           }
 
-          /* --- Editorial tartib raqami --- */
-          .card-index {
+          /* --- Top Bar Chips --- */
+          .card-top-bar {
             position: absolute;
+            top: 14px;
+            left: 14px;
+            right: 14px;
             z-index: 3;
-            top: 26px;
-            left: 32px;
-            font-family: $font-serif;
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.14em;
-            color: rgba(255, 255, 255, 0.72);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
 
-            &::after {
-              content: "";
-              display: block;
-              width: 18px;
-              height: 1px;
-              margin-top: 7px;
-              background: rgba(255, 255, 255, 0.42);
+            .card-chip-country {
+              display: inline-flex;
+              align-items: center;
+              gap: 4px;
+              padding: 4px 10px;
+              border-radius: 999px;
+              background: rgba(15, 23, 42, 0.52);
+              backdrop-filter: blur(8px);
+              -webkit-backdrop-filter: blur(8px);
+              border: 1px solid rgba(255, 255, 255, 0.18);
+              font-size: 11px;
+              font-weight: 600;
+              color: #ffffff;
+              letter-spacing: 0.03em;
+
+              .chip-icon {
+                font-size: 13px;
+                color: #60a5fa;
+              }
+            }
+
+            .card-chip-index {
+              padding: 3px 8px;
+              border-radius: 999px;
+              background: rgba(15, 23, 42, 0.45);
+              backdrop-filter: blur(8px);
+              -webkit-backdrop-filter: blur(8px);
+              border: 1px solid rgba(255, 255, 255, 0.14);
+              font-size: 11px;
+              font-weight: 700;
+              color: rgba(255, 255, 255, 0.85);
             }
           }
 
-          /* --- Matn bloki --- */
+          /* --- Bottom Matn bloki --- */
           .card-content {
             position: relative;
             z-index: 2;
@@ -595,122 +578,65 @@
             margin-top: auto;
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            padding: 32px;
+            padding: 18px;
             color: #ffffff;
-          }
-
-          &.is-feature .card-content {
-            padding: 40px;
-          }
-
-          &.is-wide .card-content {
-            padding: 40px;
-            max-width: 56%;
-          }
-
-          .card-overline {
-            display: inline-flex;
-            align-items: center;
             gap: 10px;
-            margin-bottom: 14px;
-            font-size: 10px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.18em;
-            color: rgba(255, 255, 255, 0.8);
 
-            &::before {
-              content: "";
-              width: 24px;
-              height: 1px;
-              background: rgba(255, 255, 255, 0.5);
-            }
-          }
-
-          .card-heading {
-            margin: 0;
-            font-family: "Inter", sans-serif;
-            font-weight: 600;
-            line-height: 1.08;
-            letter-spacing: -0.01em;
-            color: #ffffff;
-            text-wrap: balance;
-          }
-
-          &.is-feature .card-heading {
-            font-size: 40px;
-          }
-          &.is-wide .card-heading {
-            font-size: 34px;
-          }
-          &.is-compact .card-heading {
-            font-size: 26px;
-          }
-
-          .card-desc {
-            margin: 12px 0 0;
-            max-width: 46ch;
-            font-size: 14px;
-            line-height: 23px;
-            color: rgba(237, 240, 255, 0.82);
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-
-          /* --- Hairline bilan ajratilgan meta qatori --- */
-          .card-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            width: 100%;
-            margin-top: 22px;
-            padding-top: 16px;
-            border-top: 1px solid rgba(255, 255, 255, 0.18);
-
-            .card-stats {
-              display: inline-flex;
-              align-items: center;
-              gap: 12px;
-              min-height: 16px;
-              font-size: 12px;
-              font-weight: 500;
-              letter-spacing: 0.02em;
-              color: rgba(255, 255, 255, 0.82);
-
-              .stat-dot {
-                width: 3px;
-                height: 3px;
-                border-radius: 50%;
-                background: rgba(255, 255, 255, 0.45);
-              }
-            }
-
-            .card-cue {
-              display: inline-flex;
-              align-items: center;
-              gap: 8px;
-              font-size: 12px;
-              font-weight: 600;
-              letter-spacing: 0.04em;
-              white-space: nowrap;
+            .card-heading {
+              margin: 0;
+              font-family: "Inter", sans-serif;
+              font-size: 22px;
+              font-weight: 700;
+              line-height: 1.15;
+              letter-spacing: -0.02em;
               color: #ffffff;
+              text-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+              transition: transform 0.3s ease;
+            }
 
-              .cue-label {
-                // Hover'da chiziladigan editorial tagchiziq
-                background-image: linear-gradient(currentColor, currentColor);
-                background-repeat: no-repeat;
-                background-position: 0 100%;
-                background-size: 0% 1px;
-                transition: background-size 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+            .card-footer {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              width: 100%;
+              margin: 0;
+              padding: 0;
+              border: none;
+
+              .card-stats {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 12px;
+                font-weight: 500;
+                color: rgba(255, 255, 255, 0.85);
+
+                .stat-dot {
+                  width: 3px;
+                  height: 3px;
+                  border-radius: 50%;
+                  background: rgba(255, 255, 255, 0.5);
+                }
               }
 
-              .cue-icon {
-                font-size: 16px;
-                transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+              .card-action-btn {
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.18);
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+                border: 1px solid rgba(255, 255, 255, 0.25);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #ffffff;
+                transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+
+                .cue-icon {
+                  font-size: 16px;
+                  transition: transform 0.35s ease;
+                }
               }
             }
           }
@@ -719,19 +645,20 @@
           &:hover,
           &:focus-within {
             transform: translateY(-4px);
-            box-shadow: 0 2px 4px rgba(20, 27, 43, 0.08),
-              0 28px 58px -24px rgba(20, 27, 43, 0.44);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 28px -6px rgba(20, 27, 43, 0.32);
 
             .card-bg {
-              transform: scale(1.07);
+              transform: scale(1.08);
             }
 
-            .card-footer .card-cue {
-              .cue-label {
-                background-size: 100% 1px;
-              }
+            .card-action-btn {
+              background: #ffffff;
+              color: #0f172a;
+              transform: scale(1.1);
+
               .cue-icon {
-                transform: translateX(4px);
+                transform: translateX(2px);
               }
             }
           }
@@ -739,80 +666,31 @@
 
         .bento-empty-state {
           grid-column: span 12;
-          padding: 56px 0;
+          padding: 40px 0;
           text-align: center;
           font-size: 14px;
           color: $on-surface-variant;
         }
 
         @media (max-width: 1100px) {
-          gap: 16px;
+          gap: 14px;
 
           .bento-card {
             &[class*="span-"] {
               grid-column: span 6;
             }
-
-            &.is-feature,
-            &.is-wide,
-            &.is-compact {
-              min-height: 340px;
-            }
-
-            &.is-feature .card-content,
-            &.is-wide .card-content {
-              padding: 28px;
-              max-width: none;
-            }
-
-            .card-content {
-              padding: 28px;
-            }
-
-            &.is-feature .card-heading,
-            &.is-wide .card-heading {
-              font-size: 27px;
-            }
-            &.is-compact .card-heading {
-              font-size: 23px;
-            }
+            height: 230px;
+            min-height: 230px;
           }
         }
 
-        @media (max-width: 700px) {
+        @media (max-width: 640px) {
           .bento-card {
             &[class*="span-"] {
               grid-column: span 12;
             }
-
-            .card-index {
-              top: 20px;
-              left: 24px;
-            }
-
-            .card-content,
-            &.is-feature .card-content,
-            &.is-wide .card-content {
-              padding: 24px;
-            }
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .bento-card,
-          .bento-card .card-bg,
-          .bento-card .cue-label,
-          .bento-card .cue-icon {
-            transition: none;
-          }
-
-          .bento-card:hover,
-          .bento-card:focus-within {
-            transform: none;
-
-            .card-bg {
-              transform: scale(1.02);
-            }
+            height: 210px;
+            min-height: 210px;
           }
         }
       }

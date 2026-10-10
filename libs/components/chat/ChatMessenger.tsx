@@ -5,7 +5,10 @@ import { useRouter } from 'next/router';
 import { GET_MY_CHATS, GET_MESSAGES } from '../../../apollo/chat/query';
 import { DELETE_MY_CHAT, GET_OR_CREATE_DIRECT_CHAT, MARK_CHAT_AS_READ } from '../../../apollo/chat/mutation';
 import { userVar } from '../../../apollo/store';
-import { getJwtToken } from '../../auth';
+import { AUTH_TOKEN_ERRORS, clearAuthSession, getJwtToken } from '../../auth';
+import { getChatSocketUrl } from '../../config';
+import { sweetErrorAlert } from '../../sweetAlert';
+import { Message } from '../../enums/common.enum';
 import ChatSidebar from './ChatSidebar';
 import ChatThread from './ChatThread';
 import ChatDossier from './ChatDossier';
@@ -129,9 +132,8 @@ const ChatMessenger: React.FC = () => {
 	useEffect(() => {
 		const token = getJwtToken();
 		if (!user._id || !token) return;
-		const socketBaseUrl = process.env.NEXT_PUBLIC_API_SOCKET_URL || process.env.REACT_APP_API_URL || 'http://127.0.0.1:3007';
-		const socketUrl = socketBaseUrl.replace(/\/$/, '').endsWith('/chat') ? socketBaseUrl.replace(/\/$/, '') : `${socketBaseUrl.replace(/\/$/, '')}/chat`;
-		const socket = io(socketUrl, { auth: { token }, transports: ['websocket'], reconnection: true, reconnectionAttempts: 8 });
+		// auth callback re-reads the token on every reconnect so a refreshed JWT is used
+		const socket = io(getChatSocketUrl(), { auth: (cb) => cb({ token: getJwtToken() }), transports: ['websocket'], reconnection: true, reconnectionAttempts: 8 });
 		socketRef.current = socket;
 		socket.on('connect', () => {
 			setSocketStatus('connected');
@@ -140,6 +142,14 @@ const ChatMessenger: React.FC = () => {
 		socket.io.on('reconnect_attempt', () => setSocketStatus('reconnecting'));
 		socket.on('disconnect', () => setSocketStatus('disconnected'));
 		socket.on('connect_error', () => setSocketStatus('disconnected'));
+		socket.on('chat:error', (payload: { message?: string }) => {
+			// Server rejected the token (expired, blocked or deleted member): end the stale session
+			if (payload?.message && AUTH_TOKEN_ERRORS.includes(payload.message)) {
+				socket.disconnect();
+				clearAuthSession();
+				void sweetErrorAlert(Message.SESSION_EXPIRED);
+			}
+		});
 		socket.on('message:new', (message: ChatMessage) => {
 			if (!message?._id || !message.chatId) return;
 			if (message.chatId === activeChatIdRef.current) setMessages((previous) => upsertMessage(previous, message));

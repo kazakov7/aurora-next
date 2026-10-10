@@ -240,9 +240,9 @@ Ushbu bo'limdagi qoidalar buzilishi mutlaqo qabul qilinmaydi va har bir vazifada
    - Barcha ma'lumotlar (`list`, `metaCounter`, narxlar, rasmlar, sarlavhalar, sanalar) birinchi qadamdanoq **FAQAT va FAQAT real GraphQL API query'sidan** olinishi SHART.
    - Agar bazada 1 ta element bo'lsa — aynan o'sha 1 ta real element ko'rsatiladi. Agar filtr bo'yicha 0 ta element bo'lsa — toza `No Data / Bo'sh holat` ko'rsatiladi. Gridni sun'iy to'ldirish TAQIQLANADI.
 
-2. **VALYUTA STANDARTI (KRW / ₩)**:
-   - Platformaning asosiy valyutasi **KRW (₩ - Janubiy Koreya Voni)** hisoblanadi (masalan, `₩75,000`, `₩155,000`, `₩450,000`).
-   - Narxlar, filtr slayderi oraliqlari (min: `₩50,000`, max: `₩1,000,000+`, step: `₩10,000`) va barcha ko'rsatkichlar USD ($) emas, **KRW (₩)** formatida bo'lishi SHART.
+2. **VALYUTA STANDARTI (USD / $)**:
+   - Platformaning asosiy va yagona valyutasi **USD ($ - AQSh dollari)** hisoblanadi (masalan, `$75.00`, `$155.00`, `$450.00`).
+   - Narxlar, filter slayderlari (min: `$50`, max: `$1,000+`, step: `$10`), checkout, booking va payment qiymatlari **USD ($)** formatida bo'lishi SHART.
 
 3. **REAKTIV FILTRLASH VA SARALASH (APPLY TUGMASISIZ BIR ZUMDA ISHLASH)**:
    - Har qanday filtr (kategoriya chiplari, narx slayderi, manzil pilllari, qidiruv matni, xonalar/odamlar soni) yoki saralash dropdown'i tanlanishi bilan hech qanday "Apply Filters" tugmasisiz, **BIR ZUMDA VA REAKTIV** ravishda API'ga so'rov yuborishi, URL query parametrini yangilashi va ro'yxatni yangilashi SHART.

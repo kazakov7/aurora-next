@@ -4,7 +4,9 @@ import { GET_AGENT_PROPERTIES } from "../../../../apollo/user/query";
 import { PropertyType, PropertyStatus } from "../../../enums/property.enum";
 import { Direction } from "../../../enums/common.enum";
 import { useRouter } from "next/router";
-import { getImageUrl } from "../../../../libs/config";
+import { DEFAULT_PROPERTY_IMAGE, getImageUrl } from "../../../../libs/config";
+import { Property } from "../../../types/property/property";
+import AgentPropertyForm from "./AgentPropertyForm";
 import moment from "moment";
 import { sweetErrorHandling } from "../../../../libs/sweetAlert";
 
@@ -14,8 +16,9 @@ const MyHotels = () => {
   const [search, setSearch] = useState("");
   const [propertyType, setPropertyType] = useState<PropertyType | "">("");
   const [propertyStatus, setPropertyStatus] = useState<PropertyStatus | "">("");
+  const [formTarget, setFormTarget] = useState<Property | null | undefined>(undefined);
 
-  const { data, loading } = useQuery(GET_AGENT_PROPERTIES, {
+  const { data, loading, refetch } = useQuery(GET_AGENT_PROPERTIES, {
     fetchPolicy: "network-only",
     onError: (err) => sweetErrorHandling(err),
     variables: {
@@ -35,8 +38,11 @@ const MyHotels = () => {
   const total = data?.getAgentProperties?.metaCounter?.[0]?.total || 0;
   const totalPages = Math.ceil(total / 10) || 1;
 
-  const handleAddHotel = () => {
-    router.push("/property/create");
+  /** HANDLERS **/
+  const handleAddHotel = () => setFormTarget(null);
+  const handleFormSaved = () => {
+    setFormTarget(undefined);
+    void refetch();
   };
 
   return (
@@ -124,7 +130,7 @@ const MyHotels = () => {
                     <td>
                       <div className="item-cell">
                         <img
-                          src={getImageUrl(prop?.propertyImages?.[0], "/img/placeholder.png")}
+                          src={getImageUrl(prop?.propertyImages?.[0], DEFAULT_PROPERTY_IMAGE)}
                           alt={prop.propertyName}
                         />
                         <div className="item-info">
@@ -145,7 +151,7 @@ const MyHotels = () => {
                     </td>
                     <td>
                       <div className="price-cell">
-                        <span className="price">${prop.pricePerNight}</span>
+                        <span className="price">${Number(prop.pricePerNight || 0).toLocaleString()}</span>
                         <span className="unit">{prop.currency} / night</span>
                       </div>
                     </td>
@@ -157,7 +163,7 @@ const MyHotels = () => {
                     </td>
                     <td>
                       <div className="actions-cell">
-                        <button onClick={() => router.push(`/_admin/properties?id=${prop._id}`)}>
+                        <button onClick={() => setFormTarget(prop)}>
                           Edit
                         </button>
                       </div>
@@ -169,7 +175,7 @@ const MyHotels = () => {
           </table>
         </div>
         
-        {totalPages > 0 && (
+        {total > 0 && (
           <div className="pagination-footer">
             <span className="page-info">
               Showing <strong>{(page - 1) * 10 + 1}–{Math.min(page * 10, total)}</strong> of <strong>{total}</strong> properties
@@ -194,6 +200,9 @@ const MyHotels = () => {
           </div>
         )}
       </div>
+      {formTarget !== undefined && (
+        <AgentPropertyForm property={formTarget} onClose={() => setFormTarget(undefined)} onSaved={handleFormSaved} />
+      )}
     </div>
   );
 };

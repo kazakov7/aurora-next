@@ -227,7 +227,7 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 							<div style={{ position: 'relative' }}>
 								<input
 									type="file"
-									accept="image/jpeg, image/png, image/webp"
+									accept="image/jpeg, image/png"
 									onChange={handleImageUpload}
 									ref={fileInputRef}
 									disabled={uploadingImage}

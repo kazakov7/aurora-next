@@ -175,10 +175,11 @@ const WishlistPlaceCard = ({
 
         <motion.div variants={itemVariants} className="bottom-row">
           <p className="price-text">
-            {new Intl.NumberFormat("ko-KR", {
+            {new Intl.NumberFormat("en-US", {
               style: "currency",
               currency,
-              maximumFractionDigits: currency === "KRW" ? 0 : 2,
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
             }).format(pricePerNight)}{" "}
             <span className="unit">{priceUnit}</span>
           </p>

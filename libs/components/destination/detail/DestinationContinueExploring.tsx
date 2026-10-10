@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Destination } from '../../../types/destination/destination';
-import { getImageUrl } from '../../../config';
+import { DEFAULT_DESTINATION_IMAGE, getImageUrl } from '../../../config';
 
 interface DestinationContinueExploringProps {
 	destinations: Destination[];
@@ -20,12 +20,6 @@ const countryFlags: Record<string, string> = {
 	Vietnam: '🇻🇳',
 };
 
-const fallbackImages = [
-	'https://lh3.googleusercontent.com/aida-public/AB6AXuDq5qK3uF0YJGJlcCLOwnpQvZUhOCALzwZqSAFo6-SSvb347qMAkWK4W1JADv4TSJgm65R-YnDrbFdeVZMkk4i9gJIUM4F0FEqty6QVLCxpQupfCce1V85tmobIKxKNvMpDocjkmIpU3soZTWbQNhz70s1HOVP-J6SCTfftc_HxGJx7QYw8H9v_2H70pCUGZ53FY9BVvv_8tfVBQeEYJym19xzN1QpZfX8ajN5pEVj42atuqAxSveuP',
-	'https://lh3.googleusercontent.com/aida-public/AB6AXuD5-zmZOSxZO4XypsSQM9W33Ch76qUiRuzM5OKRka5JCueFY-hxLW8e5eVAWAydxepKJvrEXts1uFLTi0BJnKj5AJCS9Sk1i_OLPEgkbAbJCYsWa3NC0OxUH0ZRwXowoAagMxssQZ2aRx68de4ZBvbQR_YLQNB-RB0p0ckqNd9NhD4bksdGHGMsIt8oIqkIaMth-Frl7zWzClg-njrfspzVtdsDIFH3ulTpM4EMb2kBXUQZAWpwMDNM',
-	'https://lh3.googleusercontent.com/aida-public/AB6AXuDcedc2yHogh_22zR2392_kMhG2bDT8LZ6qEvGKdgB9feAPduUHei4KopK54kN2bvDSgnKE2J0jKuEJOw5M4uXmsJ4vNLXn7XrsZw_9vTk2YG6XJ-zh5JPV8RKqaEyPjikTjiUt1aBCmEuv4xRWh2wfVfZQuCCFHxRjQypDUIsmBMl0DsDmPSmL99J_0a4BN6qvFDUfUvEZUON21VU1JZTcX4oWDtjoegOLbEiy3LkkmaZSCN2x6rnv',
-];
-
 const DestinationContinueExploring = ({ destinations }: DestinationContinueExploringProps) => {
 	if (!destinations || destinations.length === 0) return null;
 
@@ -42,7 +36,7 @@ const DestinationContinueExploring = ({ destinations }: DestinationContinueExplo
 
 			<div className="continue-cards-grid">
 				{displayList.map((dest, idx) => {
-					const fallback = fallbackImages[idx % fallbackImages.length];
+					const fallback = DEFAULT_DESTINATION_IMAGE;
 					const imgUrl = getImageUrl(dest.destinationImages?.[0], fallback);
 					const flag = countryFlags[dest.destinationCountry] || '🌐';
 

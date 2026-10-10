@@ -54,7 +54,7 @@ const TourCard = ({ tour, likeTourHandler }: TourCardProps) => {
 					<div className="tour-price-row">
 						<div className="price-block">
 							<span className="price-label">From</span>
-							<span className="price-amount">₩{tour.tourPrice.toLocaleString()}</span>
+							<span className="price-amount">${tour.tourPrice.toLocaleString()}</span>
 						</div>
 						<span className="price-unit">Per traveler</span>
 					</div>

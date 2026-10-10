@@ -5,6 +5,99 @@
 **Audit Team Roles:** Principal Backend Engineer, Senior Frontend Engineer, Software Architect, Security Auditor, Database Engineer, QA Automation Engineer, DevOps Readiness Engineer  
 **Date of Audit:** October 2026  
 
+## VERIFIED REMEDIATION STATUS — PHASE 4 (2026-10-10)
+
+Phase 4 continued from the uncommitted OpenAI Codex handoff. Codex work was reviewed first, confirmed defects in it were fixed, and the frontend/backend integration audit continued. Phase 1–3 backend logic (auth/CORS, pagination, booking/payment integrity) and Tour publication status were not modified. Nothing was committed or pushed.
+
+### Codex handoff review
+
+| Codex change | Verdict | Action |
+|---|---|---|
+| `GlobalSearch.tsx` (Destinations/Properties/Tours, 300 ms debounce, 2-char minimum, keyboard) | ✅ Works against live API | Kept. Enter now opens the first result when none is highlighted. Desktop dropdown verified on top of page content (no z-index conflict). |
+| Navbar `USD · EN` → `KRW · EN` | ✅ Correct | Kept. |
+| `useAuthSession` server revalidation via public `getMember` | 🔴 **Security defect** | `getMember` uses `WithoutGuard`: a revoked/forged/expired token is treated as anonymous and the public lookup still returns an ACTIVE member, so the session was kept. Rewritten: uses a dedicated silent `VerifyMemberSession` own-profile read; the backend returns `accessToken` **only** when it authenticated the bearer token against the current ACTIVE member. No `accessToken` → session cleared. Refreshed token is stored (role changes apply). Logout/login race guarded (token compared after the request). GraphQL error → session cleared; pure network failure → JWT session kept (server still enforces auth). String matching on error text (`'blocked'`, `'DELETED'`) removed. |
+| Apollo auth error list | ✅ Messages match backend `Messages` enum | Centralised in `libs/auth` (`AUTH_TOKEN_ERRORS`). `extensions.code === 'UNAUTHENTICATED'` also recognised, excluding credential-exchange operations (Login/Signup/Google/Kakao/Telegram) so a wrong password with a stale stored token no longer logs the user out with a misleading "session expired". |
+| Upload mutations `target: String!` | ✅ Matches schema | Kept. |
+| Travel history `destinationId`, `visitedAt` | ✅ Matches schema | Kept. |
+| Removed `GET_AGENTS` | ✅ Unused (no references) | Kept. |
+| `NEXT_PUBLIC_AURORA_SOCKET_URL` | ✅ Correct (`ws://localhost:3007` + `/chat` namespace, `auth.token` handshake) | URL logic deduplicated into `getChatSocketUrl()`. Socket `auth` is now a callback so reconnects use the current token. Both sockets now handle the server's `chat:error` auth messages (blocked/deleted/expired) by ending the stale session instead of silently looping. |
+| SCSS added inside `pc/main.scss` and `mobile/main.scss` | ⚠️ AGENTS.md §7.5 violation | Moved verbatim (same selectors, same visuals) to `scss/pc/common/global-search.scss` and `scss/mobile/common/navbar.scss`, imported from the respective `main.scss`. |
+| Booking cancel UI only for `PENDING` | ✅ Matches backend (`cancelBooking`/`cancelTourBooking` only claim PENDING) | Kept. Confirmed-booking cancellation not restored. |
+
+### Bugs found and repaired in Phase 4
+
+| ID | Severity | Area | Root cause | Fix |
+|---|---|---|---|---|
+| P4-01 | P0 | Frontend auth | Public lookup treated as proof of identity (above) | Server-verified `accessToken` check |
+| P4-02 | P1 | **Backend security** | `imageUploader`/`imagesUploader` wrote to `uploads/${target}/` with unvalidated `target` (path traversal, arbitrary write location) and took the extension from the client filename (`evil.html` with `image/png` was stored as `.html` and served statically → stored XSS on the API origin) | `target` must be one of `member, article, board, property, tour, destination, support` (BAD_REQUEST otherwise); extension derived from the validated mimetype. Live check: `../apps` rejected; `evil.html` stored as `.png`. |
+| P4-03 | P1 | **Backend search** | Property/Tour/Destination/Notice/Article search passed raw user text to `new RegExp()` → typing `(` in any search returned HTTP 500 (`Invalid regular expression`), plus ReDoS exposure | Shared `escapeRegExp()` in `libs/config.ts` (same escaping Member/Support already used). Live check: `se(` now returns an empty result, not an error. |
+| P4-04 | P1 | Agent dashboard | "Add Hotel"/"Add Tour" pushed to non-existent `/property/create` and `/tour/create` (404); "Edit" pushed to admin-only pages (agent redirected home). Agents could not create or edit listings at all | New `AgentPropertyForm` / `AgentTourForm` modals using existing `createProperty`/`updateProperty`/`createTour`/`updateTour`, real destination list, multi-image upload, KRW, validation aligned with backend DTOs (tour end date strictly after start; capacity ≥ reserved seats; destination fixed on property edit because `UpdatePropertyInput` has no `destinationId`). Agent list queries extended with the editable fields. |
+| P4-05 | P1 | Mobile (all public pages) | Device detection is user-agent based; nearly all domain styles were scoped to `#pc-wrap` only, so real phones received essentially unstyled pages (raw HTML layout, 6 000 px overflow) | Domain stylesheets now target `#pc-wrap, #mobile-wrap` (the pattern destination/community already used); `#main`/footer shared; new `scss/mobile/responsive.scss` collapses desktop grids, adds 16 px gutters, horizontal scrollers for chips, single-column detail/auth layouts. Verified with iPhone emulation: layout viewport stays 390 px on all crawled pages (previously 628–769 px). |
+| P4-06 | P2 | Hardcoded fake data (AGENTS.md §9) | `PropertyCard`: fake `4.96` rating, fabricated review counts, rotating fake badges, "0.8 km from center", dead "View map", "Free cancellation" (false — confirmed bookings cannot be cancelled), fake address/type fallbacks, hot-linked stock photos | Rating shown only when reviews exist (else "New"); badges derived from real metrics (rating/bookings/created date); guests/bedrooms/beds from data; false claims removed; local default image. |
+| P4-07 | P2 | Hardcoded fake data | Hotel filter: fixed type counts, fake star-rating section with fake counts and non-functional checkboxes, city chips incl. countries (`Japan`, `Greece`) sent as `propertyCityList` (always 0 results), price max ₩500,000, `USD / KRW` label | City chips built from real listing cities; all `PropertyType` values without counts; non-functional star section removed; KRW slider ₩50,000–₩1,000,000+ step ₩10,000 (AGENTS.md §9.2); shared canonical amenity list. |
+| P4-08 | P2 | Hardcoded fake data | 15/20 destinations without images showed random hot-linked photos of other places; admin fallbacks `"CHE-109.432.891"` tax ID and `"Zermatt, Switzerland"` location; `"Global Citizen"`, fake article excerpt; `tourLocation` (non-existent field) → always "Curated Expedition" | Local default destination image; honest "Not provided"/"Location not provided"; real tour city/country. |
+| P4-09 | P2 | Checkout | Signed-out users stuck on "Initializing secure payment…" forever; missing/invalid stay dates also stuck and summary showed `₩NaN`; pay button showed a client-side estimate; missing `/img/placeholder.png` | Redirect to login with `referrer` back to checkout; explicit date error with link back; server `paymentAmount`/`paymentCurrency` now requested and displayed; local default images. Stripe client confirmation is still not treated as booking authority (webhook confirms). |
+| P4-10 | P3 | Agent dashboard | Prices rendered with `$`, missing placeholder image, "Showing 1–0 of 0" when empty | `₩` formatting, default images, pagination footer hidden when empty. Same `$` fix in agent Reservations. |
+| P4-11 | P3 | My Page | `GetMyAgentApplications` fired without a token before redirect (`Bearer token is not provided!`) | Query skipped until a user exists. |
+| P4-12 | P3 | CS page | Two hero images were expiring `lh3.googleusercontent.com/aida/…` URLs (blocked, `ERR_BLOCKED_BY_ORB`) | Local banner images. |
+| P4-13 | P3 | Uploads | Article cover input accepted WebP; avatar input accepted any image; backend accepts only PNG/JPEG | `accept` aligned to PNG/JPEG. |
+| P4-14 | P3 | Head | `/favicon.ico` 404 on every page | `public/favicon.svg` + `<link rel="icon">`. |
+
+### Verification evidence
+
+| Check | Result |
+|---|---|
+| Frontend `tsc --noEmit` | ✅ pass |
+| Next.js production build (isolated copy, so the running dev server on :3000 was not disturbed) | ✅ pass — 33/33 pages |
+| GraphQL contract validation — every `gql` document in `apollo/**` parsed and validated against live introspection | ✅ 108/108 valid |
+| ESLint | ⛔ **BLOCKED** — no ESLint config in `aurora-next`; `next lint` would start interactive setup |
+| Backend `aurora-api` / `aurora-batch` TypeScript | ✅ pass / ✅ pass |
+| Backend unit tests | ✅ 27/27 (5 suites; +4 new tests for `escapeRegExp`, upload target whitelist, mimetype extension) |
+| Backend E2E (MongoMemoryReplSet, verified isolated from the dev DB) | ⚠️ 68/69 — sole failure is the unchanged Tour `PENDING`/`ACTIVE` policy mismatch (`catalog-social.e2e-spec.ts:169`) |
+| Backend Nest build | ✅ pass |
+| Browser crawl (headless Chrome, desktop 1440 px), anonymous: 17 routes; authenticated USER: 17 routes incl. all My Page tabs, chat, member, details | ✅ 0 GraphQL errors, 0 page errors (remaining console noise: Google Sign-In origin not allowed — configuration) |
+| Mobile crawl (iPhone UA, 390 px) | ✅ layout viewport = 390 px on all 17 checked routes; no squeezed grids |
+| Global Search interaction | ✅ grouped results, ArrowDown+Enter navigates to detail, `se(` handled, dropdown not covered |
+| Chat Socket.IO | ✅ "Connected" with refreshed token; `/chat` namespace |
+| Session verification (live API) | ✅ no token / garbage token → `accessToken: null` (session cleared); valid token → refreshed `accessToken` |
+| Checkout | ✅ signed-out redirect to login with referrer; missing dates message; Stripe **test-mode** PaymentIntent initialised for a tour and server amount displayed. No payment was confirmed or charged. |
+
+### Production-blocking data finding
+
+- The live tour tested at checkout was stored with `tourCurrency: "USD"` and `tourPrice: 450000`, so the server prepared a **USD 450,000** charge (Stripe amount ×100). The backend accepts any client-supplied `currency`/`tourCurrency` on create/update. The new agent forms always send `KRW`, but the backend should enforce the platform currency (KRW) server-side and existing non-KRW listings must be migrated before launch.
+
+### Environment incident during Phase 4 (not caused by Phase 4 work)
+
+- At about 04:05 KST the dev database `AURORA` was emptied (all collections 0 documents; later 1 member + the auto-created global chat) while MongoDB Compass was open and the backend was restarted from another terminal; `pages/index.tsx` and `TrendingDestinations.tsx` were edited concurrently in the same minute. Phase 4 executed only read-only counts against the database, unit tests without DB access, and E2E against an in-memory replica set (confirmed: the dev DB was unchanged after E2E). The test account `p4smk030619` and the test-mode tour hold created during verification were removed together with the reset. The matching Stripe **test-mode** PaymentIntent remains unconfirmed in the Stripe test account (no charge). Runtime checks needing listing data after 04:05 were therefore **BLOCKED**.
+
+### Telegram sign-in (Phase 4 addendum)
+
+| Area | Result |
+|---|---|
+| Backend contract | `telegramAuth(input: { code, redirectUri, codeVerifier })` exchanges the code at `https://oauth.telegram.org/token` (Basic auth + PKCE verifier) and verifies the RS256 `id_token` against Telegram JWKS (`iss`, `aud` = bot ID). Matches Telegram's live discovery document and official docs. Existing E2E covers member creation, reuse and nickname candidates. |
+| Backend fix | Telegram answers token errors with **HTTP 200** and `{"error":"invalid_grant"}`; the service only handled 4xx, so expired/invalid codes surfaced as "Telegram authentication failed". `error` bodies now map to `INVALID_TELEGRAM_AUTHORIZATION_CODE` (`invalid_client`/`unauthorized_client` → `TELEGRAM_AUTH_NOT_CONFIGURED`), with unit coverage. Verified live. |
+| Frontend | Sign-in and sign-up Telegram buttons start the OIDC authorization code flow (`scope=openid profile`, `state`, PKCE S256, 10-minute one-time request in `sessionStorage`); new `/auth/telegram/callback` page sends `code`, the same `redirectUri` and the verifier to `telegramAuth`, stores the AURORA JWT and returns to the safe `referrer`. `MemberAuthType.TELEGRAM` added; `TelegramAuth` errors are shown on the callback page (silent in the global error link). Back-navigation from a provider page re-enables social buttons. |
+| Browser verification | Authorization URL parameters and `code_challenge = BASE64URL(SHA256(verifier))` verified from both pages; callback verified for invalid code (backend reached Telegram), state mismatch, expired request and user cancellation; an existing session is kept when Telegram sign-in fails. |
+| **Required configuration (BLOCKED for a real login)** | Telegram currently rejects every local redirect URI (`redirect_uri required`). Register `http://localhost:3000/auth/telegram/callback` (and the production `https://<domain>/auth/telegram/callback`) in @BotFather → Bot Settings → Login Widget → Allowed URLs. If Telegram does not accept `http://localhost`, serve the frontend through an HTTPS tunnel, register that callback URL, open the site from the tunnel origin and add the origin to backend `CORS_ALLOWED_ORIGINS`. Keep the ID-token signing algorithm at the default RS256 (the backend verifies RS256 only). |
+
+### Remaining problems and recommended repairs
+
+| Item | File / area | Probable cause | Recommended repair |
+|---|---|---|---|
+| Non-KRW listings accepted | backend `property.service.ts`, `tour.service.ts` | Currency taken from client input | Force `KRW` on create/update (or validate `IsIn([KRW])`) and migrate existing data |
+| Agent forms not runtime-tested | `AgentPropertyForm.tsx`, `AgentTourForm.tsx` | No approved HOTEL/TOUR agent and DB reset | Test with an approved agent account: create, upload, edit, capacity below reserved seats |
+| Admin pages not runtime-tested | `pages/_admin/*` | No ADMIN credentials | Contract-validated only; run an authenticated admin crawl |
+| Google Sign-In button 403 | Google Cloud OAuth client | `http://localhost:3000` not an authorised JavaScript origin | Add the origin in Google Cloud Console |
+| Hot-linked Stitch images | `DestinationHero`, `SignIn`/`SignUp` editorial panels, `PropertyCard` removed | `lh3.googleusercontent.com/aida-public` URLs can expire (the CS ones already did) | Download into `public/img` |
+| Inconsistent amenity values in data (`WiFi` vs `WIFI`, `AIR_CONDITIONING`) | DB data | Older seed/import formats | Normalise to the canonical list in `libs/config.ts` |
+| Destination counters always 0 | backend destination service | `destinationProperties`/`destinationTours` not incremented for most listings | Recompute counters or increment on listing create/status change |
+| Agent search/type filters disabled | `MyHotels.tsx`, `MyTours.tsx` | `AgentPropertiesInquiry.search` only supports status | Add backend `text`/`propertyType` filters or keep disabled |
+| Confirmed-booking cancellation/refunds | backend payment | Product policy undefined (Phase 3) | Define policy before exposing UI |
+| No frontend automated tests / ESLint config | `aurora-next` | Not set up | Add ESLint config and Playwright smoke tests (crawler approach used here) |
+| Phone sign-up button leads to a 404 | `SignUp.tsx` → `/account/phone-signup` | Page was never created; backend has no phone OTP flow | Build the page on top of `signup` with `memberAuthType: PHONE`, or hide the button |
+
+---
+
 ## VERIFIED REMEDIATION STATUS — PHASE 3 (2026-10-10)
 
 The original findings below remain as the historical audit baseline. Phase 3 audited the complete booking/payment path and hardened only confirmed integrity defects. Phase 1 authentication/CORS fixes, Phase 2 pagination validation, Tour publication status, frontend design, and unrelated schemas were preserved.

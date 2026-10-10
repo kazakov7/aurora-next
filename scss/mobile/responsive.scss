@@ -1,0 +1,248 @@
+/* ==========================================================================
+   MOBILE RESPONSIVE OVERRIDES
+   Domain stylesheets are shared by #pc-wrap and #mobile-wrap. These rules adapt
+   their desktop grids to phones and tablets rendered in #mobile-wrap.
+   `#mobile-wrap#mobile-wrap` doubles the ID so overrides beat the deeply nested
+   (1 ID + n classes) desktop selectors without !important.
+   ========================================================================== */
+#mobile-wrap {
+	// Clip stray decorative overflow (zoomed hero images) without creating a scroll container,
+	// so position: sticky descendants keep working.
+	overflow-x: clip;
+
+	#main {
+		padding-top: 64px;
+	}
+}
+
+#mobile-wrap#mobile-wrap {
+	/* ---------- Side gutters: desktop containers are max-width centred with no inline padding ---------- */
+	.section-container,
+	.hero-content-container,
+	.hero-content,
+	.hero-content-wrapper,
+	.hero-inner-container,
+	.property-main-container,
+	.tour-main-container,
+	.destination-main-container,
+	.community-main-container,
+	.community-detail-breadcrumb-wrap,
+	.related-inner-container,
+	.community-detail-main,
+	.detail-container,
+	.content-wrapper,
+	.my-profile-container,
+	.member-profile-container,
+	.messenger-container,
+	.checkout-container,
+	.destination-cities-section,
+	.destination-reviews-section,
+	.about-grid-layout {
+		box-sizing: border-box;
+		padding-left: 16px;
+		padding-right: 16px;
+	}
+
+	/* ---------- Footer ---------- */
+	.footer-main {
+		padding: 40px 0 24px;
+
+		.footer-container {
+			padding: 0 16px;
+		}
+
+		.footer-top-grid {
+			grid-template-columns: 1fr 1fr;
+			gap: 28px 16px;
+
+			> :first-child {
+				grid-column: 1 / -1;
+			}
+		}
+	}
+
+	/* ---------- Home ---------- */
+	.hero-main-content {
+		flex-direction: column;
+		gap: 32px;
+
+		.hero-right {
+			width: 100%;
+			justify-content: center;
+		}
+	}
+
+	.filter-bar {
+		flex-wrap: wrap;
+		gap: 4px;
+
+		.filter-item,
+		.search-field-wrapper {
+			flex: 1 1 45%;
+			min-width: 0;
+			padding: 10px 12px;
+		}
+
+		.filter-item.date-item {
+			flex-basis: 100%;
+		}
+
+		.search-submit-btn {
+			flex: 1 1 100%;
+			border-radius: 9999px;
+		}
+	}
+
+	.section-header {
+		flex-wrap: wrap;
+		gap: 12px;
+	}
+
+	.stays-grid,
+	.curators-grid,
+	.experiences-section .tours-grid {
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		gap: 16px;
+	}
+
+	.bento-grid {
+		grid-template-columns: 1fr;
+
+		> * {
+			grid-column: auto !important;
+			grid-row: auto !important;
+		}
+	}
+
+	.card-desc {
+		max-width: 100%;
+	}
+
+	.card-bottom-row {
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+
+	/* ---------- Property / Tour listings ---------- */
+	.property-layout-flex,
+	.tour-layout-flex {
+		flex-direction: column;
+		gap: 20px;
+
+		.filter-sidebar {
+			width: 100%;
+			max-width: none;
+			position: static;
+		}
+	}
+
+	.property-listing-main,
+	.tour-listing-main {
+		width: 100%;
+		min-width: 0;
+	}
+
+	.listing-header-box {
+		padding: 16px;
+
+		.header-top-row {
+			flex-wrap: wrap;
+			gap: 12px;
+		}
+	}
+
+	.quick-filter-chips {
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.hotels-grid,
+	.tours-grid {
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: 16px;
+	}
+
+	.price-reserve-row,
+	.tour-price-row {
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	/* ---------- Property / Tour detail ---------- */
+	.detail-two-col-layout {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 24px;
+
+		> * {
+			min-width: 0;
+		}
+
+		.reservation-sticky-widget,
+		.tour-reservation-widget {
+			position: static;
+		}
+	}
+
+	.host-action-buttons,
+	.organizer-actions {
+		width: 100%;
+		flex-wrap: wrap;
+
+		> * {
+			flex: 1 1 140px;
+		}
+	}
+
+	/* ---------- Destinations / Community ---------- */
+	.continent-buttons-group,
+	.pills-scroll-wrapper {
+		min-width: 0;
+		max-width: 100%;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.community-cards-stack {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	/* ---------- Account ---------- */
+	.auth-split-card {
+		grid-template-columns: minmax(0, 1fr);
+		height: auto;
+		border-radius: 20px;
+
+		.editorial-panel {
+			display: none;
+		}
+
+		.form-panel {
+			min-width: 0;
+		}
+
+		.social-grid {
+			flex-wrap: wrap;
+
+			> * {
+				flex: 1 1 30%;
+				min-width: 0;
+			}
+		}
+	}
+}
+
+@media (max-width: 480px) {
+	#mobile-wrap#mobile-wrap {
+		.footer-main .footer-top-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.filter-bar {
+			.filter-item,
+			.search-field-wrapper {
+				flex-basis: 100%;
+			}
+		}
+	}
+}

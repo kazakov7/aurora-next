@@ -25,7 +25,7 @@ const formatDate = (value?: Date | string): string => {
 };
 
 const formatAmount = (amount: number, currency: string): string => {
-	const symbol = currency === 'KRW' ? '₩' : currency === 'USD' ? '$' : `${currency} `;
+	const symbol = currency === 'USD' ? '$' : currency === 'USD' ? '$' : `${currency} `;
 	return `${symbol}${amount.toLocaleString()}`;
 };
 

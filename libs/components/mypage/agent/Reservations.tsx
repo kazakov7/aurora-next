@@ -171,7 +171,7 @@ const Reservations = () => {
                     </td>
                     <td>
                       <div className="price-cell">
-                        <span className="price">${booking.bookingTotalPrice}</span>
+                        <span className="price">{booking.bookingCurrency === 'USD' ? '$' : '$'}{Number(booking.bookingTotalPrice || 0).toLocaleString()}</span>
                         <span className="unit">{booking.bookingCurrency}</span>
                       </div>
                     </td>

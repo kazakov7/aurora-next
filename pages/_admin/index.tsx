@@ -305,7 +305,7 @@ const AdminDashboardOverview: NextPage = () => {
                     </td>
                     <td>
                       <strong style={{ color: "#1a2b49" }}>
-                        {booking.bookingCurrency === "KRW" ? "₩" : "$"}
+                        {booking.bookingCurrency === "USD" ? "$" : "$"}
                         {booking.bookingTotalPrice.toLocaleString()}
                       </strong>
                     </td>

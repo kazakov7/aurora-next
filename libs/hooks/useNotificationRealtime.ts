@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { getJwtToken } from '../auth';
+import { AUTH_TOKEN_ERRORS, clearAuthSession, getJwtToken } from '../auth';
+import { getChatSocketUrl } from '../config';
 import { Notification } from '../types/notification/notification';
 
 interface UseNotificationRealtimeProps {
@@ -15,11 +16,6 @@ let sharedSocket: Socket | null = null;
 let sharedToken = '';
 const listeners = new Set<NotificationListener>();
 
-const getSocketUrl = (): string => {
-	const baseUrl = (process.env.NEXT_PUBLIC_AURORA_SOCKET_URL || process.env.NEXT_PUBLIC_API_SOCKET_URL || 'http://127.0.0.1:3007').replace(/\/$/, '');
-	return baseUrl.endsWith('/chat') ? baseUrl : `${baseUrl}/chat`;
-};
-
 const closeSharedSocket = (): void => {
 	sharedSocket?.disconnect();
 	sharedSocket = null;
@@ -30,7 +26,14 @@ const openSharedSocket = (token: string): void => {
 	if (sharedSocket && sharedToken === token) return;
 	closeSharedSocket();
 	sharedToken = token;
-	sharedSocket = io(getSocketUrl(), { auth: { token }, transports: ['websocket'], reconnection: true, reconnectionAttempts: 8 });
+	// auth callback re-reads the token on every reconnect so a refreshed JWT is used
+	sharedSocket = io(getChatSocketUrl(), { auth: (cb) => cb({ token: getJwtToken() }), transports: ['websocket'], reconnection: true, reconnectionAttempts: 8 });
+	sharedSocket.on('chat:error', (payload: { message?: string }) => {
+		if (payload?.message && AUTH_TOKEN_ERRORS.includes(payload.message)) {
+			closeSharedSocket();
+			clearAuthSession();
+		}
+	});
 	sharedSocket.on('notification:new', (notification: Notification) => {
 		listeners.forEach((listener) => listener(notification));
 	});

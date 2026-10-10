@@ -1,4 +1,5 @@
-#pc-wrap {
+#pc-wrap,
+#mobile-wrap {
 	.auth-page-container {
 		width: 100%;
 		min-height: calc(100vh - 64px);
@@ -378,24 +379,36 @@
 				}
 			}
 
-			/* SOCIAL BUTTONS */
-			.social-grid {
-				display: flex;
+			/* GOOGLE PRIMARY BUTTON WRAPPER */
+			.google-auth-wrapper {
 				width: 100%;
-				gap: 10px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				margin-bottom: 12px;
 
 				.google-auth-button {
-					flex: 1;
-					height: 40px;
 					display: flex;
-					align-items: center;
 					justify-content: center;
+					align-items: center;
+					min-height: 44px;
+					max-width: 400px;
+					width: 100%;
 
 					&.is-disabled {
 						opacity: 0.6;
 						pointer-events: none;
 					}
 				}
+			}
+
+			/* SOCIAL BUTTONS */
+			.social-grid {
+				display: flex;
+				width: 100%;
+				max-width: 400px;
+				margin: 0 auto;
+				gap: 10px;
 
 				.social-btn {
 					flex: 1;
@@ -422,6 +435,10 @@
 						width: 18px;
 						height: 18px;
 						flex-shrink: 0;
+					}
+
+					.material-symbols-outlined {
+						font-size: 18px;
 					}
 				}
 			}

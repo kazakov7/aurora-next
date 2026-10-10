@@ -7,6 +7,7 @@ import { DEFAULT_USER_AVATAR, getImageUrl } from "../config";
 import { GET_UNREAD_NOTIFICATION_COUNT } from "../../apollo/user/query";
 import { useNotificationRealtime } from "../hooks/useNotificationRealtime";
 import AuroraLogo3D from "./AuroraLogo3D";
+import GlobalSearch from "./common/GlobalSearch";
 
 const Top = () => {
   const router = useRouter();
@@ -111,19 +112,8 @@ const Top = () => {
           </nav>
         </div>
 
-        {/* Quick Search Input */}
-        <div className="nav-search">
-          <div className="search-input-wrapper">
-            <span className="material-symbols-outlined search-icon">
-              search
-            </span>
-            <input
-              type="text"
-              placeholder="Search places, stays..."
-              className="search-input"
-            />
-          </div>
-        </div>
+        {/* Real API-backed global search */}
+        <GlobalSearch />
 
         {/* Right Controls */}
         <div className="nav-right">

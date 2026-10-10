@@ -659,7 +659,7 @@ const AdminAgentVerificationPage: NextPage = () => {
                 <div className="info-col-card">
                   <span className="info-label">Registration Tax ID</span>
                   <span className="info-tax-id">
-                    {selectedAgent.businessNumber || "CHE-109.432.891"}
+                    {selectedAgent.businessNumber || "Not provided"}
                   </span>
                 </div>
               </div>

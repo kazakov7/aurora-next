@@ -10,48 +10,22 @@ interface TrendingDestinationsProps {
   error?: ApolloError;
 }
 
-type CardVariant = "wide" | "feature" | "compact";
-
-/** Kartalar soni kam bo'lganda gridni teng bo'lib to'ldiruvchi shablonlar **/
+/** Kartalar soni bo'yicha 12-ustunli gridni teng bo'lib to'ldiruvchi shablonlar **/
 const SPAN_OVERRIDES: Record<number, number[]> = {
   1: [12],
   2: [6, 6],
   3: [4, 4, 4],
+  4: [6, 6, 6, 6],
+  5: [4, 4, 4, 6, 6],
+  6: [4, 4, 4, 4, 4, 4],
 };
 
-/** Asosiy bento ritmi — joy nomiga emas, faqat pozitsiyaga bog'langan **/
-const SPAN_RHYTHM = [7, 5, 4, 8];
-
-/**
- * Har bir karta uchun ustun kengligini hisoblaydi. Oxirgi qator to'liq
- * bo'lmasa, oxirgi karta qolgan joyni egallaydi — shunda API nechta
- * destination qaytarishidan qat'i nazar grid teshiksiz chiqadi.
- */
 const buildSpans = (total: number): number[] => {
   if (total <= 0) return [];
-
   const override = SPAN_OVERRIDES[total];
   if (override) return override;
 
-  const spans = Array.from(
-    { length: total },
-    (_, index) => SPAN_RHYTHM[index % SPAN_RHYTHM.length],
-  );
-
-  let rowUsed = 0;
-  spans.forEach((span) => {
-    if (rowUsed + span > 12) rowUsed = 0;
-    rowUsed += span;
-  });
-  if (rowUsed < 12) spans[spans.length - 1] += 12 - rowUsed;
-
-  return spans;
-};
-
-const getVariant = (span: number): CardVariant => {
-  if (span >= 8) return "wide";
-  if (span === 7) return "feature";
-  return "compact";
+  return Array.from({ length: total }, () => 4);
 };
 
 const TrendingDestinations = ({
@@ -85,13 +59,10 @@ const TrendingDestinations = ({
             </p>
           ) : null}
           {destinations.map((destination, index) => {
-            const span = spans[index] ?? 6;
-            const variant = getVariant(span);
+            const span = spans[index] ?? 4;
             const imageUrl = getImageUrl(destination.destinationImages?.[0]);
-            const stays = destination.destinationProperties;
-            const tours = destination.destinationTours;
-            const hasStays = typeof stays === "number";
-            const hasTours = typeof tours === "number";
+            const stays = destination.destinationProperties ?? 0;
+            const tours = destination.destinationTours ?? 0;
 
             return (
               <Link
@@ -100,7 +71,7 @@ const TrendingDestinations = ({
                   pathname: "/destination/detail",
                   query: { id: destination._id },
                 }}
-                className={`bento-card is-${variant} span-${span}`}
+                className={`bento-card span-${span}`}
               >
                 <span
                   className="card-bg"
@@ -112,40 +83,32 @@ const TrendingDestinations = ({
                   aria-hidden="true"
                 />
                 <span className="card-scrim" aria-hidden="true" />
-                <span className="card-index" aria-hidden="true">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
 
+                {/* Top Glassmorphic Badges */}
+                <div className="card-top-bar">
+                  <span className="card-chip-country">
+                    <span className="material-symbols-outlined chip-icon">location_on</span>
+                    {destination.destinationCountry || "Global"}
+                  </span>
+                  <span className="card-chip-index">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </div>
+
+                {/* Modern Bottom Content */}
                 <div className="card-content">
-                  {destination.destinationCountry ? (
-                    <span className="card-overline">
-                      {destination.destinationCountry}
-                    </span>
-                  ) : null}
-
                   <h3 className="card-heading">
                     {destination.destinationName}
                   </h3>
 
-                  {variant !== "compact" && destination.destinationDesc ? (
-                    <p className="card-desc">{destination.destinationDesc}</p>
-                  ) : null}
-
                   <div className="card-footer">
-                    <span className="card-stats">
-                      {hasStays ? (
-                        <span className="stat">{stays} Stays</span>
-                      ) : null}
-                      {hasStays && hasTours ? (
-                        <span className="stat-dot" aria-hidden="true" />
-                      ) : null}
-                      {hasTours ? (
-                        <span className="stat">{tours} Tours</span>
-                      ) : null}
-                    </span>
+                    <div className="card-stats">
+                      <span className="stat">{stays} Stays</span>
+                      <span className="stat-dot" aria-hidden="true" />
+                      <span className="stat">{tours} Tours</span>
+                    </div>
 
-                    <span className="card-cue" aria-hidden="true">
-                      <span className="cue-label">View collection</span>
+                    <span className="card-action-btn" aria-hidden="true">
                       <span className="material-symbols-outlined cue-icon">
                         arrow_forward
                       </span>

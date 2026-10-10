@@ -37,7 +37,7 @@ const Home: NextPage = () => {
     getTrendingDestinations?: RankingList<Destination>;
   }>(GET_TRENDING_DESTINATIONS, {
     ...rankingOptions,
-    variables: { input: { limit: 4 } },
+    variables: { input: { limit: 6 } },
   });
   const properties = useQuery<{ getTopProperties?: RankingList<Property> }>(
     GET_TOP_PROPERTIES,

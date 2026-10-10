@@ -250,16 +250,16 @@ const DestinationDetail: NextPage = () => {
 			</Head>
 
 			{/* 1. Hero Section */}
-			<DestinationDetailHero
+			<DestinationDetailHero destination={destination} />
+
+			{/* 2. About Section */}
+			<DestinationAbout
 				destination={destination}
 				onLike={handleLikeDestination}
 				isLiked={isLiked}
 				likesCount={likesCount}
 				commentsCount={totalReviews || destination.destinationComments || 0}
 			/>
-
-			{/* 2. About Section */}
-			<DestinationAbout destination={destination} />
 
 			{/* 3. Explore Cities in Country */}
 			<DestinationCities destination={destination} cities={siblingCities} />

@@ -120,7 +120,7 @@ const MemberHeader: React.FC<MemberHeaderProps> = ({
 
 						<div className="location-row">
 							<span className="material-symbols-outlined">pin_drop</span>
-							<span>{member?.memberAddress || 'Global Citizen'}</span>
+							<span>{member?.memberAddress || 'Location not provided'}</span>
 						</div>
 
 						<p className="bio-text">

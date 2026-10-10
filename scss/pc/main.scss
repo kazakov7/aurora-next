@@ -11,13 +11,16 @@
 @import "./community/community.scss";
 @import "./community/community-detail.scss";
 @import "./account/join.scss";
+@import "./account/auth-callback.scss";
 @import "./mypage/myProfile.scss";
+@import "./mypage/agent-listing-form.scss";
 @import "./member.scss";
 @import "./chat/chat.scss";
 @import "./cs/cs.scss";
 @import "./admin/admin.scss";
 @import "./checkout.scss";
 @import "./common/buttons.scss";
+@import "./common/global-search.scss";
 
 body {
   margin: 0;
@@ -250,6 +253,11 @@ button {
     }
   }
 
+}
+
+/* Content wrapper and footer are shared by the desktop and mobile layouts */
+#pc-wrap,
+#mobile-wrap {
   /* ==========================================================================
 	   MAIN CONTENT WRAPPER
 	   ========================================================================== */

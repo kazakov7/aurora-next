@@ -91,8 +91,8 @@ const MyProfileBookings: React.FC = () => {
 		URL.revokeObjectURL(url);
 	};
 
-	const formatPrice = (amount: number, currency = 'KRW') => new Intl.NumberFormat('ko-KR', {
-		style: 'currency', currency, maximumFractionDigits: currency === 'KRW' ? 0 : 2,
+	const formatPrice = (amount: number, currency = 'USD') => new Intl.NumberFormat('en-US', {
+		style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 2,
 	}).format(amount);
 
 	const formatDateRange = (inDate?: Date | string, outDate?: Date | string) => {
@@ -218,7 +218,7 @@ const MyProfileBookings: React.FC = () => {
 							booking.bookingStatus === BookingStatus.CONFIRMED ||
 							booking.bookingStatus === BookingStatus.PENDING;
 						const isCancelled = booking.bookingStatus === BookingStatus.CANCELLED;
-						const isCancellable = [BookingStatus.PENDING, BookingStatus.CONFIRMED].includes(booking.bookingStatus);
+						const isCancellable = booking.bookingStatus === BookingStatus.PENDING;
 
 						return (
 							<article key={booking._id} className="booking-card-item">

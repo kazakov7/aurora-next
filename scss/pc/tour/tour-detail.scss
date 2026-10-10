@@ -1,6 +1,7 @@
 /** TOUR DETAIL PAGE SCSS **/
 
-#pc-wrap {
+#pc-wrap,
+#mobile-wrap {
   .tour-detail-page {
     width: 100%;
     background-color: $surface;
@@ -1068,7 +1069,7 @@
       }
 
       /* ==========================================================================
-			   4. RIGHT COLUMN STICKY RESERVATION WIDGET (KRW)
+			   4. RIGHT COLUMN STICKY RESERVATION WIDGET (USD)
 			   ========================================================================== */
       .tour-reservation-widget {
         position: sticky;
@@ -2098,7 +2099,8 @@
   }
 }
 
-#pc-wrap {
+#pc-wrap,
+#mobile-wrap {
   .tour-detail-page {
     .detail-empty-state,
     .tour-gallery-empty-state {

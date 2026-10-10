@@ -25,7 +25,7 @@ const CS: NextPage = () => {
 				<div className="cs-page">
 					{/* HERO SECTION */}
 					<section className="hero-section">
-						<div className="hero-bg" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida/AEtjO1V5YkJrjFIoa8V_NOprDw7wdWsa-LZQkYhgCrD4Je0raUdF05gAi113qTs2S36WViyWC4KlAI2GRz8nvgo0uuSE_eZTt9WypPO9AThqnkyfSIdImcmLQ9f_BH-gSOz4S9-s0f6Iy5QfQKPHa4z6IzbjgsrNkVqh-YQUvn0JUwpCJAuCYKYuGuT0KI3P1DiS0gefpIjjuucAjjg5C_c6vfZF4LENVjvM67aFv1No0CWhuIdj4A-I-1j7WBg')" }}></div>
+						<div className="hero-bg" style={{ backgroundImage: "url('/img/banner/hero_traveler.jpg')" }}></div>
 						<div className="hero-overlay"></div>
 						<div className="hero-content">
 							<div className="concierge-badge">
@@ -283,7 +283,7 @@ const CS: NextPage = () => {
 									</div>
 									
 									<div className="inset-card">
-										<div className="bg-img" style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida/AEtjO1VL_pfMx57PUv1LKuBs-d-fqGUY1ORiXOYT4H2lSxfvWQZgAG7GNWn3HickLRqsTPvq6IAGFfxfH-s7Gm5-RvxK9Aq2OPC6G_cV1QB8SJWTnezIuKP9bMufIhaqRi3U1R2juNaiOI58wUE-quySDgphyGCohQxhUttV-pJesnXBhC-Rwi31X5WNIo_wUHhbYHscCiliRg23FIY6pmUmMfIdugeUa_7QdkRhA-_80gXyS0OG1YS3p5r76_o')" }}></div>
+										<div className="bg-img" style={{ backgroundImage: "url('/img/banner/hero-tour.jpg')" }}></div>
 										<div className="overlay"></div>
 										<div className="inset-content">
 											<div className="eyebrow">Geneva Base Dispatch</div>

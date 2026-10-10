@@ -9,8 +9,8 @@ interface ExperiencesProps {
   error?: Error;
 }
 
-const formatKrw = (price?: number) =>
-  typeof price === "number" ? `₩${price.toLocaleString()}` : "Price on request";
+const formatUsd = (price?: number) =>
+  typeof price === "number" ? `$${price.toLocaleString()}` : "Price on request";
 
 const Experiences = ({ tours, loading, error }: ExperiencesProps) => {
   return (
@@ -94,7 +94,7 @@ const Experiences = ({ tours, loading, error }: ExperiencesProps) => {
                     <div className="price-col">
                       <span className="from-text">From</span>
                       <span className="price-text">
-                        {formatKrw(tour.tourPrice)}
+                        {formatUsd(tour.tourPrice)}
                       </span>
                     </div>
                     <span className="feature-badge">{tour.tourStatus}</span>

@@ -65,7 +65,7 @@ const PropertyPaymentForm = ({ paymentAmount, onClose, onPaymentConfirmed, onSub
 					Cancel
 				</button>
 				<button type="submit" className="payment-confirm-btn" disabled={!stripe || submitting}>
-					{submitting ? 'Confirming...' : `Pay ₩${paymentAmount.toLocaleString()}`}
+					{submitting ? 'Confirming...' : `Pay $${paymentAmount.toLocaleString()}`}
 				</button>
 			</div>
 		</form>

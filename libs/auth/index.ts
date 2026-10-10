@@ -2,8 +2,20 @@ import decodeJWT from 'jwt-decode';
 import { initialUser, userVar } from '../../apollo/store';
 import { CustomJwtPayload } from '../types/customJwtPayload';
 import { DEFAULT_USER_AVATAR } from '../config';
+import { Member } from '../types/member/member';
 
 export const ACCESS_TOKEN_KEY = 'accessToken';
+
+/** Backend messages (Messages enum) that mean the stored token is no longer accepted **/
+export const AUTH_TOKEN_ERRORS = [
+	'jwt expired',
+	'invalid signature',
+	'jwt malformed',
+	'invalid token',
+	'You are not authenticated, please login first!',
+	'Your session has expired, please login again!',
+	'Bearer token is not provided!',
+];
 
 export const isTokenExpired = (jwtToken: string): boolean => {
 	try {
@@ -72,6 +84,32 @@ export const updateUserInfo = (jwtToken: string) => {
 		console.warn('Invalid JWT token', err);
 		return false;
 	}
+};
+
+export const updateUserFromMember = (member: Member): void => {
+	userVar({
+		_id: member._id,
+		memberType: member.memberType,
+		memberStatus: member.memberStatus,
+		memberAuthType: member.memberAuthType,
+		memberPhone: member.memberPhone ?? '',
+		memberEmail: member.memberEmail ?? '',
+		memberNick: member.memberNick ?? '',
+		memberFullName: member.memberFullName ?? '',
+		memberImage: member.memberImage || DEFAULT_USER_AVATAR,
+		memberAddress: member.memberAddress ?? '',
+		memberDesc: member.memberDesc ?? '',
+		memberFollowers: member.memberFollowers ?? 0,
+		memberFollowings: member.memberFollowings ?? 0,
+		memberLikes: member.memberLikes ?? 0,
+		memberViews: member.memberViews ?? 0,
+		memberComments: member.memberComments ?? 0,
+		memberProperties: member.memberProperties ?? 0,
+		memberTours: member.memberTours ?? 0,
+		memberArticles: member.memberArticles ?? 0,
+		memberPoints: member.memberPoints ?? 0,
+		memberRank: member.memberRank ?? 0,
+	});
 };
 export const clearAuthSession = (): void => {
 	if (typeof window !== 'undefined') {

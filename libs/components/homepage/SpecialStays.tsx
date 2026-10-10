@@ -15,7 +15,7 @@ interface SpecialStaysProps {
 	error?: Error;
 }
 
-const formatKrw = (price?: number) => (typeof price === 'number' ? `₩${price.toLocaleString()}` : 'Price on request');
+const formatUsd = (price?: number) => (typeof price === 'number' ? `$${price.toLocaleString()}` : 'Price on request');
 
 const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
 	const user = useReactiveVar(userVar);
@@ -84,7 +84,7 @@ const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
 									</div>
 									{stay.propertyDesc ? <p className="stay-desc">{stay.propertyDesc}</p> : null}
 									<div className="card-bottom-row">
-										<div className="price-box"><span className="price-val">{formatKrw(stay.pricePerNight)}</span><span className="price-unit"> / night</span></div>
+										<div className="price-box"><span className="price-val">{formatUsd(stay.pricePerNight)}</span><span className="price-unit"> / night</span></div>
 										<button className="reserve-btn" type="button" onClick={(event) => { event.stopPropagation(); }}>Reserve</button>
 									</div>
 								</div>

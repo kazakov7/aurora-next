@@ -267,7 +267,7 @@ const AdminToursPage: NextPage = () => {
                     </td>
                     <td>
                       <span style={{ fontWeight: 600, color: "#006194" }}>
-                        {tour.tourCurrency === "KRW" ? "₩" : "$"}
+                        {tour.tourCurrency === "USD" ? "$" : "$"}
                         {tour.tourPrice.toLocaleString()}
                       </span>
                     </td>

@@ -5,7 +5,14 @@ import { useMutation } from "@apollo/client";
 import { GOOGLE_AUTH, SIGN_UP } from "../../../apollo/user/mutation";
 import { MemberAuthType, MemberType } from "../../enums/member.enum";
 import { setJwtToken, updateUserInfo } from "../../auth";
-import { getGoogleAuthErrorMessage, getSafeAuthRedirect, renderGoogleSignInButton, startKakaoAuthorization } from "../../auth/social";
+import {
+  getGoogleAuthErrorMessage,
+  getSafeAuthRedirect,
+  getTelegramAuthErrorMessage,
+  renderGoogleSignInButton,
+  startKakaoAuthorization,
+  startTelegramAuthorization,
+} from "../../auth/social";
 import {
   sweetMixinErrorAlert,
   sweetTopSmallSuccessAlert,
@@ -31,7 +38,18 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
   /** APOLLO **/
   const [signupMutation, { loading }] = useMutation(SIGN_UP);
   const [googleAuth, { loading: googleLoading }] = useMutation(GOOGLE_AUTH);
-  const [socialLoading, setSocialLoading] = useState<"google" | "kakao" | "">("");
+  const [socialLoading, setSocialLoading] = useState<"google" | "kakao" | "telegram" | "">("");
+
+  /** LIFECYCLES **/
+  // Returning with the browser back button from a provider page restores this page from bfcache:
+  // re-enable the social buttons instead of leaving them stuck in a loading state.
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) setSocialLoading("");
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
 
   /** SIGN UP **/
   const handleSubmit = async (e: React.FormEvent) => {
@@ -143,8 +161,16 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
     }
   };
 
-  const handleUnsupportedSocial = (provider: string) => {
-    sweetMixinErrorAlert(`${provider} sign-up is not available yet.`);
+  const handleTelegramSignup = async () => {
+    if (socialLoading) return;
+    try {
+      setSocialLoading("telegram");
+      // Telegram OIDC creates the AURORA member on first sign-in, so sign-up and sign-in share one flow
+      await startTelegramAuthorization(router.query.referrer);
+    } catch (error) {
+      setSocialLoading("");
+      sweetMixinErrorAlert(getTelegramAuthErrorMessage(error));
+    }
   };
 
   /** PHONE SIGN UP **/
@@ -372,13 +398,17 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
             <span>or continue with</span>
           </div>
 
-          {/* SOCIAL AUTH */}
-          <div className="social-grid">
+          {/* Google Primary Button */}
+          <div className="google-auth-wrapper">
             <div
               ref={googleButtonRef}
               className={`google-auth-button ${loading || googleLoading || socialLoading ? "is-disabled" : ""}`}
               aria-label="Continue with Google"
             />
+          </div>
+
+          {/* Secondary Social Options */}
+          <div className="social-grid">
 
             <button
               type="button"
@@ -396,7 +426,8 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
             <button
               type="button"
               className="social-btn"
-              onClick={() => handleUnsupportedSocial("Telegram")}
+              onClick={handleTelegramSignup}
+              disabled={loading || googleLoading || Boolean(socialLoading)}
             >
               <svg fill="#229ED9" viewBox="0 0 24 24">
                 <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.477-1.635z" />

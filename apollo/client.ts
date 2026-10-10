@@ -5,7 +5,7 @@ import createUploadLink from 'apollo-upload-client/public/createUploadLink.js';
 import { WebSocketLink } from '@apollo/client/link/ws';
 import { getMainDefinition } from '@apollo/client/utilities';
 import { onError } from '@apollo/client/link/error';
-import { clearAuthSession, getJwtToken } from '../libs/auth';
+import { AUTH_TOKEN_ERRORS, clearAuthSession, getJwtToken } from '../libs/auth';
 import { sweetErrorAlert } from '../libs/sweetAlert';
 import { Message } from '../libs/enums/common.enum';
 import { socketVar } from './store';
@@ -16,6 +16,7 @@ const SILENT_ERROR_OPERATIONS = [
 	'Signup',
 	'GoogleAuth',
 	'KakaoAuth',
+	'TelegramAuth',
 	'LikeTargetProperty',
 	'LikeTargetTour',
 	'LikeTargetDestination',
@@ -24,8 +25,10 @@ const SILENT_ERROR_OPERATIONS = [
 	'Unsubscribe',
 	'CreateComment',
 	'CreateDestinationReview',
+	'VerifyMemberSession',
 ];
-const AUTH_TOKEN_ERRORS = ['jwt expired', 'invalid signature', 'jwt malformed', 'invalid token', 'You are not authenticated, please login first!'];
+/** Credential exchanges legitimately answer UNAUTHENTICATED without meaning the stored session expired **/
+const AUTH_EXCHANGE_OPERATIONS = ['Login', 'Signup', 'GoogleAuth', 'KakaoAuth', 'TelegramAuth'];
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
 
@@ -104,9 +107,11 @@ function createIsomorphicLink() {
 				const isSilent = SILENT_ERROR_OPERATIONS.includes(operation.operationName);
 				const hadToken = !!operation.getContext().headers?.Authorization;
 				let sessionExpired = false;
-				graphQLErrors.forEach(({ message }) => {
+				const isAuthExchange = AUTH_EXCHANGE_OPERATIONS.includes(operation.operationName);
+				graphQLErrors.forEach(({ message, extensions }) => {
 					console.log(`[GraphQL error]: ${message}`);
-					if (hadToken && AUTH_TOKEN_ERRORS.includes(message)) {
+					const isAuthError = AUTH_TOKEN_ERRORS.includes(message) || extensions?.code === 'UNAUTHENTICATED';
+					if (hadToken && !isAuthExchange && isAuthError) {
 						sessionExpired = true;
 						return;
 					}

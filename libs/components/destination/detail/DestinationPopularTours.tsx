@@ -46,7 +46,7 @@ const DestinationPopularTours = ({
 					const imgUrl = getImageUrl(tour.tourImages?.[0], DEFAULT_TOUR_IMAGE);
 					const inclusions = tour.tourAdditionalInfo?.split(',').map((value) => value.trim()).filter(Boolean).slice(0, 3) || [];
 					const isLiked = tour.meLiked?.[0]?.myFavorite;
-					const priceKRW = tour.tourPrice;
+					const priceUSD = tour.tourPrice;
 					const rating = typeof tour.tourRating === 'number' ? tour.tourRating.toFixed(2) : '—';
 					const departure =
 						tour.tourDepartureCity || tour.tourDestinationCity || destinationName;
@@ -117,7 +117,7 @@ const DestinationPopularTours = ({
 
 								<div className="card-price-package-row">
 									<div className="price-box">
-										<span className="price-amount">{typeof priceKRW === 'number' ? `₩${priceKRW.toLocaleString()}` : 'Price on request'}</span>
+										<span className="price-amount">{typeof priceUSD === 'number' ? `$${priceUSD.toLocaleString()}` : 'Price on request'}</span>
 										<span className="price-subtext">per person</span>
 									</div>
 									<Link href={`/tour/detail?id=${tour._id}`} className="view-package-btn">

@@ -216,7 +216,7 @@ const MyProfileWishlist: React.FC = () => {
                   "No description provided."
                 }
                 pricePerNight={price || 0}
-                currency={currency || "KRW"}
+                currency={currency || "USD"}
                 priceUnit={isTour ? "/ person" : "/ night"}
                 isLiked={true}
                 onLikeToggle={(e) => handleRemoveFavorite(e, item)}

@@ -1,6 +1,8 @@
 @import '../variables.scss';
 @import './general.scss';
+@import './common/navbar.scss';
 @import './member.scss';
+@import './responsive.scss';
 
 #mobile-wrap {
 	width: 100%;

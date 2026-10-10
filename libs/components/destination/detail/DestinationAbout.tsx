@@ -1,102 +1,116 @@
-import React from 'react';
+import React, { useState } from 'react';
+import Link from 'next/link';
 import { Destination } from '../../../types/destination/destination';
+import { sweetTopSmallSuccessAlert } from '../../../sweetAlert';
 
 interface DestinationAboutProps {
 	destination: Destination;
+	onLike: (destinationId: string) => void;
+	isLiked: boolean;
+	likesCount: number;
+	commentsCount: number;
 }
 
-const countryLanguages: Record<string, { lang: string; note: string }> = {
-	'South Korea': {
-		lang: 'Korean (Hangul)',
-		note: 'English widely spoken in luxury hotels and transit hubs',
-	},
-	Japan: {
-		lang: 'Japanese',
-		note: 'English signage ubiquitous across rail networks & resorts',
-	},
-	Switzerland: {
-		lang: 'German, French, Italian',
-		note: 'English fluently spoken throughout hospitality sanctuaries',
-	},
-	Germany: {
-		lang: 'German',
-		note: 'High English proficiency in cosmopolitan metropolitan centers',
-	},
-};
+const DestinationAbout = ({ destination, onLike, isLiked, likesCount, commentsCount }: DestinationAboutProps) => {
+	const [shareCopied, setShareCopied] = useState(false);
+	const ratingValue = typeof destination.destinationRating === 'number' ? destination.destinationRating.toFixed(1) : '—';
+	const reviewsTotal = destination.destinationReviews ?? 0;
+	const hasCoordinates = typeof destination.latitude === 'number' && typeof destination.longitude === 'number';
 
-const DestinationAbout = ({ destination }: DestinationAboutProps) => {
-	const langInfo = countryLanguages[destination.destinationCountry] || {
-		lang: 'National Language',
-		note: 'English spoken in luxury hotels and international hubs',
+	/** HANDLERS **/
+	const handleShare = async () => {
+		if (typeof window === 'undefined' || !navigator.clipboard) return;
+
+		await navigator.clipboard.writeText(window.location.href);
+		setShareCopied(true);
+		await sweetTopSmallSuccessAlert('Link copied to clipboard!', 900);
+		setTimeout(() => setShareCopied(false), 2000);
 	};
 
 	return (
 		<section className="destination-about-section">
 			<div className="about-grid-layout">
-				{/* Left Editorial Column */}
 				<div className="editorial-col">
-					<span className="editorial-eyebrow">Culture &amp; Heritage</span>
-					<h2 className="editorial-heading">Experience {destination.destinationName}</h2>
-					<p className="editorial-paragraph">
-						{destination.destinationDesc ||
-							`From the historic temples and royal heritage to the vibrant coastal seafood markets and serene landscapes of ${destination.destinationName}. Every corner seamlessly weaves dynastic architecture, pioneering gastronomy, high-speed rail connectivity, and tranquil retreats into an unforgettable journey.`}
-					</p>
+					<nav aria-label="Breadcrumb" className="about-breadcrumb-nav">
+						<Link href="/destination">Destinations</Link>
+						<span>/</span>
+						<Link href={{ pathname: '/destination', query: { search: destination.destinationCountry } }}>
+							{destination.destinationCountry}
+						</Link>
+						<span>/</span>
+						<strong>{destination.destinationName}</strong>
+					</nav>
 
-					<div className="editorial-chips-row">
-						<div className="feature-pill">
-							<span className="material-symbols-outlined icon-feature">train</span>
-							<span className="feature-text">High-Speed Rail Connected</span>
+					<span className="editorial-eyebrow">Destination overview</span>
+					<h1 className="editorial-heading">Discover {destination.destinationName}</h1>
+					{destination.destinationDesc ? (
+						<p className="editorial-paragraph">{destination.destinationDesc}</p>
+					) : (
+						<p className="editorial-paragraph is-empty">Destination description is not available yet.</p>
+					)}
+
+					<div className="about-stats-row" aria-label="Destination engagement">
+						<div className="about-stat">
+							<span className="material-symbols-outlined">visibility</span>
+							<strong>{(destination.destinationViews ?? 0).toLocaleString()}</strong>
+							<span>views</span>
 						</div>
-						<div className="feature-pill">
-							<span className="material-symbols-outlined icon-feature">restaurant</span>
-							<span className="feature-text">Culinary Capital</span>
+						<button type="button" className={`about-stat ${isLiked ? 'liked' : ''}`} onClick={() => onLike(destination._id)} aria-label="Like destination">
+							<span className="material-symbols-outlined" style={{ fontVariationSettings: isLiked ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+							<strong>{likesCount.toLocaleString()}</strong>
+							<span>likes</span>
+						</button>
+						<a href="#traveler-comments" className="about-stat" title="Jump to traveler comments">
+							<span className="material-symbols-outlined">chat_bubble</span>
+							<strong>{commentsCount.toLocaleString()}</strong>
+							<span>comments</span>
+						</a>
+						<div className="about-stat rating">
+							<span className="material-symbols-outlined">star</span>
+							<strong>{ratingValue}</strong>
+							<span>({reviewsTotal.toLocaleString()} reviews)</span>
 						</div>
-						<div className="feature-pill">
-							<span className="material-symbols-outlined icon-feature">verified_user</span>
-							<span className="feature-text">World-Class Safety Index</span>
-						</div>
+					</div>
+
+					<div className="about-actions-row">
+						<button type="button" className="about-action secondary" onClick={handleShare}>
+							<span className="material-symbols-outlined">share</span>
+							{shareCopied ? 'Copied Link!' : 'Share'}
+						</button>
+						<a href="#cities" className="about-action primary">
+							Explore Cities
+							<span className="material-symbols-outlined">arrow_downward</span>
+						</a>
 					</div>
 				</div>
 
-				{/* Right Quick Info Cards */}
 				<div className="quick-info-col">
-					{/* Card 1: Capital / Focus City */}
 					<div className="quick-info-card">
-						<div className="icon-badge badge-primary">
-							<span className="material-symbols-outlined">location_city</span>
-						</div>
+						<div className="icon-badge badge-primary"><span className="material-symbols-outlined">location_city</span></div>
 						<div className="card-info-content">
-							<div className="card-kicker">Center</div>
+							<div className="card-kicker">Destination</div>
 							<h3 className="card-heading">{destination.destinationName}</h3>
-							<p className="card-desc">
-								Metropolitan heart of architecture, culture &amp; scenic landscapes
-							</p>
+							<p className="card-desc">{destination.destinationCountry}</p>
 						</div>
 					</div>
 
-					{/* Card 2: Region */}
 					<div className="quick-info-card">
-						<div className="icon-badge badge-secondary">
-							<span className="material-symbols-outlined">public</span>
-						</div>
+						<div className="icon-badge badge-secondary"><span className="material-symbols-outlined">hotel</span></div>
 						<div className="card-info-content">
-							<div className="card-kicker">Country &amp; Region</div>
-							<h3 className="card-heading">{destination.destinationCountry}</h3>
-							<p className="card-desc">
-								Curated global sanctuary with discreet hospitality standards
-							</p>
+							<div className="card-kicker">Available stays</div>
+							<h3 className="card-heading">{(destination.destinationProperties ?? 0).toLocaleString()} properties</h3>
+							<p className="card-desc">Real accommodations listed for this destination</p>
 						</div>
 					</div>
 
-					{/* Card 3: Language */}
 					<div className="quick-info-card">
-						<div className="icon-badge badge-surface">
-							<span className="material-symbols-outlined">translate</span>
-						</div>
+						<div className="icon-badge badge-surface"><span className="material-symbols-outlined">explore</span></div>
 						<div className="card-info-content">
-							<div className="card-kicker">Language</div>
-							<h3 className="card-heading">{langInfo.lang}</h3>
-							<p className="card-desc">{langInfo.note}</p>
+							<div className="card-kicker">Available tours</div>
+							<h3 className="card-heading">{(destination.destinationTours ?? 0).toLocaleString()} tours</h3>
+							<p className="card-desc">
+								{hasCoordinates ? `${destination.latitude?.toFixed(4)}, ${destination.longitude?.toFixed(4)}` : 'Coordinates are not available yet'}
+							</p>
 						</div>
 					</div>
 				</div>

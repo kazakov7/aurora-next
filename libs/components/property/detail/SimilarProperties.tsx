@@ -114,7 +114,7 @@ const SimilarProperties = ({ currentPropertyId, city }: SimilarPropertiesProps) 
 
 								<div className="card-bottom-price">
 									<span className="price-tag">
-										₩{item.pricePerNight?.toLocaleString()}
+										${item.pricePerNight?.toLocaleString()}
 									</span>
 									<span className="night-tag">/ night</span>
 								</div>

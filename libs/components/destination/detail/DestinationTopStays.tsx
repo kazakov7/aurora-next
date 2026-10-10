@@ -47,7 +47,7 @@ const DestinationTopStays = ({
 					const imgUrl = getImageUrl(property.propertyImages?.[0], DEFAULT_PROPERTY_IMAGE);
 					const pillLabel = property.propertyType;
 					const isLiked = property.meLiked?.[0]?.myFavorite;
-					const priceKRW = property.pricePerNight;
+					const priceUSD = property.pricePerNight;
 					const rating = typeof property.propertyRating === 'number' ? property.propertyRating.toFixed(2) : '—';
 					const reviews = property.propertyReviews ?? 0;
 
@@ -110,7 +110,7 @@ const DestinationTopStays = ({
 
 								<div className="card-price-reserve-row">
 									<div className="price-box">
-										<span className="price-amount">{typeof priceKRW === 'number' ? `₩${priceKRW.toLocaleString()}` : 'Price on request'}</span>
+										<span className="price-amount">{typeof priceUSD === 'number' ? `$${priceUSD.toLocaleString()}` : 'Price on request'}</span>
 										<span className="price-unit"> / night</span>
 									</div>
 									<Link href={`/property/detail?id=${property._id}`} className="reserve-btn-link">

@@ -1,0 +1,301 @@
+/* ==========================================================================
+   AGENT LISTING FORM MODAL (AgentPropertyForm / AgentTourForm)
+   Mirrors the community write-story modal visual language.
+   ========================================================================== */
+#pc-wrap,
+#mobile-wrap {
+	.agent-listing-modal-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 1200;
+		background-color: rgba(20, 27, 43, 0.6);
+		backdrop-filter: blur(6px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 20px;
+
+		.agent-listing-modal-card {
+			width: 100%;
+			max-width: 760px;
+			max-height: calc(100vh - 40px);
+			overflow-y: auto;
+			background-color: #ffffff;
+			border-radius: 20px;
+			box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+			padding: 28px;
+			display: flex;
+			flex-direction: column;
+			gap: 20px;
+			animation: modalAppear 0.25s ease-out;
+
+			.modal-header {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+
+				.title-group {
+					display: flex;
+					align-items: center;
+					gap: 8px;
+
+					.icon {
+						font-size: 24px;
+						color: $primary;
+					}
+
+					h2 {
+						font-size: 18px;
+						font-weight: 700;
+						color: $on-surface;
+						margin: 0;
+					}
+				}
+
+				.close-btn {
+					border: none;
+					background: transparent;
+					color: $outline;
+					cursor: pointer;
+					padding: 4px;
+					border-radius: 50%;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+
+					&:hover {
+						background-color: $surface-container-low;
+						color: $on-surface;
+					}
+				}
+			}
+
+			.modal-form {
+				display: flex;
+				flex-direction: column;
+				gap: 16px;
+
+				.form-row {
+					display: grid;
+					grid-template-columns: repeat(2, minmax(0, 1fr));
+					gap: 12px;
+
+					&.three {
+						grid-template-columns: repeat(3, minmax(0, 1fr));
+					}
+
+					&.four {
+						grid-template-columns: repeat(4, minmax(0, 1fr));
+					}
+				}
+
+				.form-group {
+					display: flex;
+					flex-direction: column;
+					gap: 6px;
+					min-width: 0;
+
+					label {
+						font-size: 12px;
+						font-weight: 600;
+						color: $on-surface;
+					}
+
+					.form-input,
+					.form-select,
+					.form-textarea {
+						width: 100%;
+						box-sizing: border-box;
+						padding: 10px 14px;
+						border-radius: 10px;
+						border: 1px solid rgba(191, 199, 210, 0.6);
+						background-color: #ffffff;
+						font-family: inherit;
+						font-size: 13px;
+						color: $on-surface;
+						outline: none;
+						transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+						&:focus {
+							border-color: $primary;
+							box-shadow: 0 0 0 3px rgba(0, 97, 148, 0.1);
+						}
+
+						&:disabled {
+							background-color: $surface-container-low;
+							color: $on-surface-variant;
+						}
+					}
+
+					.form-textarea {
+						resize: vertical;
+					}
+
+					.inline-pair {
+						display: grid;
+						grid-template-columns: 1fr 1fr;
+						gap: 6px;
+					}
+				}
+
+				.chip-grid {
+					display: flex;
+					flex-wrap: wrap;
+					gap: 8px;
+
+					.chip {
+						padding: 6px 12px;
+						border-radius: 9999px;
+						border: 1px solid rgba(191, 199, 210, 0.6);
+						background: #ffffff;
+						font-size: 12px;
+						color: $on-surface-variant;
+						cursor: pointer;
+						transition: all 0.15s ease;
+
+						&:hover {
+							border-color: $primary;
+							color: $primary;
+						}
+
+						&.active {
+							background: $primary;
+							border-color: $primary;
+							color: #ffffff;
+						}
+					}
+				}
+
+				.image-grid {
+					display: grid;
+					grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+					gap: 10px;
+
+					.image-thumb,
+					.image-add {
+						position: relative;
+						aspect-ratio: 4 / 3;
+						border-radius: 10px;
+						overflow: hidden;
+					}
+
+					.image-thumb {
+						border: 1px solid rgba(220, 226, 247, 0.6);
+
+						img {
+							width: 100%;
+							height: 100%;
+							object-fit: cover;
+						}
+
+						button {
+							position: absolute;
+							top: 6px;
+							right: 6px;
+							width: 24px;
+							height: 24px;
+							border: none;
+							border-radius: 50%;
+							background: rgba(0, 0, 0, 0.55);
+							color: #ffffff;
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							cursor: pointer;
+
+							.material-symbols-outlined {
+								font-size: 16px;
+							}
+						}
+					}
+
+					.image-add {
+						display: flex;
+						flex-direction: column;
+						align-items: center;
+						justify-content: center;
+						gap: 4px;
+						border: 1px dashed rgba(0, 97, 148, 0.45);
+						background: rgba(0, 97, 148, 0.04);
+						color: $primary;
+						font-size: 12px;
+						font-weight: 600;
+						cursor: pointer;
+
+						&.disabled {
+							opacity: 0.6;
+							cursor: progress;
+						}
+					}
+				}
+
+				.modal-actions-bar {
+					display: flex;
+					align-items: center;
+					justify-content: flex-end;
+					gap: 10px;
+					margin-top: 8px;
+
+					.cancel-btn {
+						padding: 10px 18px;
+						border-radius: 9999px;
+						border: 1px solid rgba(191, 199, 210, 0.6);
+						background: transparent;
+						font-size: 13px;
+						font-weight: 600;
+						color: $on-surface-variant;
+						cursor: pointer;
+
+						&:hover {
+							background-color: $surface-container-low;
+						}
+					}
+
+					.publish-btn {
+						padding: 10px 22px;
+						border-radius: 9999px;
+						border: none;
+						background-color: $primary;
+						color: #ffffff;
+						font-size: 13px;
+						font-weight: 600;
+						cursor: pointer;
+						box-shadow: 0 2px 8px rgba(0, 97, 148, 0.25);
+
+						&:hover {
+							background-color: $primary-container;
+						}
+
+						&:disabled {
+							opacity: 0.6;
+							cursor: not-allowed;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+#mobile-wrap .agent-listing-modal-overlay {
+	padding: 10px;
+	align-items: flex-end;
+
+	.agent-listing-modal-card {
+		padding: 20px 16px;
+		max-height: calc(100vh - 20px);
+		border-radius: 18px 18px 12px 12px;
+
+		.modal-form .form-row,
+		.modal-form .form-row.three,
+		.modal-form .form-row.four {
+			grid-template-columns: 1fr;
+		}
+	}
+}
+
+@media (max-width: 760px) {
+	#pc-wrap .agent-listing-modal-overlay .agent-listing-modal-card .modal-form .form-row.four {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}

@@ -179,7 +179,7 @@ const MyProfileSettings: React.FC = () => {
                     type="file" 
                     ref={fileInputRef} 
                     onChange={handleImageUpload} 
-                    accept="image/*" 
+                    accept="image/jpeg, image/png" 
                     style={{ display: 'none' }} 
                 />
              </div>

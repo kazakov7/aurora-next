@@ -4,7 +4,9 @@ import { GET_AGENT_TOURS } from "../../../../apollo/user/query";
 import { TourStatus } from "../../../enums/tour.enum";
 import { Direction } from "../../../enums/common.enum";
 import { useRouter } from "next/router";
-import { getImageUrl } from "../../../../libs/config";
+import { DEFAULT_TOUR_IMAGE, getImageUrl } from "../../../../libs/config";
+import { Tour } from "../../../types/tour/tour";
+import AgentTourForm from "./AgentTourForm";
 import moment from "moment";
 import { sweetErrorHandling } from "../../../../libs/sweetAlert";
 
@@ -13,8 +15,9 @@ const MyTours = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [tourStatus, setTourStatus] = useState<TourStatus | "">("");
+  const [formTarget, setFormTarget] = useState<Tour | null | undefined>(undefined);
 
-  const { data, loading } = useQuery(GET_AGENT_TOURS, {
+  const { data, loading, refetch } = useQuery(GET_AGENT_TOURS, {
     fetchPolicy: "network-only",
     onError: (err) => sweetErrorHandling(err),
     variables: {
@@ -34,8 +37,11 @@ const MyTours = () => {
   const total = data?.getAgentTours?.metaCounter?.[0]?.total || 0;
   const totalPages = Math.ceil(total / 10) || 1;
 
-  const handleAddTour = () => {
-    router.push("/tour/create"); // Standard flow
+  /** HANDLERS **/
+  const handleAddTour = () => setFormTarget(null);
+  const handleFormSaved = () => {
+    setFormTarget(undefined);
+    void refetch();
   };
 
   return (
@@ -110,7 +116,7 @@ const MyTours = () => {
                     <td>
                       <div className="item-cell">
                         <img
-                          src={getImageUrl(tour?.tourImages?.[0], "/img/placeholder.png")}
+                          src={getImageUrl(tour?.tourImages?.[0], DEFAULT_TOUR_IMAGE)}
                           alt={tour.tourName}
                         />
                         <div className="item-info">
@@ -118,7 +124,7 @@ const MyTours = () => {
                             {tour.tourName}
                           </span>
                           <span className="item-loc" style={{ marginTop: '4px' }}>
-                            {tour.tourLocation || 'Curated Expedition'}
+                            {[tour.tourDestinationCity, tour.tourDepartureCountry].filter(Boolean).join(' · ') || 'Location not provided'}
                           </span>
                         </div>
                       </div>
@@ -142,7 +148,7 @@ const MyTours = () => {
                     </td>
                     <td>
                       <div className="price-cell">
-                        <span className="price">${tour.tourPrice}</span>
+                        <span className="price">${Number(tour.tourPrice || 0).toLocaleString()}</span>
                         <span className="unit">{tour.tourCurrency}</span>
                       </div>
                     </td>
@@ -154,7 +160,7 @@ const MyTours = () => {
                     </td>
                     <td>
                       <div className="actions-cell">
-                        <button onClick={() => router.push(`/_admin/tours?id=${tour._id}`)}>
+                        <button onClick={() => setFormTarget(tour)}>
                           Edit
                         </button>
                       </div>
@@ -166,7 +172,7 @@ const MyTours = () => {
           </table>
         </div>
         
-        {totalPages > 0 && (
+        {total > 0 && (
           <div className="pagination-footer">
             <span className="page-info">
               Showing <strong>{(page - 1) * 10 + 1}–{Math.min(page * 10, total)}</strong> of <strong>{total}</strong> tours
@@ -191,6 +197,9 @@ const MyTours = () => {
           </div>
         )}
       </div>
+      {formTarget !== undefined && (
+        <AgentTourForm tour={formTarget} onClose={() => setFormTarget(undefined)} onSaved={handleFormSaved} />
+      )}
     </div>
   );
 };

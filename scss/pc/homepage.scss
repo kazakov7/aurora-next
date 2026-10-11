@@ -205,20 +205,25 @@
               position: relative;
               width: 480px;
               height: 600px;
-              border-radius: 220px 220px 24px 24px;
+              border-radius: 260px 48px 260px 48px;
               overflow: hidden;
               background: #e2e8f0;
               border: 6px solid #ffffff;
-              box-shadow: 0 28px 56px -12px rgba(15, 23, 42, 0.16),
-                0 10px 24px -4px rgba(15, 23, 42, 0.08),
-                0 0 0 1px rgba(0, 0, 0, 0.04);
+              box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04),
+                0 0 0 7px rgba(255, 255, 255, 0.75),
+                0 0 0 9px rgba(0, 97, 148, 0.12),
+                0 32px 68px -14px rgba(15, 23, 42, 0.18),
+                0 12px 28px -6px rgba(15, 23, 42, 0.08);
               transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
                 box-shadow 0.5s ease;
 
               &:hover {
-                transform: translateY(-6px);
-                box-shadow: 0 36px 68px -12px rgba(15, 23, 42, 0.22),
-                  0 14px 28px -4px rgba(15, 23, 42, 0.1);
+                transform: translateY(-8px) scale(1.01);
+                box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04),
+                  0 0 0 8px rgba(255, 255, 255, 0.9),
+                  0 0 0 11px rgba(0, 97, 148, 0.2),
+                  0 40px 78px -14px rgba(15, 23, 42, 0.24),
+                  0 16px 32px -6px rgba(15, 23, 42, 0.1);
 
                 .hero-img {
                   transform: scale(1.045);
@@ -265,7 +270,7 @@
               .hero-img-box {
                 width: 420px;
                 height: 520px;
-                border-radius: 200px 200px 22px 22px;
+                border-radius: 220px 40px 220px 40px;
               }
             }
 
@@ -278,7 +283,7 @@
                 width: 380px;
                 height: 480px;
                 max-width: 100%;
-                border-radius: 180px 180px 20px 20px;
+                border-radius: 200px 36px 200px 36px;
               }
             }
 

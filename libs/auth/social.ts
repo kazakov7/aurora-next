@@ -28,6 +28,7 @@ declare global {
 					width?: number;
 					locale?: string;
 				}) => void;
+				prompt?: (momentListener?: (notification: unknown) => void) => void;
 				};
 			};
 		};
@@ -117,10 +118,10 @@ export const renderGoogleSignInButton = async (
 		type: 'standard',
 		theme: 'outline',
 		size: 'large',
-		text: 'continue_with',
+		text: 'signin',
 		shape: 'rectangular',
 		logo_alignment: 'left',
-		width: 400,
+		width: 240,
 		...(locale ? { locale } : {}),
 	});
 };

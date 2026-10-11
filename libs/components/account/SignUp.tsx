@@ -40,7 +40,9 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
   /** APOLLO **/
   const [signupMutation, { loading }] = useMutation(SIGN_UP);
   const [googleAuth, { loading: googleLoading }] = useMutation(GOOGLE_AUTH);
-  const [socialLoading, setSocialLoading] = useState<"google" | "kakao" | "telegram" | "">("");
+  const [socialLoading, setSocialLoading] = useState<
+    "google" | "kakao" | "telegram" | ""
+  >("");
 
   /** LIFECYCLES **/
   // Returning with the browser back button from a provider page restores this page from bfcache:
@@ -81,9 +83,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
     }
 
     if (!agreedTerms) {
-      sweetMixinErrorAlert(
-        t("auth.signUp.agreementRequired"),
-      );
+      sweetMixinErrorAlert(t("auth.signUp.agreementRequired"));
       return;
     }
 
@@ -103,7 +103,9 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
         updateUserInfo(data.signup.accessToken);
 
         await sweetTopSmallSuccessAlert(
-          t("auth.signUp.welcomeToAurora", { memberNick: data.signup.memberNick }),
+          t("auth.signUp.welcomeToAurora", {
+            memberNick: data.signup.memberNick,
+          }),
           1000,
         );
 
@@ -112,39 +114,50 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
     } catch (err: any) {
       console.error("Sign up error:", err);
 
-      sweetMixinErrorAlert(
-        tError(err, "auth.signUp.registrationFailed"),
-      );
+      sweetMixinErrorAlert(tError(err, "auth.signUp.registrationFailed"));
     }
   };
 
   /** SOCIAL AUTH **/
-  const handleGoogleSignup = useCallback(async (credential: string) => {
-    if (socialLoading) return;
-    try {
-      setSocialLoading("google");
-      const { data } = await googleAuth({ variables: { input: { credential } } });
-      const member = data?.googleAuth;
-      if (!member?.accessToken) throw new Error("SOCIAL_AUTH_FAILED");
-      setJwtToken(member.accessToken);
-      updateUserInfo(member.accessToken);
-      await sweetTopSmallSuccessAlert(t("auth.signUp.welcomeToAurora", { memberNick: member.memberNick }), 800);
-      await router.push(getSafeAuthRedirect(router.query.referrer));
-    } catch (error) {
-      sweetMixinErrorAlert(getGoogleAuthErrorMessage(error, "sign-up"));
-    } finally {
-      setSocialLoading("");
-    }
-  }, [googleAuth, router, socialLoading, t]);
+  const handleGoogleSignup = useCallback(
+    async (credential: string) => {
+      if (socialLoading) return;
+      try {
+        setSocialLoading("google");
+        const { data } = await googleAuth({
+          variables: { input: { credential } },
+        });
+        const member = data?.googleAuth;
+        if (!member?.accessToken) throw new Error("SOCIAL_AUTH_FAILED");
+        setJwtToken(member.accessToken);
+        updateUserInfo(member.accessToken);
+        await sweetTopSmallSuccessAlert(
+          t("auth.signUp.welcomeToAurora", { memberNick: member.memberNick }),
+          800,
+        );
+        await router.push(getSafeAuthRedirect(router.query.referrer));
+      } catch (error) {
+        sweetMixinErrorAlert(getGoogleAuthErrorMessage(error, "sign-up"));
+      } finally {
+        setSocialLoading("");
+      }
+    },
+    [googleAuth, router, socialLoading, t],
+  );
 
   useEffect(() => {
     const container = googleButtonRef.current;
     if (!container) return;
     let disposed = false;
-    void renderGoogleSignInButton(container, (credential) => {
-      if (!disposed) void handleGoogleSignup(credential);
-    }, locale).catch((error) => {
-      if (!disposed) sweetMixinErrorAlert(getGoogleAuthErrorMessage(error, "sign-up"));
+    void renderGoogleSignInButton(
+      container,
+      (credential) => {
+        if (!disposed) void handleGoogleSignup(credential);
+      },
+      locale,
+    ).catch((error) => {
+      if (!disposed)
+        sweetMixinErrorAlert(getGoogleAuthErrorMessage(error, "sign-up"));
     });
     return () => {
       disposed = true;
@@ -197,7 +210,9 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
               <span className="meta-title">{t("auth.signUp.badge")}</span>
             </div>
 
-            <span className="meta-version">{t("auth.signUp.joinAuroraV24")}</span>
+            <span className="meta-version">
+              {t("auth.signUp.joinAuroraV24")}
+            </span>
           </div>
 
           {/* HEADING */}
@@ -262,7 +277,9 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
             <div className="two-cols">
               <div className="field-group">
                 <div className="field-header">
-                  <label htmlFor="pass-input">{t("auth.signUp.passwordRequiredLabel")}</label>
+                  <label htmlFor="pass-input">
+                    {t("auth.signUp.passwordRequiredLabel")}
+                  </label>
                 </div>
 
                 <div className="input-wrapper">
@@ -296,7 +313,9 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
 
               <div className="field-group">
                 <div className="field-header">
-                  <label htmlFor="confirm-pass-input">{t("auth.signUp.confirmPassword")}</label>
+                  <label htmlFor="confirm-pass-input">
+                    {t("auth.signUp.confirmPassword")}
+                  </label>
                 </div>
 
                 <div className="input-wrapper">
@@ -349,31 +368,27 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
                   {tx("auth.signUp.agreeTerms", {
                     terms: (
                       <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
 
-                      sweetMixinErrorAlert(
-                        t("auth.signUp.termsNotice"),
-                      );
-                    }}
-                  >
-                    {t("auth.signUp.termsOfService")}
-                  </a>
+                          sweetMixinErrorAlert(t("auth.signUp.termsNotice"));
+                        }}
+                      >
+                        {t("auth.signUp.termsOfService")}
+                      </a>
                     ),
                     privacy: (
                       <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
 
-                      sweetMixinErrorAlert(
-                        t("auth.signUp.privacyNotice"),
-                      );
-                    }}
-                  >
-                    {t("auth.signUp.privacyPolicy")}
-                  </a>
+                          sweetMixinErrorAlert(t("auth.signUp.privacyNotice"));
+                        }}
+                      >
+                        {t("auth.signUp.privacyPolicy")}
+                      </a>
                     ),
                   })}
                   .
@@ -404,17 +419,52 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
             <span>{t("auth.orContinueWith")}</span>
           </div>
 
-          {/* Google Primary Button */}
-          <div className="google-auth-wrapper">
-            <div
-              ref={googleButtonRef}
-              className={`google-auth-button ${loading || googleLoading || socialLoading ? "is-disabled" : ""}`}
-              aria-label={t("auth.continueWithGoogle")}
-            />
-          </div>
-
           {/* Secondary Social Options */}
           <div className="social-grid">
+            {/* Google */}
+            <div className="social-btn-wrapper google-btn-wrapper">
+              <button
+                type="button"
+                className="social-btn"
+                title={t("auth.continueWithGoogle")}
+                disabled={loading || googleLoading || Boolean(socialLoading)}
+                onClick={() => {
+                  if (
+                    typeof window !== "undefined" &&
+                    window.google?.accounts?.id
+                  ) {
+                    window.google.accounts.id.prompt?.();
+                  }
+                }}
+              >
+                <svg className="google-icon" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.98 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                  />
+                </svg>
+                <span>Google</span>
+              </button>
+              <div
+                ref={googleButtonRef}
+                className={`google-overlay-container ${
+                  loading || googleLoading || socialLoading ? "is-disabled" : ""
+                }`}
+                aria-hidden="true"
+              />
+            </div>
 
             <button
               type="button"
@@ -510,9 +560,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
         <div className="bottom-content">
           <span className="feature-eyebrow">{t("auth.panel.eyebrow")}</span>
           <h2>{t("auth.panel.title")}</h2>
-          <p>
-            {t("auth.panel.text")}
-          </p>
+          <p>{t("auth.panel.text")}</p>
           <div className="indicator-pills">
             <span className="pill active"></span>
             <span className="pill inactive"></span>

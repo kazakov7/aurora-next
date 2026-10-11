@@ -21,6 +21,14 @@
     "uzbek": "O‘zbekcha",
     "select": "Tilni tanlang"
   },
+  "mobileMaintenance": {
+    "badge": "Mobil versiya yangilanmoqda",
+    "imageAlt": "Sayohat chamadonini ta’mirlayotgan do‘stona robot",
+    "title": "Biz ozgina sayqal beryapmiz",
+    "description": "Mobil versiyamizda ta’mirlash ishlari ketmoqda. Sizga yanada qulayroq tajriba tayyorlayapmiz.",
+    "desktopNote": "Hozircha desktop versiyadan foydalanib turing",
+    "soon": "Tez orada yana shu yerda uchrashamiz ✦"
+  },
   "footer": {
     "description": "Unutilmas sayohatlar, ortiqcha tashvishlarsiz. Qulaylik, xotirjamlik va yuqori darajadagi dam olishni qadrlaydiganlar uchun dunyoning eng sara manzillari.",
     "explore": "Kashf eting",

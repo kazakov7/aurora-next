@@ -62,37 +62,6 @@
 	}
 
 	/* ---------- Home ---------- */
-	.hero-main-content {
-		flex-direction: column;
-		gap: 32px;
-
-		.hero-right {
-			width: 100%;
-			justify-content: center;
-		}
-	}
-
-	.filter-bar {
-		flex-wrap: wrap;
-		gap: 4px;
-
-		.filter-item,
-		.search-field-wrapper {
-			flex: 1 1 45%;
-			min-width: 0;
-			padding: 10px 12px;
-		}
-
-		.filter-item.date-item {
-			flex-basis: 100%;
-		}
-
-		.search-submit-btn {
-			flex: 1 1 100%;
-			border-radius: 9999px;
-		}
-	}
-
 	.section-header {
 		flex-wrap: wrap;
 		gap: 12px;
@@ -237,12 +206,6 @@
 		.footer-main .footer-top-grid {
 			grid-template-columns: 1fr;
 		}
-
-		.filter-bar {
-			.filter-item,
-			.search-field-wrapper {
-				flex-basis: 100%;
-			}
-		}
 	}
 }
+

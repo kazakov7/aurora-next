@@ -1,4 +1,11 @@
 /* Mobile-only foundations. Desktop remains owned by scss/pc. */
+@media (max-width: 767px) {
+	#pc-wrap {
+		max-width: 100vw;
+		overflow-x: clip;
+	}
+}
+
 #mobile-wrap#mobile-wrap {
 	min-width: 0;
 	min-height: 100dvh;
@@ -26,6 +33,12 @@
 		touch-action: manipulation;
 	}
 
+	input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='date']),
+	select,
+	textarea {
+		font-size: 16px !important;
+	}
+
 	button,
 	select,
 	input[type='date'],
@@ -35,18 +48,18 @@
 
 	#main {
 		min-width: 0;
-		padding-top: calc(116px + env(safe-area-inset-top));
+		padding-top: calc(104px + env(safe-area-inset-top, 0px));
 	}
 
 	.header-navbar {
 		top: 0;
-		height: calc(116px + env(safe-area-inset-top));
-		padding-top: env(safe-area-inset-top);
+		height: calc(104px + env(safe-area-inset-top, 0px));
+		padding-top: env(safe-area-inset-top, 0px);
 		box-shadow: 0 1px 12px rgba(15, 23, 42, 0.07);
 
 		.header-container {
 			position: relative;
-			height: 64px;
+			height: 54px;
 			padding: 0 14px;
 			justify-content: space-between;
 		}
@@ -55,8 +68,8 @@
 			flex: 0 0 auto;
 
 			.logo-link section {
-				width: 96px;
-				height: 58px !important;
+				width: 92px;
+				height: 50px !important;
 			}
 		}
 
@@ -65,17 +78,25 @@
 
 			.nav-search {
 				position: absolute;
-				top: 64px;
+				top: 54px;
 				left: 14px;
 				right: 14px;
 				width: auto;
 
 				.search-input {
-					height: 40px;
+					height: 38px;
+					min-height: 38px;
 					padding-right: 14px;
 					background: $surface-container-low;
 					border: 1px solid rgba(191, 199, 210, 0.45);
-					font-size: 14px;
+					font-size: 16px !important;
+				}
+
+				.global-search-results {
+					position: absolute;
+					top: calc(100% + 8px);
+					left: 0;
+					right: 0;
 				}
 			}
 
@@ -88,9 +109,9 @@
 			.icon-btn,
 			.mobile-menu-trigger {
 				display: inline-grid;
-				width: 42px;
-				height: 42px;
-				min-height: 42px;
+				width: 40px;
+				height: 40px;
+				min-height: 40px;
 				place-items: center;
 				border: 0;
 				border-radius: 50%;

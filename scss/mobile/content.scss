@@ -11,8 +11,8 @@
 			}
 
 			.hero-title {
-				font-size: clamp(38px, 11vw, 52px);
-				line-height: 1.06;
+				font-size: clamp(34px, 10vw, 46px);
+				line-height: 1.08;
 			}
 
 			.hero-description {
@@ -26,39 +26,151 @@
 		}
 
 		.section-header,
-		.section-title-row {
+		.section-title-row,
+		.section-header-row {
 			align-items: flex-start;
 			flex-direction: column;
-			gap: 12px;
+			gap: 10px;
 		}
 
-		.section-title {
-			font-size: clamp(27px, 8vw, 36px);
+		.section-title,
+		.section-main-title,
+		.cities-main-heading,
+		.travelers-heading,
+		.reviews-main-title,
+		.continue-heading {
+			font-size: clamp(24px, 7vw, 30px) !important;
 			line-height: 1.18;
 		}
 
-		.about-grid-layout,
-		.cities-grid,
-		.reviews-grid,
-		.travelers-grid,
-		.continue-grid {
-			grid-template-columns: 1fr;
+		.destination-about-section {
+			padding: 32px 16px;
+
+			.about-grid-layout {
+				grid-template-columns: minmax(0, 1fr);
+				gap: 24px;
+				padding-inline: 0;
+
+				.editorial-col .editorial-heading {
+					font-size: clamp(26px, 7.5vw, 34px);
+				}
+			}
 		}
 
-		.destination-stays-grid,
-		.destination-tours-grid,
-		.top-stays-grid,
-		.popular-tours-grid {
-			display: flex;
+		.destination-cities-section,
+		.destination-top-stays-section,
+		.destination-popular-tours-section,
+		.destination-continue-exploring-section {
+			padding: 32px 16px;
+
+			.cities-header-row,
+			.section-header-row,
+			.section-header-box {
+				margin-bottom: 18px;
+			}
+		}
+
+		.cities-cards-grid,
+		.stays-cards-grid,
+		.tours-cards-grid,
+		.continue-cards-grid {
+			display: flex !important;
+			flex-wrap: nowrap;
 			gap: 14px;
 			overflow-x: auto;
-			padding-bottom: 12px;
+			margin-inline: -16px;
+			padding: 2px 16px 12px;
+			scroll-padding-inline: 16px;
 			scroll-snap-type: x mandatory;
+			-webkit-overflow-scrolling: touch;
+			scrollbar-width: none;
+
+			&::-webkit-scrollbar {
+				display: none;
+			}
 
 			> * {
-				width: min(84vw, 320px);
-				min-width: min(84vw, 320px);
+				flex: 0 0 min(82vw, 300px);
+				width: min(82vw, 300px) !important;
+				min-width: min(82vw, 300px) !important;
+				max-width: min(82vw, 300px) !important;
 				scroll-snap-align: start;
+			}
+		}
+
+		.destination-travelers-section {
+			padding: 32px 0;
+
+			.section-header-box {
+				padding-inline: 16px;
+				margin-bottom: 18px;
+			}
+
+			.travelers-cards-grid {
+				display: grid;
+				grid-template-columns: minmax(0, 1fr);
+				gap: 14px;
+				padding-inline: 16px;
+
+				.traveler-card-item {
+					min-width: 0;
+					width: 100%;
+					max-width: 100%;
+					padding: 20px 16px;
+					box-sizing: border-box;
+
+					.traveler-avatar {
+						width: 68px;
+						height: 68px;
+					}
+
+					.traveler-name {
+						max-width: 100%;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+					}
+
+					.traveler-bio {
+						white-space: normal;
+						display: -webkit-box;
+						-webkit-line-clamp: 2;
+						-webkit-box-orient: vertical;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						word-break: break-word;
+						max-width: 100%;
+					}
+
+					.card-actions-row {
+						min-width: 0;
+						flex-wrap: wrap;
+						gap: 10px;
+					}
+				}
+			}
+		}
+
+		.destination-reviews-section {
+			padding: 32px 16px;
+
+			.reviews-header-bar {
+				margin-bottom: 20px;
+				padding-bottom: 16px;
+			}
+
+			.review-composer-card {
+				padding: 16px;
+				margin-bottom: 20px;
+			}
+
+			.reviews-list-container .review-card-item {
+				padding: 16px;
+
+				.review-header-flex {
+					flex-wrap: wrap;
+					gap: 10px;
+				}
 			}
 		}
 	}
@@ -208,8 +320,8 @@
 
 	.cs-page {
 		.hero-section {
-			min-height: 430px;
-			padding-block: 54px;
+			min-height: 360px;
+			padding-block: 40px;
 
 			.hero-content {
 				width: 100%;
@@ -217,8 +329,8 @@
 			}
 
 			.hero-title {
-				font-size: clamp(34px, 10vw, 46px);
-				line-height: 1.08;
+				font-size: clamp(30px, 9vw, 42px);
+				line-height: 1.1;
 			}
 
 			.search-container,
@@ -241,37 +353,80 @@
 		.content-wrapper {
 			width: 100%;
 			padding-inline: 16px;
-		}
 
-		.topics-grid,
-		.contact-grid,
-		.support-form .form-row {
-			grid-template-columns: 1fr;
-		}
+			.topics-grid,
+			.contact-grid,
+			.support-form .form-row {
+				grid-template-columns: minmax(0, 1fr);
+			}
 
-		.section-header {
-			align-items: flex-start;
-			flex-direction: column;
-		}
+			.section-header {
+				align-items: flex-start;
+				flex-direction: column;
+			}
 
-		.topic-card,
-		.faq-item,
-		.info-card,
-		.form-panel,
-		.help-callout {
-			border-radius: 16px;
-		}
+			.section-header-simple .section-title {
+				font-size: clamp(26px, 7.5vw, 32px);
+			}
 
-		.form-actions,
-		.callout-actions {
-			align-items: stretch;
-			flex-direction: column;
-			gap: 12px;
+			.faq-section .faq-container {
+				padding: 16px;
 
-			.submit-btn,
-			.action-btn {
+				.faq-item {
+					padding: 16px;
+
+					summary {
+						font-size: 16px;
+					}
+				}
+			}
+
+			.contact-section .contact-grid .form-panel {
+				padding: 22px 16px;
+			}
+
+			.topic-card,
+			.faq-item,
+			.info-card,
+			.form-panel,
+			.help-callout {
+				border-radius: 16px;
+			}
+
+			.help-callout {
+				flex-direction: column;
+				align-items: stretch;
+				padding: 22px 18px;
+				gap: 16px;
+
+				.callout-text {
+					width: 100%;
+
+					h3 {
+						font-size: 22px;
+					}
+
+					p {
+						max-width: 100%;
+						font-size: 14px;
+					}
+				}
+			}
+
+			.form-actions,
+			.callout-actions {
 				width: 100%;
+				align-items: stretch;
+				flex-direction: column;
+				gap: 10px;
+
+				.submit-btn,
+				.action-btn {
+					width: 100%;
+					justify-content: center;
+				}
 			}
 		}
 	}
 }
+

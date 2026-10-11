@@ -101,173 +101,175 @@ const Top = () => {
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
-    <header className="header-navbar">
-      <div className="header-container">
-        {/* Logo & Navigation */}
-        <div className="nav-left">
-          <Link href="/" className="logo-link">
-            <section style={{ height: 80 }}>
-              <AuroraLogo3D align="left" />
-            </section>
-          </Link>
+    <>
+      <header className="header-navbar">
+        <div className="header-container">
+          {/* Logo & Navigation */}
+          <div className="nav-left">
+            <Link href="/" className="logo-link">
+              <section style={{ height: 80 }}>
+                <AuroraLogo3D align="left" />
+              </section>
+            </Link>
 
-          <nav className="nav-menu">
-            <Link
-              href="/"
-              className={`nav-item ${activePath === "home" ? "active" : ""}`}
-            >
-              {t("navigation.home")}
-            </Link>
-            <Link
-              href="/property"
-              className={`nav-item ${activePath === "hotels" ? "active" : ""}`}
-            >
-              {t("navigation.hotels")}
-            </Link>
-            <Link
-              href="/tour"
-              className={`nav-item ${activePath === "tours" ? "active" : ""}`}
-            >
-              {t("navigation.tours")}
-            </Link>
-            <Link
-              href="/destination"
-              className={`nav-item ${
-                activePath === "destinations" ? "active" : ""
-              }`}
-            >
-              {t("navigation.destinations")}
-            </Link>
-            <Link
-              href="/community"
-              className={`nav-item ${
-                activePath === "community" ? "active" : ""
-              }`}
-            >
-              {t("navigation.community")}
-            </Link>
-            {user?._id && (
+            <nav className="nav-menu">
               <Link
-                href="/mypage"
+                href="/"
+                className={`nav-item ${activePath === "home" ? "active" : ""}`}
+              >
+                {t("navigation.home")}
+              </Link>
+              <Link
+                href="/property"
+                className={`nav-item ${activePath === "hotels" ? "active" : ""}`}
+              >
+                {t("navigation.hotels")}
+              </Link>
+              <Link
+                href="/tour"
+                className={`nav-item ${activePath === "tours" ? "active" : ""}`}
+              >
+                {t("navigation.tours")}
+              </Link>
+              <Link
+                href="/destination"
                 className={`nav-item ${
-                  activePath === "my-page" ? "active" : ""
+                  activePath === "destinations" ? "active" : ""
                 }`}
               >
-                {t("navigation.myPage")}
+                {t("navigation.destinations")}
               </Link>
-            )}
-            <Link
-              href="/chat"
-              className={`nav-item ${activePath === "chat" ? "active" : ""}`}
-            >
-              {t("navigation.chat")}
-            </Link>
-            <Link
-              href="/cs"
-              className={`nav-item ${
-                activePath === "customer-service" ? "active" : ""
-              }`}
-            >
-              {t("navigation.customerService")}
-            </Link>
-          </nav>
-        </div>
-
-        {/* Right Controls */}
-        <div className="nav-right">
-          {/* Real API-backed global search */}
-          <GlobalSearch />
-
-          <Link
-            href={
-              user?._id ? "/mypage?category=notifications" : "/account/join"
-            }
-          >
-            <button
-              aria-label={t("navigation.notifications")}
-              className="icon-btn relative"
-              type="button"
-            >
-              <span className="material-symbols-outlined">notifications</span>
-              {unreadCount > 0 && (
-                <span className="notification-dot">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
+              <Link
+                href="/community"
+                className={`nav-item ${
+                  activePath === "community" ? "active" : ""
+                }`}
+              >
+                {t("navigation.community")}
+              </Link>
+              {user?._id && (
+                <Link
+                  href="/mypage"
+                  className={`nav-item ${
+                    activePath === "my-page" ? "active" : ""
+                  }`}
+                >
+                  {t("navigation.myPage")}
+                </Link>
               )}
-            </button>
-          </Link>
-
-          <div className="lang-currency language-switcher">
-            <span className="flag-sphere-3d" aria-hidden="true">
-              <img
-                src={LOCALE_CONFIG[locale]?.flag || "/img/flags/us.svg"}
-                alt=""
-              />
-            </span>
-            <span className="lang-current-label">
-              {LOCALE_CONFIG[locale]?.short || "EN"}
-            </span>
-            <span
-              className="material-symbols-outlined chevron"
-              aria-hidden="true"
-            >
-              expand_more
-            </span>
-            <label className="sr-only" htmlFor="site-language-selector">
-              {t("language.select")}
-            </label>
-            <select
-              id="site-language-selector"
-              className="lang-native-select"
-              value={locale}
-              onChange={(event) =>
-                void changeLocale(event.target.value as AppLocale)
-              }
-              aria-label={t("language.select")}
-            >
-              {APP_LOCALES.map((code) => (
-                <option value={code} key={code}>
-                  {LOCALE_CONFIG[code].full}
-                </option>
-              ))}
-            </select>
+              <Link
+                href="/chat"
+                className={`nav-item ${activePath === "chat" ? "active" : ""}`}
+              >
+                {t("navigation.chat")}
+              </Link>
+              <Link
+                href="/cs"
+                className={`nav-item ${
+                  activePath === "customer-service" ? "active" : ""
+                }`}
+              >
+                {t("navigation.customerService")}
+              </Link>
+            </nav>
           </div>
 
-          {user?._id ? (
-            <div className="user-profile-menu">
-              <Link href="/mypage" className="avatar-link">
+          {/* Right Controls */}
+          <div className="nav-right">
+            {/* Real API-backed global search */}
+            <GlobalSearch />
+
+            <Link
+              href={
+                user?._id ? "/mypage?category=notifications" : "/account/join"
+              }
+            >
+              <button
+                aria-label={t("navigation.notifications")}
+                className="icon-btn relative"
+                type="button"
+              >
+                <span className="material-symbols-outlined">notifications</span>
+                {unreadCount > 0 && (
+                  <span className="notification-dot">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+            </Link>
+
+            <div className="lang-currency language-switcher">
+              <span className="flag-sphere-3d" aria-hidden="true">
                 <img
-                  src={getImageUrl(user?.memberImage, DEFAULT_USER_AVATAR)}
+                  src={LOCALE_CONFIG[locale]?.flag || "/img/flags/us.svg"}
+                  alt=""
+                />
+              </span>
+              <span className="lang-current-label">
+                {LOCALE_CONFIG[locale]?.short || "EN"}
+              </span>
+              <span
+                className="material-symbols-outlined chevron"
+                aria-hidden="true"
+              >
+                expand_more
+              </span>
+              <label className="sr-only" htmlFor="site-language-selector">
+                {t("language.select")}
+              </label>
+              <select
+                id="site-language-selector"
+                className="lang-native-select"
+                value={locale}
+                onChange={(event) =>
+                  void changeLocale(event.target.value as AppLocale)
+                }
+                aria-label={t("language.select")}
+              >
+                {APP_LOCALES.map((code) => (
+                  <option value={code} key={code}>
+                    {LOCALE_CONFIG[code].full}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {user?._id ? (
+              <div className="user-profile-menu">
+                <Link href="/mypage" className="avatar-link">
+                  <img
+                    src={getImageUrl(user?.memberImage, DEFAULT_USER_AVATAR)}
+                    alt={t("navigation.profile")}
+                    className="avatar-img"
+                  />
+                </Link>
+              </div>
+            ) : (
+              <Link href="/account/join" className="avatar-link">
+                <img
+                  src={DEFAULT_USER_AVATAR}
                   alt={t("navigation.profile")}
                   className="avatar-img"
                 />
               </Link>
-            </div>
-          ) : (
-            <Link href="/account/join" className="avatar-link">
-              <img
-                src={DEFAULT_USER_AVATAR}
-                alt={t("navigation.profile")}
-                className="avatar-img"
-              />
-            </Link>
-          )}
+            )}
 
-          {device === "mobile" && (
-            <button
-              ref={menuTriggerRef}
-              type="button"
-              className="mobile-menu-trigger"
-              aria-label={t("navigation.openMenu")}
-              aria-expanded={mobileMenuOpen}
-              aria-controls="mobile-navigation-drawer"
-              onClick={() => setMobileMenuOpen(true)}
-            >
-              <span className="material-symbols-outlined" aria-hidden="true">menu</span>
-            </button>
-          )}
+            {device === "mobile" && (
+              <button
+                ref={menuTriggerRef}
+                type="button"
+                className="mobile-menu-trigger"
+                aria-label={t("navigation.openMenu")}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-navigation-drawer"
+                onClick={() => setMobileMenuOpen(true)}
+              >
+                <span className="material-symbols-outlined" aria-hidden="true">menu</span>
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      </header>
 
       {device === "mobile" && (
         <>
@@ -362,7 +364,7 @@ const Top = () => {
           </aside>
         </>
       )}
-    </header>
+    </>
   );
 };
 

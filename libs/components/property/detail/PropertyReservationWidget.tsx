@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useReactiveVar } from '@apollo/client';
 import { START_PROPERTY_PAYMENT } from '../../../../apollo/user/mutation';
 import { userVar } from '../../../../apollo/store';
@@ -9,6 +9,7 @@ import { PropertyStatus } from '../../../enums/property.enum';
 import { sweetErrorAlert } from '../../../sweetAlert';
 import PropertyAvailabilityCalendar from './PropertyAvailabilityCalendar';
 import { useI18n } from '../../../i18n';
+import useDeviceDetect from '../../../hooks/useDeviceDetect';
 import { motion, AnimatePresence } from 'framer-motion';
 import { appleEase } from '../../../motion/transitions';
 
@@ -33,7 +34,10 @@ const getNights = (checkIn: string, checkOut: string): number => {
 const PropertyReservationWidget = ({ property, refetchProperty }: PropertyReservationWidgetProps) => {
 	const { t } = useI18n();
 	const router = useRouter();
+	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
+	const widgetRef = useRef<HTMLElement | null>(null);
+	const [isWidgetInView, setIsWidgetInView] = useState(false);
 	const [checkIn, setCheckIn] = useState<string>('');
 	const [checkOut, setCheckOut] = useState<string>('');
 	const [guestCount, setGuestCount] = useState<number>(Math.min(2, Math.max(1, property.maxGuests)));
@@ -55,6 +59,18 @@ const PropertyReservationWidget = ({ property, refetchProperty }: PropertyReserv
 	useEffect(() => {
 		setGuestCount((current) => Math.min(Math.max(1, current), maxGuestsAllowed));
 	}, [maxGuestsAllowed]);
+
+	useEffect(() => {
+		if (device !== 'mobile' || typeof IntersectionObserver === 'undefined' || !widgetRef.current) return;
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				setIsWidgetInView(entry.isIntersecting);
+			},
+			{ threshold: 0.15 },
+		);
+		observer.observe(widgetRef.current);
+		return () => observer.disconnect();
+	}, [device]);
 
 	/** HANDLERS **/
 	const clearCheckout = () => setClientSecret('');
@@ -85,6 +101,14 @@ const PropertyReservationWidget = ({ property, refetchProperty }: PropertyReserv
 		}
 	};
 
+	const handleStickyAction = async () => {
+		if (nights < 1) {
+			widgetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			return;
+		}
+		await handleReserve();
+	};
+
 	const handlePaymentConfirmed = async () => {
 		await refetchProperty();
 		setCheckoutKey('');
@@ -92,7 +116,7 @@ const PropertyReservationWidget = ({ property, refetchProperty }: PropertyReserv
 
 	return (
 		<>
-			<aside className="reservation-sticky-widget">
+			<aside ref={widgetRef} className="reservation-sticky-widget">
 				<div className="widget-card">
 					<div className="price-header-row">
 						<div className="price-tag-group">
@@ -156,7 +180,31 @@ const PropertyReservationWidget = ({ property, refetchProperty }: PropertyReserv
 					</div>
 				</div>
 			</aside>
-			
+			{device === 'mobile' && (
+				<div className={`mobile-sticky-booking-bar ${isWidgetInView ? 'widget-in-view' : ''}`}>
+					<div className="sticky-booking-info" onClick={() => widgetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
+						<div className="sticky-price-row">
+							<span className="sticky-price">${pricePerNight.toLocaleString('en-US')}</span>
+							<span className="sticky-unit">{t('common.perNight')}</span>
+						</div>
+						<div className="sticky-meta-row">
+							<span className="material-symbols-outlined star-icon" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+							<span className="sticky-score">{ratingVal}</span>
+							<span className="sticky-count">({reviewsCount})</span>
+							{nights > 0 && <span className="sticky-dates-pill">• ${total.toLocaleString('en-US')}</span>}
+						</div>
+					</div>
+					<button
+						type="button"
+						className="sticky-booking-cta"
+						disabled={paymentStarting || !isBookable}
+						onClick={handleStickyAction}
+					>
+						<span className="material-symbols-outlined cta-icon">{nights < 1 ? 'calendar_month' : 'lock'}</span>
+						<span>{paymentStarting ? t('hotels.reservation.preparingSecurePayment') : isBookable ? t('hotels.reservation.reserveHotel') : t('hotels.reservation.unavailable')}</span>
+					</button>
+				</div>
+			)}
 		</>
 	);
 };

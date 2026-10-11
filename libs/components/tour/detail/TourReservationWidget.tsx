@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useMutation, useReactiveVar } from '@apollo/client';
 import { START_TOUR_PAYMENT } from '../../../../apollo/user/mutation';
 import { userVar } from '../../../../apollo/store';
@@ -7,6 +7,7 @@ import { Message } from '../../../enums/common.enum';
 import { Tour } from '../../../types/tour/tour';
 import { sweetErrorAlert } from '../../../sweetAlert';
 import { useI18n } from '../../../i18n';
+import useDeviceDetect from '../../../hooks/useDeviceDetect';
 import { motion } from 'framer-motion';
 import { appleEase } from '../../../motion/transitions';
 
@@ -22,7 +23,10 @@ interface StartTourPaymentResponse {
 const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps) => {
 	const { t, formatDate } = useI18n();
 	const router = useRouter();
+	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
+	const widgetRef = useRef<HTMLElement | null>(null);
+	const [isWidgetInView, setIsWidgetInView] = useState(false);
 	const seatsLeft = Math.max(0, tour.tourCapacity - (tour.tourReservedSeats ?? 0));
 	const [travelers, setTravelers] = useState(Math.min(2, Math.max(1, seatsLeft)));
 	const [clientSecret, setClientSecret] = useState('');
@@ -36,6 +40,18 @@ const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps
 	useEffect(() => {
 		setTravelers((current) => Math.min(Math.max(1, current), Math.max(1, seatsLeft)));
 	}, [seatsLeft]);
+
+	useEffect(() => {
+		if (device !== 'mobile' || typeof IntersectionObserver === 'undefined' || !widgetRef.current) return;
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				setIsWidgetInView(entry.isIntersecting);
+			},
+			{ threshold: 0.15 },
+		);
+		observer.observe(widgetRef.current);
+		return () => observer.disconnect();
+	}, [device]);
 
 	/** HANDLERS **/
 	const resetCheckout = () => {
@@ -65,7 +81,7 @@ const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps
 
 	return (
 		<>
-			<aside className="tour-reservation-widget">
+			<aside ref={widgetRef} className="tour-reservation-widget">
 				<div className="widget-card">
 					<div className="price-header-row">
 						<div className="price-tags-group"><span className="price-current">${tour.tourPrice.toLocaleString('en-US')}</span><span className="price-unit">{t('tours.reservation.perPerson')}</span></div>
@@ -97,7 +113,30 @@ const TourReservationWidget = ({ tour, refetchTour }: TourReservationWidgetProps
 					<div className="itemized-breakdown"><div className="breakdown-row"><span className="breakdown-label">{t('tours.reservation.priceBreakdown', { count: travelers, price: tour.tourPrice.toLocaleString('en-US') })}</span><span className="breakdown-value">${totalPrice.toLocaleString('en-US')}</span></div><div className="total-price-box"><span className="total-title">{t('common.total')}</span><span className="total-amount">${totalPrice.toLocaleString('en-US')}</span></div></div>
 				</div>
 			</aside>
-			
+			{device === 'mobile' && (
+				<div className={`mobile-sticky-booking-bar ${isWidgetInView ? 'widget-in-view' : ''}`}>
+					<div className="sticky-booking-info" onClick={() => widgetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
+						<div className="sticky-price-row">
+							<span className="sticky-price">${tour.tourPrice.toLocaleString('en-US')}</span>
+							<span className="sticky-unit">{t('tours.reservation.perPerson')}</span>
+						</div>
+						<div className="sticky-meta-row">
+							<span className="material-symbols-outlined star-icon" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
+							<span className="sticky-score">{rating}</span>
+							<span className="sticky-count">({reviews})</span>
+						</div>
+					</div>
+					<button
+						type="button"
+						className="sticky-booking-cta"
+						disabled={paymentStarting || seatsLeft < 1}
+						onClick={handleReserve}
+					>
+						<span className="material-symbols-outlined cta-icon">lock</span>
+						<span>{paymentStarting ? t('tours.reservation.preparingSecurePayment') : seatsLeft < 1 ? t('tours.reservation.soldOut') : t('tours.reservation.reserveTour')}</span>
+					</button>
+				</div>
+			)}
 		</>
 	);
 };

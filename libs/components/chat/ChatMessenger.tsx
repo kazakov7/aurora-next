@@ -43,6 +43,7 @@ const ChatMessenger: React.FC = () => {
 	const [socketStatus, setSocketStatus] = useState<'connected' | 'reconnecting' | 'disconnected'>('disconnected');
 	const [chatPendingDeletion, setChatPendingDeletion] = useState<ChatConversation | null>(null);
 	const [deleteError, setDeleteError] = useState('');
+	const [mobileShowThread, setMobileShowThread] = useState<boolean>(false);
 
 	/** APOLLO REQUESTS **/
 	const { data: chatsData, loading: chatsLoading, error: chatsError, refetch: refetchChats } = useQuery(GET_MY_CHATS, {
@@ -100,6 +101,7 @@ const ChatMessenger: React.FC = () => {
 		const requestedChatId = typeof router.query.chatId === 'string' ? router.query.chatId : '';
 		if (requestedChatId && conversations.some((chat) => chat._id === requestedChatId)) {
 			setActiveChatId(requestedChatId);
+			setMobileShowThread(true);
 			return;
 		}
 		if (!activeChatId && conversations.length) setActiveChatId(conversations[0]._id);
@@ -123,6 +125,7 @@ const ChatMessenger: React.FC = () => {
 				setConversations(refreshedChats.data?.getMyChats?.list || []);
 				setTransientConversation(result.data?.getOrCreateDirectChat as ChatConversation);
 				setActiveChatId(chatId);
+				setMobileShowThread(true);
 				void router.replace({ pathname: '/chat', query: { chatId } }, undefined, { shallow: true });
 			} catch (error) {
 				openedMemberIdRef.current = '';
@@ -175,6 +178,7 @@ const ChatMessenger: React.FC = () => {
 				setNextCursor(undefined);
 				setTransientConversation(null);
 				setActiveChatId(globalChatId);
+				setMobileShowThread(false);
 				void router.replace({ pathname: '/chat', query: globalChatId ? { chatId: globalChatId } : {} }, undefined, { shallow: true });
 			}
 			void refetchChats();
@@ -190,7 +194,13 @@ const ChatMessenger: React.FC = () => {
 	const handleSelectConversation = (chatId: string) => {
 		setTransientConversation(null);
 		setActiveChatId(chatId);
+		setMobileShowThread(true);
 		void router.replace({ pathname: '/chat', query: { chatId } }, undefined, { shallow: true });
+	};
+
+	const handleBackToConversations = () => {
+		setMobileShowThread(false);
+		void router.replace({ pathname: '/chat' }, undefined, { shallow: true });
 	};
 
 	const handleViewProfile = (conversation: ChatConversation) => {
@@ -234,6 +244,7 @@ const ChatMessenger: React.FC = () => {
 				setNextCursor(undefined);
 				setTransientConversation(null);
 				setActiveChatId(globalChatId);
+				setMobileShowThread(false);
 				await router.replace({ pathname: '/chat', query: globalChatId ? { chatId: globalChatId } : {} }, undefined, { shallow: true });
 			}
 			setChatPendingDeletion(null);
@@ -277,9 +288,9 @@ const ChatMessenger: React.FC = () => {
 		|| (transientConversation?._id === activeChatId ? transientConversation : undefined);
 	return (
 		<div className="messenger-container">
-			<div className="messenger-grid">
+			<div className={`messenger-grid ${mobileShowThread ? 'mobile-view-thread' : 'mobile-view-list'}`}>
 				<ChatSidebar conversations={conversations} activeId={activeChatId} currentMemberId={user._id} loading={chatsLoading} error={directChatError || chatsError?.message} onSelect={handleSelectConversation} onViewProfile={handleViewProfile} onRequestDelete={(conversation) => { setDeleteError(''); setChatPendingDeletion(conversation); }} />
-				<ChatThread conversation={activeConversation} messages={messages} currentMemberId={user._id} loading={messagesLoading} error={directChatError || historyError || messagesError?.message} hasOlderMessages={Boolean(nextCursor)} socketStatus={socketStatus} onLoadOlder={handleLoadOlder} onSendMessage={handleSendMessage} />
+				<ChatThread conversation={activeConversation} messages={messages} currentMemberId={user._id} loading={messagesLoading} error={directChatError || historyError || messagesError?.message} hasOlderMessages={Boolean(nextCursor)} socketStatus={socketStatus} onLoadOlder={handleLoadOlder} onSendMessage={handleSendMessage} onBackToConversations={handleBackToConversations} />
 				<ChatDossier conversation={activeConversation} currentMemberId={user._id} />
 			</div>
 			{chatPendingDeletion ? <div className="chat-delete-modal-backdrop" role="presentation"><div className="chat-delete-modal" role="dialog" aria-modal="true" aria-labelledby="delete-chat-title"><h2 id="delete-chat-title">{t('chat.messenger.deleteTitle')}</h2><p>{t('chat.messenger.deleteText')}</p>{deleteError ? <p className="chat-delete-error">{deleteError}</p> : null}<div className="chat-delete-actions"><button type="button" onClick={() => setChatPendingDeletion(null)} disabled={deletingChat}>{t('common.cancel')}</button><button type="button" className="confirm-delete-chat" onClick={() => void handleDeleteChat()} disabled={deletingChat}>{deletingChat ? t('chat.messenger.deleting') : t('chat.deleteChat')}</button></div></div></div> : null}

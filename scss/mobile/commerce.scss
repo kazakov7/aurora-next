@@ -206,7 +206,7 @@
 	.tour-detail-page {
 		.detail-container {
 			width: 100%;
-			padding: 22px 16px 56px;
+			padding: 22px 16px 124px;
 		}
 
 		.property-header-section,
@@ -299,6 +299,109 @@
 		.tour-reservation-widget {
 			position: static;
 			width: 100%;
+		}
+
+		.mobile-sticky-booking-bar {
+			position: fixed;
+			left: 0;
+			right: 0;
+			bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+			z-index: 1090;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			padding: 10px 16px;
+			background: rgba(255, 255, 255, 0.96);
+			backdrop-filter: blur(14px);
+			-webkit-backdrop-filter: blur(14px);
+			border-top: 1px solid rgba(15, 23, 42, 0.08);
+			box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+			transition: opacity 200ms ease, transform 200ms ease;
+
+			&.widget-in-view {
+				opacity: 0;
+				pointer-events: none;
+				transform: translateY(16px);
+			}
+
+			.sticky-booking-info {
+				display: flex;
+				flex-direction: column;
+				gap: 2px;
+				min-width: 0;
+				cursor: pointer;
+
+				.sticky-price-row {
+					display: flex;
+					align-items: baseline;
+					gap: 4px;
+					flex-wrap: wrap;
+
+					.sticky-price {
+						font-size: 18px;
+						font-weight: 800;
+						color: #0f172a;
+						line-height: 1.15;
+					}
+
+					.sticky-unit {
+						font-size: 12px;
+						font-weight: 500;
+						color: #64748b;
+					}
+				}
+
+				.sticky-meta-row {
+					display: flex;
+					align-items: center;
+					gap: 4px;
+					font-size: 12px;
+					color: #475569;
+
+					.star-icon {
+						font-size: 14px;
+						color: #f59e0b;
+					}
+
+					.sticky-score {
+						font-weight: 700;
+						color: #0f172a;
+					}
+
+					.sticky-dates-pill {
+						font-weight: 700;
+						color: #006194;
+					}
+				}
+			}
+
+			.sticky-booking-cta {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				gap: 6px;
+				height: 44px;
+				padding: 0 18px;
+				border: 0;
+				border-radius: 12px;
+				background: linear-gradient(135deg, #006194 0%, #0284c7 100%);
+				color: #ffffff;
+				font-size: 14px;
+				font-weight: 700;
+				white-space: nowrap;
+				flex-shrink: 0;
+				box-shadow: 0 6px 16px rgba(0, 97, 148, 0.25);
+
+				.cta-icon {
+					font-size: 17px;
+				}
+
+				&:disabled {
+					opacity: 0.55;
+					box-shadow: none;
+				}
+			}
 		}
 
 		.guest-dropdown-menu {

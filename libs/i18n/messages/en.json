@@ -21,14 +21,6 @@
     "uzbek": "O‘zbekcha",
     "select": "Select language"
   },
-  "mobileMaintenance": {
-    "badge": "Mobile experience in progress",
-    "imageAlt": "A friendly robot repairing a travel suitcase",
-    "title": "We’re adding a little polish",
-    "description": "Our mobile experience is under maintenance while we make your next visit even smoother.",
-    "desktopNote": "Please use the desktop version for now",
-    "soon": "We’ll meet you back here very soon ✦"
-  },
   "footer": {
     "description": "Extraordinary journeys, effortlessly curated. Engineered for discerning modern travelers seeking discretion, purity, and elevated stays worldwide.",
     "explore": "Explore",

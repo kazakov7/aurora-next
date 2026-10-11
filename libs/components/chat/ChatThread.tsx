@@ -14,6 +14,7 @@ interface ChatThreadProps {
   socketStatus: "connected" | "reconnecting" | "disconnected";
   onLoadOlder: () => Promise<void>;
   onSendMessage: (text: string) => Promise<boolean>;
+  onBackToConversations?: () => void;
 }
 
 const getPeer = (
@@ -34,6 +35,7 @@ const ChatThread: React.FC<ChatThreadProps> = ({
   socketStatus,
   onLoadOlder,
   onSendMessage,
+  onBackToConversations,
 }) => {
   const { t, formatDate } = useI18n();
   const [textInput, setTextInput] = useState("");
@@ -90,6 +92,18 @@ const ChatThread: React.FC<ChatThreadProps> = ({
     return (
       <main className="chat-thread-panel">
         <div className="no-conversations-empty">
+          {onBackToConversations ? (
+            <button
+              type="button"
+              className="mobile-thread-back-btn"
+              onClick={onBackToConversations}
+              aria-label={t("chat.thread.selectConversation")}
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">
+                arrow_back
+              </span>
+            </button>
+          ) : null}
           <p>{t("chat.thread.selectConversation")}</p>
         </div>
       </main>
@@ -110,6 +124,18 @@ const ChatThread: React.FC<ChatThreadProps> = ({
     <main aria-label={t("chat.thread.conversationThread")} className="chat-thread-panel">
       <header className="thread-header">
         <div className="header-info">
+          {onBackToConversations ? (
+            <button
+              type="button"
+              className="mobile-thread-back-btn"
+              onClick={onBackToConversations}
+              aria-label={t("chat.thread.selectConversation")}
+            >
+              <span className="material-symbols-outlined" aria-hidden="true">
+                arrow_back
+              </span>
+            </button>
+          ) : null}
           <div className="avatar-wrapper">
             {isGlobal ? (
               <div className="avatar-placeholder">

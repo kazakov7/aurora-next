@@ -21,14 +21,6 @@
     "uzbek": "O‘zbekcha",
     "select": "언어 선택"
   },
-  "mobileMaintenance": {
-    "badge": "모바일 서비스 개선 중",
-    "imageAlt": "여행 가방을 수리하는 친근한 로봇",
-    "title": "더 멋진 모습으로 다듬고 있어요",
-    "description": "더 편리한 이용 경험을 위해 모바일 버전을 점검하고 있습니다.",
-    "desktopNote": "현재는 데스크톱 버전을 이용해 주세요",
-    "soon": "곧 다시 만나요 ✦"
-  },
   "footer": {
     "description": "특별한 여행을 간결하게 큐레이션합니다. 세련된 현대 여행자를 위한 품격 있는 전 세계 숙소와 경험을 만나보세요.",
     "explore": "둘러보기",

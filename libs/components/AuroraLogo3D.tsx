@@ -555,15 +555,12 @@ export default function AuroraLogo3D({
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     let t0 = performance.now();
     let raf = 0;
-    apiRef.current = {
-      setNight,
-      replay: () => {
-        t0 = performance.now();
-        targetRot = 0;
-      },
-    };
+    let isInView = true;
+    let isPageVisible = typeof document !== "undefined" ? !document.hidden : true;
+    let hasRenderedInitialFrame = false;
 
     const frame = (now: number) => {
+      raf = 0;
       const time = now / 1000;
       const t = reduce ? 99 : (now - t0) / 1000;
 
@@ -626,12 +623,61 @@ export default function AuroraLogo3D({
       });
 
       renderer.render(scene, camera);
-      raf = requestAnimationFrame(frame);
+      hasRenderedInitialFrame = true;
+      if (isInView && isPageVisible) {
+        raf = requestAnimationFrame(frame);
+      }
     };
+
+    const syncLoop = () => {
+      if (isInView && isPageVisible) {
+        if (!raf) {
+          raf = requestAnimationFrame(frame);
+        }
+      } else if (raf && hasRenderedInitialFrame) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    const io =
+      typeof IntersectionObserver !== "undefined"
+        ? new IntersectionObserver(
+            ([entry]) => {
+              isInView = entry.isIntersecting;
+              syncLoop();
+            },
+            { threshold: 0.01 },
+          )
+        : null;
+    io?.observe(canvas);
+
+    const onVisibilityChange = () => {
+      isPageVisible = !document.hidden;
+      syncLoop();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    apiRef.current = {
+      setNight: (n: boolean) => {
+        setNight(n);
+        if (!raf) {
+          renderer.render(scene, camera);
+        }
+      },
+      replay: () => {
+        t0 = performance.now();
+        targetRot = 0;
+        syncLoop();
+      },
+    };
+
     raf = requestAnimationFrame(frame);
 
     return () => {
       cancelAnimationFrame(raf);
+      io?.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       ro.disconnect();
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointermove", onMove);

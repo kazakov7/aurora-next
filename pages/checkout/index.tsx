@@ -200,11 +200,11 @@ const CheckoutPage = () => {
 	};
 
   if (!router.isReady || loading) {
-    return <div id={device === "mobile" ? "mobile-wrap" : "pc-wrap"} className="checkout-page-root"><Top /><main style={{paddingTop: 100, textAlign: 'center'}}>{t("common.loading")}</main></div>;
+    return <div id={device === "mobile" ? "mobile-wrap" : "pc-wrap"} className="checkout-page-root"><Top /><main className="checkout-main" style={{ textAlign: 'center' }}><div className="checkout-container">{t("common.loading")}</div></main></div>;
   }
 
   if (!item) {
-    return <div id={device === "mobile" ? "mobile-wrap" : "pc-wrap"} className="checkout-page-root"><Top /><main style={{paddingTop: 100, textAlign: 'center'}}>{t("checkout.itemNotFound")}</main></div>;
+    return <div id={device === "mobile" ? "mobile-wrap" : "pc-wrap"} className="checkout-page-root"><Top /><main className="checkout-main" style={{ textAlign: 'center' }}><div className="checkout-container">{t("checkout.itemNotFound")}</div></main></div>;
   }
 
   const getNights = () => {

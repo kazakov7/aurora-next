@@ -45,26 +45,30 @@ New partials:
 
 All new partials are imported once, at the end of `scss/mobile/main.scss`, after the existing mobile layers.
 
-## Components modified
+## Components & Assets modified
 
-- `libs/hooks/useDeviceDetect.ts` — live `max-width: 767px` detection with resize updates
-- `libs/components/Top.tsx` — accessible mobile drawer, route highlighting, authenticated/admin links, EN/KO/UZ selector, Escape and backdrop dismissal, body scroll lock
+- `libs/hooks/useDeviceDetect.ts` — live `max-width: 767px` detection with module-scoped client hydration cache (`hydratedClientDevice`) so subsequent page transitions and child mounts render `'mobile'` immediately without flashing `'desktop'`
+- `pages/_app.tsx` — added `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />` so `env(safe-area-inset-*)` works on iOS/Android
+- `libs/components/Top.tsx` — moved `.mobile-nav-backdrop` and `#mobile-navigation-drawer` outside `<header className="header-navbar">` so `backdrop-filter: blur(14px)` does not trap `position: fixed` drawer height to the header
+- `libs/components/chat/ChatMessenger.tsx` and `libs/components/chat/ChatThread.tsx` — split mobile chat into separate full-height conversation list and active thread screens (`mobile-view-list` / `mobile-view-thread`) with a back button in the thread header
+- `libs/components/property/detail/PropertyReservationWidget.tsx` and `libs/components/tour/detail/TourReservationWidget.tsx` — added `.mobile-sticky-booking-bar` docked above `.mobile-bottom-nav` with `IntersectionObserver` auto-hide when the inline reservation card enters the viewport
+- `libs/components/AuroraLogo3D.tsx` — added `IntersectionObserver` and `visibilitychange` loop pausing so offscreen 3D WebGL logos do not continuously run `requestAnimationFrame`
 - `libs/components/common/MobileFilterPanel.tsx` — reusable accessible mobile filter bottom sheet; filters remain instant/reactive and keep existing URL/API behavior
 - `pages/property/index.tsx` and `pages/tour/index.tsx` — use the filter bottom sheet without changing GraphQL variables or filtering handlers
 - `libs/components/layout/LayoutAdmin.tsx` — accessible mobile admin navigation drawer
-- `pages/checkout/index.tsx` — selects `#mobile-wrap` on phones instead of always forcing `#pc-wrap`
-- `libs/i18n/messages/en.json`, `ko.json`, `uz.json` — navigation accessibility labels
+- `pages/checkout/index.tsx` — selects `#mobile-wrap` on phones and applies safe top offset (`calc(120px + env(safe-area-inset-top, 0px))`) below the fixed mobile header
+- `scss/pc/main.scss` — removed duplicate `@import "checkout.scss";`
+- `public/img/profile/default-user.png` — optimized from 1.6 MB down to 66 KB
 
 ## Breakpoints and viewport behavior
 
 - Primary mobile boundary: `767px`
 - Narrow-phone refinement: `359px`
 - Profile metric refinement: `430px`
-- Safe-area insets are applied to fixed navigation, drawers, bottom sheets, and payment modal edges.
-- Grids collapse to one column on phones; horizontally dense tabs/chips use contained touch scrolling.
+- Safe-area insets (`viewport-fit=cover`) are applied to fixed navigation (`104px` compact mobile header + `60px` bottom nav), drawers, bottom sheets, sticky booking bar, chat viewport, and payment modal edges.
+- Inputs, selects, and textareas inside `#mobile-wrap` enforce `font-size: 16px` to prevent iOS Safari auto-zoom on focus.
+- Grids collapse to one column on phones; horizontally dense tabs/chips, MyPage/Member navigation pills, and Destination Detail card rails (`.cities-cards-grid`, `.stays-cards-grid`, `.tours-cards-grid`, `.continue-cards-grid`) use contained touch-snap horizontal scrolling.
 - Admin/agent tables retain all columns and actions inside contained horizontal scrollers instead of shrinking into unreadable columns.
-
-The rules were authored for the requested 320, 360, 375, 390, and 430px widths. A browser automation surface was unavailable in this session, so those widths were not visually screenshot-tested and are not claimed as visually verified.
 
 ## Page-by-page completion status
 

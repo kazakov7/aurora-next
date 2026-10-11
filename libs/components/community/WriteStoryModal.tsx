@@ -7,7 +7,7 @@ import { BoardArticleInput, BoardArticleUpdate } from '../../types/board-article
 import { BoardArticle } from '../../types/board-article/board-article';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import { getJwtToken } from '../../auth';
-import { Messages, getImageUrl } from '../../config';
+import { Messages, REACT_APP_API_GRAPHQL_URL, getImageUrl } from '../../config';
 import { useI18n } from '../../i18n';
 
 interface WriteStoryModalProps {
@@ -82,10 +82,10 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 			);
 			formData.append('0', image);
 
-			const response = await fetch(process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql', {
+			const response = await fetch(REACT_APP_API_GRAPHQL_URL, {
 				method: 'POST',
 				headers: {
-					'apollo-require-preflight': 'true',
+					'Apollo-Require-Preflight': 'true',
 					Authorization: `Bearer ${token}`,
 				},
 				body: formData,

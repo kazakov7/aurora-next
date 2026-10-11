@@ -1,5 +1,11 @@
-export const REACT_APP_API_URL = process.env.NEXT_PUBLIC_AURORA_API_URL || process.env.REACT_APP_API_URL || 'http://localhost:3007';
-export const REACT_APP_API_GRAPHQL_URL = process.env.NEXT_PUBLIC_AURORA_GRAPHQL_URL || process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql';
+const PRODUCTION_API_URL = 'https://auroraexplore.up.railway.app';
+const DEFAULT_API_URL = process.env.NODE_ENV === 'production' ? PRODUCTION_API_URL : 'http://localhost:3007';
+
+export const REACT_APP_API_URL = process.env.NEXT_PUBLIC_AURORA_API_URL || process.env.REACT_APP_API_URL || DEFAULT_API_URL;
+export const REACT_APP_API_GRAPHQL_URL =
+	process.env.NEXT_PUBLIC_AURORA_GRAPHQL_URL ||
+	process.env.REACT_APP_API_GRAPHQL_URL ||
+	`${REACT_APP_API_URL.replace(/\/$/, '')}/graphql`;
 export const REACT_APP_API_WS = process.env.NEXT_PUBLIC_AURORA_SOCKET_URL || process.env.REACT_APP_API_WS || 'ws://127.0.0.1:3007';
 /** Socket.IO chat namespace URL; accepts http(s)/ws(s) bases with or without the /chat suffix **/
 export const getChatSocketUrl = (): string => {

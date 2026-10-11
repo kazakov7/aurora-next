@@ -7,7 +7,7 @@ import {
   sweetMixinErrorAlert,
   sweetTopSmallSuccessAlert,
 } from "../../sweetAlert";
-import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
+import { DEFAULT_USER_AVATAR, getImageUrl, REACT_APP_API_GRAPHQL_URL } from "../../config";
 import { useI18n } from "../../i18n";
 import ChangePasswordSection from "./ChangePasswordSection";
 
@@ -63,10 +63,10 @@ const MyProfileSettings: React.FC = () => {
         );
         formData.append('0', file);
 
-        const response = await fetch(process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql', {
+        const response = await fetch(REACT_APP_API_GRAPHQL_URL, {
             method: 'POST',
             headers: {
-                'apollo-require-preflight': 'true',
+                'Apollo-Require-Preflight': 'true',
                 Authorization: `Bearer ${token}`,
             },
             body: formData,

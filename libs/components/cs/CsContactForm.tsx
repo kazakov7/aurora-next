@@ -9,6 +9,7 @@ import { SupportTicketInput } from '../../types/support/support.input';
 import { SupportTicket } from '../../types/support/support';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 import { useI18n } from '../../i18n';
+import { REACT_APP_API_GRAPHQL_URL } from '../../config';
 
 const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 const ALLOWED_ATTACHMENT_TYPES = ['image/png', 'image/jpg', 'image/jpeg'];
@@ -89,10 +90,10 @@ const CsContactForm = () => {
 			formData.append('map', JSON.stringify({ '0': ['variables.file'] }));
 			formData.append('0', file);
 
-			const response = await fetch(process.env.REACT_APP_API_GRAPHQL_URL || 'http://localhost:3007/graphql', {
+			const response = await fetch(REACT_APP_API_GRAPHQL_URL, {
 				method: 'POST',
 				headers: {
-					'apollo-require-preflight': 'true',
+					'Apollo-Require-Preflight': 'true',
 					Authorization: `Bearer ${getJwtToken()}`,
 				},
 				body: formData,

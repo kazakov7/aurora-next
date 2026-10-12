@@ -19,6 +19,11 @@ export interface RejectAgentApplicationInput {
 	rejectionReason: string;
 }
 
+export interface RevokeAgentInput {
+	_id: string;
+	revokeReason: string;
+}
+
 export interface AgentInput {
 	agentType: AgentType;
 	companyName: string;

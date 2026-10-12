@@ -47,6 +47,7 @@ export const SERVER_MESSAGE_IDS: Record<string, string> = {
 	'Agent is not verified!': 'AGENT_NOT_VERIFIED',
 	'Agent is already verified!': 'AGENT_ALREADY_VERIFIED',
 	'Agent application already exists!': 'AGENT_APPLICATION_EXISTS',
+	'This business number is already registered!': 'AGENT_BUSINESS_EXISTS',
 	'Agent application not found!': 'AGENT_APPLICATION_NOT_FOUND',
 	'You are not allowed to perform this agent action!': 'AGENT_NOT_ALLOWED',
 	PROVIDE_ALLOWED_FORMAT: 'PROVIDE_ALLOWED_FORMAT',

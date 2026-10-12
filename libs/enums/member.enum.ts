@@ -28,4 +28,5 @@ export enum AgentVerificationStatus {
 	PENDING = 'PENDING',
 	APPROVED = 'APPROVED',
 	REJECTED = 'REJECTED',
+	REVOKED = 'REVOKED',
 }

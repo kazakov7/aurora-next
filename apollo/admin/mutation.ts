@@ -47,6 +47,19 @@ export const REJECT_AGENT_APPLICATION = gql`
 	}
 `;
 
+export const REVOKE_AGENT_BY_ADMIN = gql`
+	mutation RevokeAgentByAdmin($input: RevokeAgentInput!) {
+		revokeAgentByAdmin(input: $input) {
+			_id
+			memberId
+			agentType
+			verificationStatus
+			rejectionReason
+			updatedAt
+		}
+	}
+`;
+
 /**************************
  *      DESTINATION       *
  *************************/

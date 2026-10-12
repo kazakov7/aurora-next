@@ -77,7 +77,8 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
   const hasPending =
     latestApplication?.verificationStatus === AgentVerificationStatus.PENDING;
   const hasRejected =
-    latestApplication?.verificationStatus === AgentVerificationStatus.REJECTED;
+    latestApplication?.verificationStatus === AgentVerificationStatus.REJECTED ||
+    latestApplication?.verificationStatus === AgentVerificationStatus.REVOKED;
   const isApprovedAgent = user?.memberType === "AGENT" && myAgentType;
 
   // Partner tab label

@@ -38,17 +38,19 @@ const AgentApplicationPage: React.FC = () => {
   const applications = data?.getMyAgentApplications?.list || [];
   const latestApp = applications[0];
 
+  // latestApp keeps its reference between renders, unlike the `|| []` fallback list
   useEffect(() => {
-    if (!loading && applications) {
-      if (!latestApp) {
-        setFormMode("create");
-      } else if (latestApp.verificationStatus === AgentVerificationStatus.PENDING || latestApp.verificationStatus === AgentVerificationStatus.APPROVED) {
-        setFormMode("hidden");
-      } else if (latestApp.verificationStatus === AgentVerificationStatus.REJECTED && formMode === "hidden") {
-        setFormMode("hidden");
-      }
+    if (loading) return;
+    if (!latestApp) {
+      setFormMode("create");
+    } else if (latestApp.verificationStatus === AgentVerificationStatus.PENDING || latestApp.verificationStatus === AgentVerificationStatus.APPROVED) {
+      setFormMode("hidden");
     }
-  }, [loading, applications, latestApp]);
+  }, [loading, latestApp]);
+
+  // A rejected application and a revoked agent status both end with a reason and a fresh application
+  const isClosedStatus = (status?: AgentVerificationStatus) =>
+    status === AgentVerificationStatus.REJECTED || status === AgentVerificationStatus.REVOKED;
 
   const handleApplyAgain = () => {
     if (latestApp) {
@@ -112,6 +114,12 @@ const AgentApplicationPage: React.FC = () => {
             {t("profile.agentApplication.notApproved")}
           </span>
         );
+      case AgentVerificationStatus.REVOKED:
+        return (
+          <span style={{ padding: "4px 8px", background: "#fee2e2", color: "#991b1b", borderRadius: "6px", fontSize: "11px", fontWeight: 700, letterSpacing: "0.05em" }}>
+            {t("profile.agentApplication.revoked")}
+          </span>
+        );
       default:
         return null;
     }
@@ -172,14 +180,20 @@ const AgentApplicationPage: React.FC = () => {
         </div>
       )}
 
-      {latestApp?.verificationStatus === AgentVerificationStatus.REJECTED && !isFormVisible && (
+      {isClosedStatus(latestApp?.verificationStatus) && !isFormVisible && (
         <div style={{ background: "#fff", borderRadius: "16px", padding: "32px", border: "1px solid #fecaca", marginBottom: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
           <div>{getStatusBadge(latestApp.verificationStatus)}</div>
-          <h3 style={{ fontSize: "20px", color: "#141b2b", margin: 0 }}>{t("profile.agentApplication.needsChangesTitle")}</h3>
-          <p style={{ fontSize: "14px", color: "#3f4850", margin: 0 }}>{t("profile.agentApplication.needsChangesText")}</p>
+          <h3 style={{ fontSize: "20px", color: "#141b2b", margin: 0 }}>
+            {latestApp.verificationStatus === AgentVerificationStatus.REVOKED ? t("profile.agentApplication.revokedTitle") : t("profile.agentApplication.needsChangesTitle")}
+          </h3>
+          <p style={{ fontSize: "14px", color: "#3f4850", margin: 0 }}>
+            {latestApp.verificationStatus === AgentVerificationStatus.REVOKED ? t("profile.agentApplication.revokedText") : t("profile.agentApplication.needsChangesText")}
+          </p>
           
           <div style={{ background: "#fef2f2", borderLeft: "4px solid #ef4444", padding: "16px", borderRadius: "0 8px 8px 0", marginTop: "8px" }}>
-             <div style={{ fontSize: "12px", fontWeight: 700, color: "#991b1b", marginBottom: "4px" }}>{t("profile.agentApplication.reasonForRejection")}</div>
+             <div style={{ fontSize: "12px", fontWeight: 700, color: "#991b1b", marginBottom: "4px" }}>
+               {latestApp.verificationStatus === AgentVerificationStatus.REVOKED ? t("profile.agentApplication.reasonForRevocation") : t("profile.agentApplication.reasonForRejection")}
+             </div>
              <div style={{ fontSize: "14px", color: "#7f1d1d" }}>{latestApp.rejectionReason || t("profile.agentApplication.noFeedback")}</div>
           </div>
 
@@ -314,7 +328,7 @@ const AgentApplicationPage: React.FC = () => {
                           <div style={{ padding: "16px", borderTop: "1px solid #dce2f7", display: "grid", gap: "12px", background: "#fff" }}>
                              <div style={{ display: "flex" }}><span style={{ color: "#707881", fontSize: "13px", width: "140px" }}>{t("profile.agentApplication.companyName")}</span><span style={{ fontSize: "13px" }}>{app.companyName}</span></div>
                              <div style={{ display: "flex" }}><span style={{ color: "#707881", fontSize: "13px", width: "140px" }}>{t("profile.agentApplication.businessNumber")}</span><span style={{ fontSize: "13px" }}>{app.businessNumber}</span></div>
-                             {app.verificationStatus === AgentVerificationStatus.REJECTED && (
+                             {isClosedStatus(app.verificationStatus) && (
                                 <div style={{ display: "flex" }}><span style={{ color: "#991b1b", fontSize: "13px", width: "140px", fontWeight: 600 }}>{t("profile.agentApplication.rejectionReason")}</span><span style={{ fontSize: "13px", color: "#7f1d1d" }}>{app.rejectionReason || "N/A"}</span></div>
                              )}
                           </div>

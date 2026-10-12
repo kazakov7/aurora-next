@@ -72,6 +72,7 @@ export const SERVER_MESSAGE_IDS: Record<string, string> = {
 	'Tour is not available!': 'TOUR_NOT_AVAILABLE',
 	'You are not the owner of this tour!': 'TOUR_NOT_OWNED',
 	'This tour is fully booked!': 'TOUR_FULL',
+	'This tour has booked seats!': 'TOUR_HAS_BOOKINGS',
 	'Tour schedule not found!': 'SCHEDULE_NOT_FOUND',
 	'Tour schedule already exists!': 'SCHEDULE_ALREADY_EXISTS',
 	'This schedule is not available!': 'SCHEDULE_NOT_AVAILABLE',

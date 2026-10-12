@@ -30,7 +30,8 @@ export interface Property {
 	createdAt: Date | string;
 	updatedAt: Date | string;
 	accessToken?: string;
-	memberData?: Member;
+	// The API leaves it empty when the owner account is gone
+	memberData?: Member | null;
 	meLiked?: MeLiked[];
 }
 

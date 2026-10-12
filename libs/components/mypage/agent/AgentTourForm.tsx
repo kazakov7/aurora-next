@@ -6,6 +6,7 @@ import { CREATE_TOUR, IMAGES_UPLOADER, UPDATE_TOUR } from '../../../../apollo/us
 import { Tour } from '../../../types/tour/tour';
 import { Destination } from '../../../types/destination/destination';
 import { getImageUrl } from '../../../config';
+import { parseApiDate } from '../../../utils';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../../sweetAlert';
 import { useI18n } from '../../../i18n';
 
@@ -15,16 +16,21 @@ interface AgentTourFormProps {
 	onSaved: () => void;
 }
 
+const MIN_IMAGES = 3;
 const MAX_IMAGES = 10;
 const DESTINATION_INPUT = { page: 1, limit: 100, sort: 'createdAt', direction: 'DESC', search: {} };
-const toDateInput = (value?: Date | string): string => (value ? moment(value).format('YYYY-MM-DD') : '');
+// The API sends dates as epoch-millisecond strings, which moment() alone cannot parse
+const toDateInput = (value?: Date | string): string => {
+	const date = parseApiDate(value);
+	return date ? moment(date).format('YYYY-MM-DD') : '';
+};
 
 /** Create / edit form for an approved TOUR agent; values are sent to createTour / updateTour **/
 const AgentTourForm = (props: AgentTourFormProps) => {
 	const { t, tError } = useI18n();
 	const { tour, onClose, onSaved } = props;
 	const isEdit = Boolean(tour?._id);
-	const [form, setForm] = useState({
+	const [initialForm] = useState(() => ({
 		destinationId: tour?.destinationId ?? '',
 		tourName: tour?.tourName ?? '',
 		tourDesc: tour?.tourDesc ?? '',
@@ -37,11 +43,16 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 		tourDeparturePlace: tour?.tourDeparturePlace ?? '',
 		tourDestinationCity: tour?.tourDestinationCity ?? '',
 		tourAdditionalInfo: tour?.tourAdditionalInfo ?? '',
-	});
+	}));
+	const [form, setForm] = useState(initialForm);
 	const [images, setImages] = useState<string[]>(tour?.tourImages ?? []);
 	const [uploading, setUploading] = useState(false);
 	const [submitting, setSubmitting] = useState(false);
 	const reservedSeats = tour?.tourReservedSeats ?? 0;
+	// Guests paid for the dates and the country they booked, so the API keeps both while seats are taken
+	const isScheduleLocked = isEdit && reservedSeats > 0;
+	const isChanged = (field: 'destinationId' | 'tourStartDate' | 'tourEndDate') => !isEdit || form[field] !== initialForm[field];
+	const today = moment().format('YYYY-MM-DD');
 
 	/** APOLLO REQUESTS **/
 	const { data: destinationData, loading: destinationsLoading } = useQuery(GET_DESTINATIONS, {
@@ -97,7 +108,8 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 		const start = moment(form.tourStartDate, 'YYYY-MM-DD', true);
 		const end = moment(form.tourEndDate, 'YYYY-MM-DD', true);
 
-		if (!form.destinationId || !form.tourName.trim()) {
+		const requiredFields = [form.destinationId, form.tourName, form.tourDesc, form.tourDepartureCountry, form.tourDepartureCity, form.tourDeparturePlace];
+		if (requiredFields.some((value) => !value.trim())) {
 			await sweetMixinErrorAlert(t('agent.tourForm.requiredFields'));
 			return;
 		}
@@ -109,19 +121,29 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 			await sweetMixinErrorAlert(t('agent.tourForm.invalidDates'));
 			return;
 		}
+		// A start date already in the past is kept on edit, but a new one must not lie behind today
+		if (isChanged('tourStartDate') && start.isBefore(today, 'day')) {
+			await sweetMixinErrorAlert(t('agent.tourForm.pastStartDate'));
+			return;
+		}
 		if (!Number.isInteger(tourCapacity) || tourCapacity < Math.max(1, reservedSeats)) {
 			await sweetMixinErrorAlert(t('agent.tourForm.capacityTooLow', { math: Math.max(1, reservedSeats) }));
 			return;
 		}
+		if (images.length < MIN_IMAGES) {
+			await sweetMixinErrorAlert(t('agent.tourForm.minPhotos', { count: MIN_IMAGES }));
+			return;
+		}
 
 		const payload = {
-			destinationId: form.destinationId,
+			// Only the values the agent changed are sent: an unchanged date may carry a time the form cannot show
+			...(isChanged('destinationId') && { destinationId: form.destinationId }),
+			...(isChanged('tourStartDate') && { tourStartDate: start.toISOString() }),
+			...(isChanged('tourEndDate') && { tourEndDate: end.toISOString() }),
 			tourName: form.tourName.trim(),
 			tourDesc: form.tourDesc.trim(),
 			tourPrice: Math.round(tourPrice * 100) / 100,
 			tourCurrency: 'USD',
-			tourStartDate: start.toISOString(),
-			tourEndDate: end.toISOString(),
 			tourCapacity,
 			tourDepartureCountry: form.tourDepartureCountry.trim(),
 			tourDepartureCity: form.tourDepartureCity.trim(),
@@ -165,7 +187,7 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 					<div className="form-row">
 						<div className="form-group">
 							<label>{t('common.destination')}</label>
-							<select className="form-select" value={form.destinationId} onChange={destinationChangeHandler} required>
+							<select className="form-select" value={form.destinationId} onChange={destinationChangeHandler} disabled={isScheduleLocked} required>
 								<option value="">{destinationsLoading ? t('agent.loadingDestinations') : t('agent.selectDestination')}</option>
 								{destinations.map((destination) => (
 									<option key={destination._id} value={destination._id}>
@@ -177,7 +199,7 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 						</div>
 						<div className="form-group">
 							<label>{t('agent.tourForm.destinationCity')}</label>
-							<input className="form-input" value={form.tourDestinationCity} onChange={updateField('tourDestinationCity')} />
+							<input className="form-input" value={form.tourDestinationCity} onChange={updateField('tourDestinationCity')} maxLength={100} />
 						</div>
 					</div>
 
@@ -197,37 +219,38 @@ const AgentTourForm = (props: AgentTourFormProps) => {
 						</div>
 						<div className="form-group">
 							<label>{t('agent.tourForm.startDate')}</label>
-							<input className="form-input" type="date" value={form.tourStartDate} onChange={updateField('tourStartDate')} required />
+							<input className="form-input" type="date" min={isChanged('tourStartDate') ? today : undefined} value={form.tourStartDate} onChange={updateField('tourStartDate')} disabled={isScheduleLocked} required />
 						</div>
 						<div className="form-group">
 							<label>{t('agent.tourForm.endDate')}</label>
-							<input className="form-input" type="date" min={form.tourStartDate ? moment(form.tourStartDate).add(1, 'day').format('YYYY-MM-DD') : undefined} value={form.tourEndDate} onChange={updateField('tourEndDate')} required />
+							<input className="form-input" type="date" min={form.tourStartDate ? moment(form.tourStartDate).add(1, 'day').format('YYYY-MM-DD') : undefined} value={form.tourEndDate} onChange={updateField('tourEndDate')} disabled={isScheduleLocked} required />
 						</div>
 					</div>
+					{isScheduleLocked && <p className="form-note">{t('agent.tourForm.lockedByBookings')}</p>}
 
 					<div className="form-row three">
 						<div className="form-group">
 							<label>{t('agent.tourForm.departureCountry')}</label>
-							<input className="form-input" value={form.tourDepartureCountry} onChange={updateField('tourDepartureCountry')} />
+							<input className="form-input" value={form.tourDepartureCountry} onChange={updateField('tourDepartureCountry')} maxLength={100} required />
 						</div>
 						<div className="form-group">
 							<label>{t('agent.tourForm.departureCity')}</label>
-							<input className="form-input" value={form.tourDepartureCity} onChange={updateField('tourDepartureCity')} />
+							<input className="form-input" value={form.tourDepartureCity} onChange={updateField('tourDepartureCity')} maxLength={100} required />
 						</div>
 						<div className="form-group">
 							<label>{t('agent.tourForm.meetingPoint')}</label>
-							<input className="form-input" value={form.tourDeparturePlace} onChange={updateField('tourDeparturePlace')} />
+							<input className="form-input" value={form.tourDeparturePlace} onChange={updateField('tourDeparturePlace')} maxLength={200} required />
 						</div>
 					</div>
 
 					<div className="form-group">
 						<label>{t('common.description')}</label>
-						<textarea className="form-textarea" rows={4} value={form.tourDesc} onChange={updateField('tourDesc')} maxLength={5000} />
+						<textarea className="form-textarea" rows={4} value={form.tourDesc} onChange={updateField('tourDesc')} maxLength={5000} required />
 					</div>
 
 					<div className="form-group">
 						<label>{t('agent.tourForm.additionalInformation')}</label>
-						<textarea className="form-textarea" rows={2} value={form.tourAdditionalInfo} onChange={updateField('tourAdditionalInfo')} />
+						<textarea className="form-textarea" rows={2} value={form.tourAdditionalInfo} onChange={updateField('tourAdditionalInfo')} maxLength={3000} />
 					</div>
 
 					<div className="form-group">

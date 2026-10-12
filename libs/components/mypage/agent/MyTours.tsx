@@ -162,7 +162,11 @@ const MyTours = () => {
                     </td>
                     <td>
                       <div className="actions-cell">
-                        <button onClick={() => setFormTarget(tour)}>
+                        {/* A tour an admin turned off is listed, but the API refuses to edit it */}
+                        <button
+                          onClick={() => setFormTarget(tour)}
+                          disabled={tour.tourStatus === TourStatus.INACTIVE}
+                        >
                           {t("common.edit")}
                         </button>
                       </div>

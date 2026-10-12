@@ -56,6 +56,7 @@ export const SERVER_MESSAGE_IDS: Record<string, string> = {
 	'City already exists!': 'CITY_ALREADY_EXISTS',
 	'Destination not found!': 'DESTINATION_NOT_FOUND',
 	'Destination already exists!': 'DESTINATION_ALREADY_EXISTS',
+	'This destination still has hotels or tours!': 'DESTINATION_HAS_LISTINGS',
 	'Property not found!': 'PROPERTY_NOT_FOUND',
 	'Property already exists!': 'PROPERTY_ALREADY_EXISTS',
 	'Property is not available!': 'PROPERTY_NOT_AVAILABLE',

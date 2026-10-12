@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useReactiveVar } from '@apollo/client';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
@@ -85,6 +86,7 @@ const DestinationDetail: NextPage = () => {
 	const {
 		data: destinationData,
 		loading: destinationLoading,
+		error: destinationError,
 		refetch: refetchDestination,
 	} = useQuery(GET_DESTINATION, {
 		fetchPolicy: 'network-only',
@@ -93,6 +95,8 @@ const DestinationDetail: NextPage = () => {
 	});
 
 	const destination: Destination | undefined = destinationData?.getDestination;
+	// A removed, inactive or unknown city answers with an error, and an empty catalog has no city to fall back to
+	const isMissing = Boolean(destinationError) || (!destinationId && initialListData?.getDestinations?.list?.length === 0);
 
 	useEffect(() => {
 		if (destination) {
@@ -108,7 +112,7 @@ const DestinationDetail: NextPage = () => {
 		variables: {
 			input: {
 				page: 1,
-				limit: 6,
+				limit: 7,
 				sort: 'destinationViews',
 				direction: Direction.DESC,
 				search: country ? { destinationCountry: country } : {},
@@ -116,7 +120,10 @@ const DestinationDetail: NextPage = () => {
 		},
 		skip: !country,
 	});
-	const siblingCities: Destination[] = siblingCitiesData?.getDestinations?.list || [];
+	// The city itself is in its own country's list, so it is left out of the other cities
+	const siblingCities: Destination[] = (siblingCitiesData?.getDestinations?.list || [])
+		.filter((city: Destination) => city._id !== destinationId)
+		.slice(0, 6);
 
 	/** TOP STAYS (PROPERTIES) **/
 	const { data: propertiesData, loading: propertiesLoading, error: propertiesError, refetch: refetchProperties } = useQuery<{ getTopProperties?: RankingList<Property> }>(GET_TOP_PROPERTIES, { fetchPolicy: 'cache-and-network', variables: { input: { destinationId, limit: 4 } }, skip: !destinationId });
@@ -207,6 +214,35 @@ const DestinationDetail: NextPage = () => {
 			sweetErrorAlert(tError(err));
 		}
 	};
+
+	if (isMissing && !destination) {
+		return (
+			<div className="destination-detail-page-wrapper">
+				<div
+					style={{
+						display: 'flex',
+						flexDirection: 'column',
+						alignItems: 'center',
+						justifyContent: 'center',
+						minHeight: '60vh',
+						gap: '12px',
+						fontSize: '16px',
+						color: '#545c72',
+						textAlign: 'center',
+					}}
+				>
+					<span className="material-symbols-outlined" style={{ fontSize: '40px', color: '#006194' }}>
+						travel_explore
+					</span>
+					<strong>{t('destinations.detail.notFound')}</strong>
+					<span>{t('destinations.detail.notFoundHint')}</span>
+					<Link href="/destination" style={{ color: '#006194', fontWeight: 600 }}>
+						{t('destinations.detail.backToList')}
+					</Link>
+				</div>
+			</div>
+		);
+	}
 
 	if (destinationLoading || !destination) {
 		return (

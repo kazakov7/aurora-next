@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { NextPage } from "next";
 import withAdminLayout from "../../../libs/components/layout/LayoutAdmin";
 import { useQuery, useMutation } from "@apollo/client";
-import { GET_DESTINATIONS } from "../../../apollo/user/query";
+import { GET_ALL_DESTINATIONS_BY_ADMIN } from "../../../apollo/admin/query";
 import {
   UPDATE_DESTINATION_BY_ADMIN,
   REMOVE_DESTINATION_BY_ADMIN,
 } from "../../../apollo/admin/mutation";
-import { DestinationsInquiry } from "../../../libs/types/destination/destination.input";
+import { AdminDestinationsInquiry } from "../../../libs/types/destination/destination.input";
 import { Destination } from "../../../libs/types/destination/destination";
 import { DestinationStatus } from "../../../libs/enums/destination.enum";
 import { Direction } from "../../../libs/enums/common.enum";
@@ -30,7 +30,7 @@ const AdminDestinationsPage: NextPage = () => {
     DestinationStatus.ACTIVE,
   );
 
-  const [searchFilter, setSearchFilter] = useState<DestinationsInquiry>({
+  const [searchFilter, setSearchFilter] = useState<AdminDestinationsInquiry>({
     page: 1,
     limit: 10,
     sort: "createdAt",
@@ -39,18 +39,23 @@ const AdminDestinationsPage: NextPage = () => {
   });
 
   /** APOLLO REQUESTS **/
-  const { data, loading, refetch } = useQuery(GET_DESTINATIONS, {
+  // The admin list includes INACTIVE cities, so they can be turned back on or removed
+  const { data, loading, refetch } = useQuery(GET_ALL_DESTINATIONS_BY_ADMIN, {
     fetchPolicy: "network-only",
     variables: { input: searchFilter },
     notifyOnNetworkStatusChange: true,
     onCompleted: (data: any) => {
-      setDestinations(data?.getDestinations?.list || []);
-      setTotal(data?.getDestinations?.metaCounter?.[0]?.total || 0);
+      setDestinations(data?.getAllDestinationsByAdmin?.list || []);
+      setTotal(data?.getAllDestinationsByAdmin?.metaCounter?.[0]?.total || 0);
     },
   });
 
   const [updateDestinationByAdmin] = useMutation(UPDATE_DESTINATION_BY_ADMIN);
   const [removeDestinationByAdmin] = useMutation(REMOVE_DESTINATION_BY_ADMIN);
+
+  /** The API removes only an INACTIVE city without hotels or tours **/
+  const canDelete = (destination: Destination) =>
+    destination.destinationStatus === DestinationStatus.INACTIVE;
 
   /** HANDLERS **/
   const handleSearchChange = (text: string) => {
@@ -357,13 +362,24 @@ const AdminDestinationsPage: NextPage = () => {
                         <button
                           type="button"
                           onClick={() => handleDelete(destination._id)}
+                          disabled={!canDelete(destination)}
+                          title={
+                            !canDelete(destination)
+                              ? t("admin.destinations.deleteOnlyInactive")
+                              : undefined
+                          }
                           style={{
                             padding: "6px",
                             borderRadius: "6px",
                             border: "none",
                             background: "#ffdad6",
                             color: "#ba1a1a",
-                            cursor: "pointer",
+                            cursor:
+                              !canDelete(destination)
+                                ? "not-allowed"
+                                : "pointer",
+                            opacity:
+                              !canDelete(destination) ? 0.4 : 1,
                           }}
                         >
                           <span

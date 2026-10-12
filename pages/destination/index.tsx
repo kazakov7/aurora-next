@@ -16,15 +16,18 @@ import { userVar } from '../../apollo/store';
 import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
 import { useI18n } from '../../libs/i18n';
 
-const continentCountryMap: Record<string, string> = {
-	all: '',
-	asia: 'Asia|Japan|South Korea|Indonesia|Malaysia|Singapore|Thailand|Vietnam|United Arab Emirates|China|India|Philippines',
-	europe: 'Europe|Switzerland|Germany|France|Italy|Spain|Netherlands|Portugal|Czech Republic|United Kingdom|Turkey|Greece|Austria|Norway|Sweden',
-	africa: 'Africa|Morocco|Egypt|South Africa|Tanzania|Kenya|Nigeria',
-	'north-america': 'North America|Canada|United States|Mexico',
-	'south-america': 'South America|Peru|Brazil|Chile|Argentina|Colombia',
-	oceania: 'Oceania|Australia|New Zealand|Fiji',
+// Exact destinationCountry values: a continent is the list of its countries, never a word in the description
+const continentCountryMap: Record<string, string[]> = {
+	all: [],
+	asia: ['Japan', 'South Korea', 'Indonesia', 'Malaysia', 'Singapore', 'Thailand', 'Vietnam', 'United Arab Emirates', 'China', 'India', 'Philippines'],
+	europe: ['Switzerland', 'Germany', 'France', 'Italy', 'Spain', 'Netherlands', 'Portugal', 'Czech Republic', 'United Kingdom', 'Turkey', 'Greece', 'Austria', 'Norway', 'Sweden'],
+	africa: ['Morocco', 'Egypt', 'South Africa', 'Tanzania', 'Kenya', 'Nigeria'],
+	'north-america': ['Canada', 'United States', 'Mexico'],
+	'south-america': ['Peru', 'Brazil', 'Chile', 'Argentina', 'Colombia'],
+	oceania: ['Australia', 'New Zealand', 'Fiji'],
 };
+const toCountryList = (continent: string): string[] | undefined =>
+	continentCountryMap[continent]?.length ? continentCountryMap[continent] : undefined;
 
 const defaultInput: DestinationsInquiry = {
 	page: 1,
@@ -41,8 +44,8 @@ const DestinationList: NextPage = () => {
 
 	const [selectedContinent, setSelectedContinent] = useState<string>('all');
 	const [selectedSort, setSelectedSort] = useState<string>('views');
-	const [currentPage, setCurrentPage] = useState<number>(1);
 	const [searchFilter, setSearchFilter] = useState<DestinationsInquiry>(defaultInput);
+	const currentPage = searchFilter.page;
 
 	const [destinations, setDestinations] = useState<Destination[]>([]);
 	const [total, setTotal] = useState<number>(0);
@@ -63,64 +66,34 @@ const DestinationList: NextPage = () => {
 		}
 	}, [data]);
 
-	// Sync with router query if present on load or change
+	// Sync with router query: the continent and the header search are separate filters and work together
 	useEffect(() => {
-		if (router.query.continent && typeof router.query.continent === 'string') {
-			const cont = router.query.continent;
-			setSelectedContinent(cont);
-			const textFilter = continentCountryMap[cont] || undefined;
-			setSearchFilter((prev) => ({
-				...prev,
-				page: 1,
-				search: {
-					...prev.search,
-					text: textFilter,
-				},
-			}));
-		} else if (router.query.search && typeof router.query.search === 'string') {
-			setSelectedContinent('all');
-			setSearchFilter((prev) => ({
-				...prev,
-				page: 1,
-				search: {
-					...prev.search,
-					text: router.query.search as string,
-				},
-			}));
-		} else if (router.isReady && !router.query.continent && !router.query.search && selectedContinent !== 'all') {
-			setSelectedContinent('all');
-			setSearchFilter((prev) => ({
-				...prev,
-				page: 1,
-				search: {
-					...prev.search,
-					text: undefined,
-				},
-			}));
-		}
+		if (!router.isReady) return;
+		const continent = typeof router.query.continent === 'string' ? router.query.continent : 'all';
+		const text = typeof router.query.search === 'string' ? router.query.search : undefined;
+		setSelectedContinent(continent);
+		setSearchFilter((prev) => ({
+			...prev,
+			page: 1,
+			search: { ...prev.search, destinationCountryList: toCountryList(continent), text },
+		}));
 	}, [router.isReady, router.query.continent, router.query.search]);
 
 	/** HANDLERS: REAKTIV FILTRLASH & SARALASH (NO APPLY BUTTON) **/
 	const handleSelectContinent = async (continent: string) => {
 		setSelectedContinent(continent);
-		setCurrentPage(1);
-
-		const textPattern = continentCountryMap[continent];
-		const updated: DestinationsInquiry = {
-			...searchFilter,
+		setSearchFilter((prev) => ({
+			...prev,
 			page: 1,
-			search: {
-				...searchFilter.search,
-				text: textPattern || undefined,
-			},
-		};
+			search: { ...prev.search, destinationCountryList: toCountryList(continent) },
+		}));
 
-		setSearchFilter(updated);
-
+		// The header search stays in the URL next to the continent
+		const { search } = router.query;
 		await router.push(
 			{
 				pathname: '/destination',
-				query: continent !== 'all' ? { continent } : {},
+				query: { ...(typeof search === 'string' && { search }), ...(continent !== 'all' && { continent }) },
 			},
 			undefined,
 			{ shallow: true, scroll: false },
@@ -129,7 +102,6 @@ const DestinationList: NextPage = () => {
 
 	const handleSelectSort = (sortVal: string) => {
 		setSelectedSort(sortVal);
-		setCurrentPage(1);
 
 		let sortField = 'destinationViews';
 		switch (sortVal) {
@@ -159,7 +131,6 @@ const DestinationList: NextPage = () => {
 	};
 
 	const handlePaginationChange = (page: number) => {
-		setCurrentPage(page);
 		const updated: DestinationsInquiry = {
 			...searchFilter,
 			page,

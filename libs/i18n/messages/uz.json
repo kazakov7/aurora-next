@@ -569,6 +569,7 @@
     "CITY_ALREADY_EXISTS": "Bu shahar allaqachon mavjud!",
     "DESTINATION_NOT_FOUND": "Manzil topilmadi!",
     "DESTINATION_ALREADY_EXISTS": "Bu manzil allaqachon mavjud!",
+    "DESTINATION_HAS_LISTINGS": "Bu manzilda hali mehmonxona yoki sayohatlar bor!",
     "PROPERTY_NOT_FOUND": "Turar joy topilmadi!",
     "PROPERTY_ALREADY_EXISTS": "Bu turar joy allaqachon mavjud!",
     "PROPERTY_NOT_AVAILABLE": "Turar joy mavjud emas!",
@@ -1166,6 +1167,9 @@
     },
     "detail": {
       "loading": "Manzil ma’lumotlari yuklanmoqda...",
+      "notFound": "Manzil topilmadi",
+      "notFoundHint": "U o‘chirilgan yoki endi mavjud emas.",
+      "backToList": "Manzillarni ko‘rish",
       "metaTitle": "AURORA | {{destinationName}} ({{destinationCountry}}) bilan tanishing",
       "metaName": "{{destinationName}} — turar joylar va sayohatlar | AURORA Travel",
       "metaDescription": "Dunyo bo‘ylab saralangan manzillar."
@@ -1978,6 +1982,7 @@
       "destinationStatusUpdated": "Manzil holati yangilandi!",
       "deleteConfirm": "Bu manzilni o‘chirmoqchimisiz?",
       "destinationDeleted": "Manzil o‘chirildi!",
+      "deleteOnlyInactive": "Faqat nofaol manzilni o‘chirish mumkin.",
       "country": "Davlat",
       "destinationsManagement": "Manzillarni boshqarish",
       "intro": "Sayohat markazlari, shaharlar va ularga oid tahlillarni boshqaring.",

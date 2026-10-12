@@ -154,6 +154,40 @@ export const GET_ALL_TOURS_BY_ADMIN = gql`
 `;
 
 /**************************
+ *       DESTINATION      *
+ *************************/
+
+export const GET_ALL_DESTINATIONS_BY_ADMIN = gql`
+	query GetAllDestinationsByAdmin($input: AdminDestinationsInquiry!) {
+		getAllDestinationsByAdmin(input: $input) {
+			list {
+				_id
+				destinationStatus
+				destinationName
+				destinationSlug
+				destinationCountry
+				latitude
+				longitude
+				destinationImages
+				destinationDesc
+				destinationViews
+				destinationLikes
+				destinationComments
+				destinationReviews
+				destinationRating
+				destinationProperties
+				destinationTours
+				createdAt
+				updatedAt
+			}
+			metaCounter {
+				total
+			}
+		}
+	}
+`;
+
+/**************************
  *      BOARD-ARTICLE     *
  *************************/
 

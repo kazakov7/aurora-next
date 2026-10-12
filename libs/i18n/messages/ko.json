@@ -569,6 +569,7 @@
     "CITY_ALREADY_EXISTS": "이미 존재하는 도시입니다.",
     "DESTINATION_NOT_FOUND": "여행지를 찾을 수 없습니다.",
     "DESTINATION_ALREADY_EXISTS": "이미 존재하는 여행지입니다.",
+    "DESTINATION_HAS_LISTINGS": "이 여행지에는 아직 숙소나 투어가 있습니다!",
     "PROPERTY_NOT_FOUND": "숙소를 찾을 수 없습니다.",
     "PROPERTY_ALREADY_EXISTS": "이미 존재하는 숙소입니다.",
     "PROPERTY_NOT_AVAILABLE": "이용할 수 없는 숙소입니다.",
@@ -1166,6 +1167,9 @@
     },
     "detail": {
       "loading": "여행지 정보를 불러오는 중...",
+      "notFound": "여행지를 찾을 수 없습니다",
+      "notFoundHint": "삭제되었거나 더 이상 이용할 수 없는 여행지입니다.",
+      "backToList": "여행지 둘러보기",
       "metaTitle": "AURORA | {{destinationName}} ({{destinationCountry}}) 둘러보기",
       "metaName": "{{destinationName}} — 숙소 & 투어 | AURORA Travel",
       "metaDescription": "전 세계에서 엄선한 여행지입니다."
@@ -1978,6 +1982,7 @@
       "destinationStatusUpdated": "여행지 상태가 변경되었습니다!",
       "deleteConfirm": "이 여행지를 삭제하시겠습니까?",
       "destinationDeleted": "여행지가 삭제되었습니다!",
+      "deleteOnlyInactive": "비활성 상태의 여행지만 삭제할 수 있습니다.",
       "country": "국가",
       "destinationsManagement": "여행지 관리",
       "intro": "여행 거점, 도시 및 관련 통계를 관리합니다.",

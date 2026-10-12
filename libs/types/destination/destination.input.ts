@@ -3,6 +3,8 @@ import { Direction } from '../../enums/common.enum';
 
 export interface DestinationSearch {
 	destinationCountry?: string;
+	/** Exact country names, e.g. every country of a continent **/
+	destinationCountryList?: string[];
 	text?: string;
 }
 
@@ -12,6 +14,14 @@ export interface DestinationsInquiry {
 	sort?: string;
 	direction?: Direction;
 	search: DestinationSearch;
+}
+
+export interface AdminDestinationSearch extends DestinationSearch {
+	destinationStatus?: DestinationStatus;
+}
+
+export interface AdminDestinationsInquiry extends Omit<DestinationsInquiry, 'search'> {
+	search: AdminDestinationSearch;
 }
 
 export interface DestinationInput {

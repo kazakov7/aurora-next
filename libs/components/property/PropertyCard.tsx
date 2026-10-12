@@ -4,6 +4,7 @@ import { useReactiveVar } from "@apollo/client";
 import { userVar } from "../../../apollo/store";
 import { Property } from "../../types/property/property";
 import { DEFAULT_PROPERTY_IMAGE, getImageUrl } from "../../config";
+import { parseApiDate } from "../../utils";
 import LikeButton from "../common/LikeButton";
 import { useI18n } from "../../i18n";
 
@@ -25,9 +26,8 @@ const getListingBadge = (
     return { labelKey: "hotels.card.badgeTopRated", className: "best-price" };
   if ((property.propertyBookings ?? 0) >= 5)
     return { labelKey: "hotels.card.badgePopular", className: "popular" };
-  const createdAt = property.createdAt
-    ? new Date(property.createdAt).getTime()
-    : NaN;
+  // The API sends createdAt as an epoch-millisecond string, which `new Date()` alone cannot parse
+  const createdAt = parseApiDate(property.createdAt)?.getTime() ?? NaN;
   if (
     !Number.isNaN(createdAt) &&
     Date.now() - createdAt < NEW_LISTING_DAYS * 24 * 60 * 60 * 1000

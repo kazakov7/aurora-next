@@ -61,6 +61,7 @@ export const SERVER_MESSAGE_IDS: Record<string, string> = {
 	'Property is not available!': 'PROPERTY_NOT_AVAILABLE',
 	'You are not the owner of this property!': 'PROPERTY_NOT_OWNED',
 	'This property cannot be booked!': 'PROPERTY_CANNOT_BE_BOOKED',
+	'This property has upcoming bookings!': 'PROPERTY_HAS_BOOKINGS',
 	'Room not found!': 'ROOM_NOT_FOUND',
 	'Room already exists!': 'ROOM_ALREADY_EXISTS',
 	'Room is not available!': 'ROOM_NOT_AVAILABLE',

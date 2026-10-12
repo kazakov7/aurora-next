@@ -164,7 +164,11 @@ const MyHotels = () => {
                     </td>
                     <td>
                       <div className="actions-cell">
-                        <button onClick={() => setFormTarget(prop)}>
+                        {/* A hotel an admin turned off is listed, but the API refuses to edit it */}
+                        <button
+                          onClick={() => setFormTarget(prop)}
+                          disabled={prop.propertyStatus === PropertyStatus.INACTIVE}
+                        >
                           {t("common.edit")}
                         </button>
                       </div>

@@ -574,6 +574,7 @@
     "PROPERTY_NOT_AVAILABLE": "이용할 수 없는 숙소입니다.",
     "PROPERTY_NOT_OWNED": "이 숙소의 소유자가 아닙니다.",
     "PROPERTY_CANNOT_BE_BOOKED": "이 숙소는 예약할 수 없습니다.",
+    "PROPERTY_HAS_BOOKINGS": "이 숙소에는 예정된 예약이 있습니다.",
     "ROOM_NOT_FOUND": "객실을 찾을 수 없습니다.",
     "ROOM_ALREADY_EXISTS": "이미 존재하는 객실입니다.",
     "ROOM_NOT_AVAILABLE": "이용할 수 없는 객실입니다.",

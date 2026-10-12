@@ -574,6 +574,7 @@
     "PROPERTY_NOT_AVAILABLE": "Turar joy mavjud emas!",
     "PROPERTY_NOT_OWNED": "Siz bu turar joy egasi emassiz!",
     "PROPERTY_CANNOT_BE_BOOKED": "Bu turar joyni bron qilib bo‘lmaydi!",
+    "PROPERTY_HAS_BOOKINGS": "Bu turar joyda kelgusi bronlar bor!",
     "ROOM_NOT_FOUND": "Xona topilmadi!",
     "ROOM_ALREADY_EXISTS": "Bu xona allaqachon mavjud!",
     "ROOM_NOT_AVAILABLE": "Xona mavjud emas!",

@@ -493,11 +493,13 @@ const AdminCommunityPage: NextPage = () => {
                     border: "none",
                     height: 200,
                     overflowY: "auto",
+                    whiteSpace: "pre-line",
+                    overflowWrap: "anywhere",
                   }}
-                  dangerouslySetInnerHTML={{
-                    __html: selectedArticle.articleContent,
-                  }}
-                />
+                >
+                  {/* Plain text: shown as written, never run as HTML */}
+                  {selectedArticle.articleContent}
+                </div>
               </div>
 
               <div className="admin-form-group">

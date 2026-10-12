@@ -17,6 +17,11 @@ interface WriteStoryModalProps {
 	editArticle?: BoardArticle | null;
 }
 
+// Same limits as the API: short enough to stay a story, long enough to tell one
+const MIN_LENGTH = 3;
+const TITLE_MAX = 100;
+const CONTENT_MAX = 2000;
+
 const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 	isOpen,
 	onClose,
@@ -120,6 +125,10 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 			sweetMixinErrorAlert(t(Messages.error3));
 			return;
 		}
+		if (title.trim().length < MIN_LENGTH || content.trim().length < MIN_LENGTH) {
+			sweetMixinErrorAlert(t('community.writeStory.tooShort', { min: MIN_LENGTH }));
+			return;
+		}
 
 		try {
 			setSubmitting(true);
@@ -207,6 +216,7 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 							value={title}
 							onChange={(e) => setTitle(e.target.value)}
 							className="form-input"
+							maxLength={TITLE_MAX}
 							required
 						/>
 					</div>
@@ -250,8 +260,12 @@ const WriteStoryModal: React.FC<WriteStoryModalProps> = ({
 							value={content}
 							onChange={(e) => setContent(e.target.value)}
 							className="form-textarea"
+							maxLength={CONTENT_MAX}
 							required
 						/>
+						<span style={{ alignSelf: 'flex-end', fontSize: '12px', color: '#707881' }}>
+							{content.length}/{CONTENT_MAX}
+						</span>
 					</div>
 
 					{/* Actions */}

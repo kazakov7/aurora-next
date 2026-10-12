@@ -1267,7 +1267,8 @@
       "storyContent": "스토리 내용",
       "contentPlaceholder": "생생한 이야기, 장비 추천, 숨은 길, 현지 분위기를 공유해 주세요...",
       "saving": "저장 중...",
-      "publishDispatch": "게시하기"
+      "publishDispatch": "게시하기",
+      "tooShort": "제목과 내용은 {{min}}자 이상이어야 합니다."
     },
     "detailBody": {
       "noContent": "이 게시글에는 내용이 없습니다."

@@ -380,6 +380,11 @@
 			margin: 0 0 22px;
 		}
 
+		.story-text {
+			white-space: pre-line;
+			overflow-wrap: anywhere;
+		}
+
 		.section-heading {
 			font-size: 26px;
 			font-weight: 700;

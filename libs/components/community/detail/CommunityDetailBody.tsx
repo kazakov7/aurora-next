@@ -13,10 +13,8 @@ const CommunityDetailBody: React.FC<CommunityDetailBodyProps> = ({ article }) =>
 	return (
 		<article className="community-detail-body-article">
 			{content ? (
-				<div 
-					className="story-section quill-content" 
-					dangerouslySetInnerHTML={{ __html: content }} 
-				/>
+				// The story is plain text: React escapes it, and pre-line keeps the author's line breaks
+				<div className="story-section story-text">{content}</div>
 			) : (
 				<p className="body-paragraph" style={{ textAlign: 'center', color: 'var(--outline)' }}>
 					{t('community.detailBody.noContent')}

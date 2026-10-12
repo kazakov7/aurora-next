@@ -1267,7 +1267,8 @@
       "storyContent": "Hikoya matni",
       "contentPlaceholder": "Tafsilotlar, jihozlar bo‘yicha tavsiyalar, yashirin so‘qmoqlar va muhit haqida yozing...",
       "saving": "Saqlanmoqda...",
-      "publishDispatch": "E’lon qilish"
+      "publishDispatch": "E’lon qilish",
+      "tooShort": "Sarlavha va matn kamida {{min}} ta belgidan iborat bo‘lishi kerak."
     },
     "detailBody": {
       "noContent": "Bu maqola uchun matn mavjud emas."

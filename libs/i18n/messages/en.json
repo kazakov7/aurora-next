@@ -1267,7 +1267,8 @@
       "storyContent": "Story Content",
       "contentPlaceholder": "Share the raw details, gear recommendations, hidden trailways, and atmosphere...",
       "saving": "Saving...",
-      "publishDispatch": "Publish Dispatch"
+      "publishDispatch": "Publish Dispatch",
+      "tooShort": "Title and story need at least {{min}} characters."
     },
     "detailBody": {
       "noContent": "No content available for this article."

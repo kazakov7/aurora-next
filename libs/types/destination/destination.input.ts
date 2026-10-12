@@ -16,7 +16,6 @@ export interface DestinationsInquiry {
 
 export interface DestinationInput {
 	destinationName: string;
-	destinationSlug: string;
 	destinationCountry: string;
 	destinationImages: string[];
 	latitude?: number;

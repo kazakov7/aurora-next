@@ -12,6 +12,7 @@ export interface Agent {
 	companyDesc?: string;
 	verificationStatus: AgentVerificationStatus;
 	rejectionReason?: string;
+	verifiedAt?: Date;
 	memberData?: Member;
 	createdAt: Date;
 	updatedAt: Date;

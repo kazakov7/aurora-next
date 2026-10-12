@@ -188,16 +188,6 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
     }
   };
 
-  /** PHONE SIGN UP **/
-  const handlePhoneSignup = () => {
-    router.push({
-      pathname: "/account/phone-signup",
-      query: router.query.referrer
-        ? { referrer: router.query.referrer }
-        : undefined,
-    });
-  };
-
   return (
     <div className="auth-split-card">
       {/* LEFT SIDE */}
@@ -241,6 +231,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
                   id="nick-input"
                   type="text"
                   required
+                  maxLength={12}
                   autoComplete="username"
                   value={nick}
                   onChange={(e) => setNick(e.target.value)}
@@ -291,6 +282,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
                     id="pass-input"
                     type={showPassword ? "text" : "password"}
                     required
+                    maxLength={12}
                     autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -327,6 +319,7 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
                     id="confirm-pass-input"
                     type={showConfirmPassword ? "text" : "password"}
                     required
+                    maxLength={12}
                     autoComplete="new-password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -490,21 +483,6 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
               </svg>
 
               <span>Telegram</span>
-            </button>
-
-            {/* PHONE SIGNUP */}
-            <button
-              type="button"
-              className="social-btn"
-              onClick={handlePhoneSignup}
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 18 }}
-              >
-                smartphone
-              </span>
-              <span>{t("auth.signUp.phone")}</span>
             </button>
           </div>
         </div>

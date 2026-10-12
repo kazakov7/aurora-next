@@ -98,7 +98,8 @@ const MyProfileSettings: React.FC = () => {
           input: {
             _id: user?._id,
             memberNick: nick.trim(),
-            memberPhone: phone.trim(),
+            // Phone is optional: an empty field clears it (null), never stores an empty string
+            memberPhone: phone.trim() || null,
             memberAddress: address.trim(),
             memberDesc: desc.trim(),
             memberImage: image,
@@ -203,6 +204,8 @@ const MyProfileSettings: React.FC = () => {
             <input
               type="text"
               value={nick}
+              minLength={3}
+              maxLength={12}
               onChange={(e) => setNick(e.target.value)}
               style={{
                 width: "100%",
@@ -216,6 +219,38 @@ const MyProfileSettings: React.FC = () => {
                 outline: "none",
               }}
               required
+            />
+          </div>
+
+          <div>
+            <label
+              style={{
+                display: "block",
+                fontSize: "12px",
+                fontWeight: 600,
+                color: "#141b2b",
+                marginBottom: "6px",
+              }}
+            >
+              {t("profile.settings.email")}
+            </label>
+            <input
+              type="email"
+              value={user?.memberEmail || ""}
+              placeholder="-"
+              readOnly
+              style={{
+                width: "100%",
+                height: "44px",
+                padding: "0 14px",
+                background: "#f1f3ff",
+                border: "1px solid transparent",
+                borderRadius: "10px",
+                fontSize: "14px",
+                color: "#6b7280",
+                outline: "none",
+                cursor: "default",
+              }}
             />
           </div>
 
@@ -246,7 +281,6 @@ const MyProfileSettings: React.FC = () => {
                 color: "#141b2b",
                 outline: "none",
               }}
-              required
             />
           </div>
 
@@ -296,6 +330,7 @@ const MyProfileSettings: React.FC = () => {
             <textarea
               rows={3}
               value={desc}
+              maxLength={500}
               onChange={(e) => setDesc(e.target.value)}
               placeholder={t("profile.settings.bioPlaceholder")}
               style={{

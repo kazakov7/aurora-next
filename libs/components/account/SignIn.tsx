@@ -48,15 +48,8 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 	/** HANDLERS **/
 	const handleIdentifierChange = (val: string) => {
 		setIdentifier(val);
-		if (val.includes('@') && val.includes('.')) {
-			setIdentifierHint(t('auth.signIn.validEmail'));
-		} else if (val.startsWith('@') && val.length > 2) {
-			setIdentifierHint(t('auth.signIn.validHandle'));
-		} else if (val.trim().length >= 3) {
-			setIdentifierHint(t('auth.signIn.validNickname'));
-		} else {
-			setIdentifierHint('');
-		}
+		// The API signs in by nickname only (3+ characters); email is not a login identifier
+		setIdentifierHint(val.trim().length >= 3 ? t('auth.signIn.validNickname') : '');
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -84,7 +77,12 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 			}
 		} catch (err: any) {
 			console.error('Login error:', err);
-			sweetMixinErrorAlert(tError(err, 'auth.signIn.loginFailed'));
+			// The API refuses every bad sign-in the same way and never says which part was wrong,
+			// so on this form a refusal simply means the credentials did not match
+			const refused = err?.graphQLErrors?.some((e: any) =>
+				['UNAUTHENTICATED', 'BAD_REQUEST'].includes(e?.extensions?.code),
+			);
+			sweetMixinErrorAlert(refused ? t('auth.signIn.loginFailed') : tError(err, 'auth.signIn.loginFailed'));
 		}
 	};
 
@@ -170,7 +168,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 						{/* Identity Field */}
 						<div className="field-group">
 							<div className="field-header">
-								<label htmlFor="identifier">{t('auth.signIn.emailOrNickname')}</label>
+								<label htmlFor="identifier">{t('auth.signIn.nickname')}</label>
 								{identifierHint && (
 									<span className="field-hint" style={{ opacity: 1 }}>
 										{identifierHint}
@@ -196,16 +194,6 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 						<div className="field-group">
 							<div className="field-header">
 								<label htmlFor="password">{t('auth.signIn.password')}</label>
-								<a
-									href="#"
-									className="forgot-link"
-									onClick={(e) => {
-										e.preventDefault();
-										sweetMixinErrorAlert(t('auth.signIn.recoveryLinkSent'));
-									}}
-								>
-									{t('auth.signIn.forgotPassword')}
-								</a>
 							</div>
 							<div className="input-wrapper">
 								<input

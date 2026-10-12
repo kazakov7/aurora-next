@@ -5,7 +5,7 @@ import { gql } from '@apollo/client';
  *************************/
 
 export const UPDATE_MEMBER_BY_ADMIN = gql`
-	mutation UpdateMemberByAdmin($input: MemberUpdate!) {
+	mutation UpdateMemberByAdmin($input: AdminUpdateMemberInput!) {
 		updateMemberByAdmin(input: $input) {
 			_id
 			memberType

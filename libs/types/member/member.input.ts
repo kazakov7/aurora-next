@@ -4,11 +4,7 @@ import { Direction } from '../../enums/common.enum';
 export interface MemberInput {
 	memberNick: string;
 	memberPassword: string;
-	memberPhone: string;
-	memberEmail?: string;
 	memberFullName?: string;
-	memberType?: MemberType;
-	memberAuthType?: MemberAuthType;
 }
 
 export interface LoginInput {
@@ -17,33 +13,31 @@ export interface LoginInput {
 }
 
 export interface MemberUpdate {
-	_id: string;
-	memberType?: MemberType;
-	memberStatus?: MemberStatus;
-	memberPhone?: string;
-	memberEmail?: string;
+	_id?: string;
 	memberNick?: string;
 	memberFullName?: string;
+	memberPhone?: string;
+	memberDesc?: string;
 	memberImage?: string;
 	memberAddress?: string;
+}
+
+export interface AdminUpdateMemberInput {
+	_id: string;
+	memberStatus?: MemberStatus;
+	memberNick?: string;
+	memberFullName?: string;
+	memberEmail?: string;
+	memberPhone?: string;
 	memberDesc?: string;
-}
-
-interface AISearch {
-	text?: string;
-}
-
-export interface AgentsInquiry {
-	page: number;
-	limit: number;
-	sort?: string;
-	direction?: Direction;
-	search: AISearch;
+	memberImage?: string;
+	memberAddress?: string;
 }
 
 interface MISearch {
 	memberStatus?: MemberStatus;
 	memberType?: MemberType;
+	memberAuthType?: MemberAuthType;
 	text?: string;
 }
 

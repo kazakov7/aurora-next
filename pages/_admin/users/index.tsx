@@ -6,7 +6,10 @@ import UserDrawer from "../../../libs/components/admin/UserDrawer";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_ALL_MEMBERS_BY_ADMIN } from "../../../apollo/admin/query";
 import { UPDATE_MEMBER_BY_ADMIN } from "../../../apollo/admin/mutation";
-import { MembersInquiry } from "../../../libs/types/member/member.input";
+import {
+  AdminUpdateMemberInput,
+  MembersInquiry,
+} from "../../../libs/types/member/member.input";
 import { Member } from "../../../libs/types/member/member";
 import { MemberStatus, MemberType } from "../../../libs/enums/member.enum";
 import { Direction } from "../../../libs/enums/common.enum";
@@ -94,14 +97,11 @@ const AdminMembersPage: NextPage = () => {
     newStatus: MemberStatus,
   ) => {
     try {
-      await updateMemberByAdmin({
-        variables: {
-          input: {
-            _id: memberId,
-            memberStatus: newStatus,
-          },
-        },
-      });
+      const input: AdminUpdateMemberInput = {
+        _id: memberId,
+        memberStatus: newStatus,
+      };
+      await updateMemberByAdmin({ variables: { input } });
       await sweetTopSmallSuccessAlert(t("admin.users.statusUpdatedTo", { newStatus: tEnum("memberStatus", newStatus) }), 800);
       setOpenMenuId(null);
       if (selectedMember && selectedMember._id === memberId) {

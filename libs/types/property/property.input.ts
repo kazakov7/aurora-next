@@ -8,7 +8,7 @@ export interface PricePerNightRange {
 
 export interface PropertySearch {
 	memberId?: string;
-	destinationId?: string[];
+	destinationId?: string;
 	propertyCityList?: string[];
 	propertyTypeList?: PropertyType[];
 	minGuests?: number;

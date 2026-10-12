@@ -24,4 +24,5 @@ export interface AgentInput {
 	companyName: string;
 	businessNumber: string;
 	companyAddress: string;
+	companyDesc?: string;
 }

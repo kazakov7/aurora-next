@@ -3,7 +3,6 @@ import { useQuery, useReactiveVar } from "@apollo/client";
 import { GET_AGENT_PROPERTY_BOOKINGS, GET_AGENT_TOUR_BOOKINGS, GET_MY_AGENT_APPLICATIONS } from "../../../../apollo/user/query";
 import { AgentType, AgentVerificationStatus } from "../../../enums/agent.enum";
 import { BookingStatus } from "../../../enums/booking.enum";
-import { Direction } from "../../../enums/common.enum";
 import { useRouter } from "next/router";
 import moment from "moment";
 import { userVar } from "../../../../apollo/store";
@@ -39,10 +38,10 @@ const Reservations = () => {
     skip: !isHotel,
     variables: {
       input: {
-        page, limit: 10, sort: "createdAt", direction: Direction.DESC,
+        // BookingsInquiry accepts only page, limit and search.bookingStatusList
+        page, limit: 10,
         search: {
           ...(bookingStatus && { bookingStatusList: [bookingStatus] }),
-          // Search string isn't well supported in backend booking query, omit for now or send as memberId if objectId
         }
       }
     }
@@ -54,7 +53,7 @@ const Reservations = () => {
     skip: !isTour,
     variables: {
       input: {
-        page, limit: 10, sort: "createdAt", direction: Direction.DESC,
+        page, limit: 10,
         search: {
           ...(bookingStatus && { bookingStatusList: [bookingStatus] }),
         }

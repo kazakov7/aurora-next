@@ -1,5 +1,5 @@
 import { Member } from '../member/member';
-import { TotalCounter } from '../destination/destination';
+import { MeLiked, TotalCounter } from '../destination/destination';
 
 export interface MeFollowed {
 	followingId: string;
@@ -12,7 +12,7 @@ export interface Follower {
 	followingId: string;
 	followerId: string;
 	createdAt: Date;
-	updatedAt: Date;
+	meLiked?: MeLiked[];
 	meFollowed?: MeFollowed[];
 	followerData?: Member;
 }
@@ -27,7 +27,7 @@ export interface Following {
 	followingId: string;
 	followerId: string;
 	createdAt: Date;
-	updatedAt: Date;
+	meLiked?: MeLiked[];
 	meFollowed?: MeFollowed[];
 	followingData?: Member;
 }

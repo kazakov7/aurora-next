@@ -634,16 +634,15 @@ const AdminAgentVerificationPage: NextPage = () => {
                   <h3 className="applicant-name">
                     {selectedAgent.memberData?.memberFullName ||
                       selectedAgent.memberData?.memberNick ||
-                      "Julian Laurent"}
+                      t("admin.agentVerification.notProvided")}
                   </h3>
                   <span className="applicant-email">
                     {selectedAgent.memberData?.memberEmail ||
-                      `${(
-                        selectedAgent.memberData?.memberNick || "julian"
-                      ).toLowerCase()}@swissretreats.ch`}
+                      t("admin.agentVerification.notProvided")}
                   </span>
                   <span className="applicant-phone">
-                    {selectedAgent.memberData?.memberPhone || "+41 27 966 8100"}
+                    {selectedAgent.memberData?.memberPhone ||
+                      t("admin.agentVerification.notProvided")}
                   </span>
                 </div>
               </div>

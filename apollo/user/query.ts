@@ -736,6 +736,9 @@ export const GET_MY_BOOKINGS = gql`
 				memberId
 				bookingCategory
 				bookingStatus
+				bookingStartDate
+				bookingEndDate
+				cancelReason
 				bookingRefId
 				checkIn
 				checkOut
@@ -773,6 +776,32 @@ export const GET_MY_BOOKINGS = gql`
 	}
 `;
 
+/** Tab counters of My Bookings: totals only, one round trip **/
+export const GET_MY_BOOKING_COUNTS = gql`
+	query GetMyBookingCounts($all: BookingsInquiry!, $active: BookingsInquiry!, $hotels: BookingsInquiry!, $tours: BookingsInquiry!) {
+		all: getMyBookings(input: $all) {
+			metaCounter {
+				total
+			}
+		}
+		active: getMyBookings(input: $active) {
+			metaCounter {
+				total
+			}
+		}
+		hotels: getMyBookings(input: $hotels) {
+			metaCounter {
+				total
+			}
+		}
+		tours: getMyBookings(input: $tours) {
+			metaCounter {
+				total
+			}
+		}
+	}
+`;
+
 export const GET_AGENT_PROPERTY_BOOKINGS = gql`
 	query GetAgentPropertyBookings($input: BookingsInquiry!) {
 		getAgentPropertyBookings(input: $input) {
@@ -781,6 +810,9 @@ export const GET_AGENT_PROPERTY_BOOKINGS = gql`
 				memberId
 				bookingCategory
 				bookingStatus
+				bookingStartDate
+				bookingEndDate
+				cancelReason
 				bookingRefId
 				checkIn
 				checkOut
@@ -815,6 +847,9 @@ export const GET_MY_TOUR_BOOKINGS = gql`
 				memberId
 				bookingCategory
 				bookingStatus
+				bookingStartDate
+				bookingEndDate
+				cancelReason
 				bookingRefId
 				checkIn
 				checkOut
@@ -844,6 +879,9 @@ export const GET_AGENT_TOUR_BOOKINGS = gql`
 				memberId
 				bookingCategory
 				bookingStatus
+				bookingStartDate
+				bookingEndDate
+				cancelReason
 				bookingRefId
 				checkIn
 				checkOut

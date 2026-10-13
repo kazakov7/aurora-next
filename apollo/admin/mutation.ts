@@ -232,3 +232,14 @@ export const UPDATE_SUPPORT_TICKET_BY_ADMIN = gql`
 		}
 	}
 `;
+
+export const CANCEL_BOOKING_BY_ADMIN = gql`
+	mutation CancelBookingByAdmin($input: CancelBookingByAdminInput!) {
+		cancelBookingByAdmin(input: $input) {
+			_id
+			bookingStatus
+			cancelReason
+			cancelledAt
+		}
+	}
+`;

@@ -642,7 +642,9 @@
     "PROVIDE_ALLOWED_FORMAT": "Only PNG and JPG images are allowed!",
     "FILE_TOO_LARGE": "File size is too large!",
     "IMAGE_REQUIRED": "Image is required!",
-    "ONLY_SPECIFIC_ROLES": "Only specific roles!"
+    "ONLY_SPECIFIC_ROLES": "Only specific roles!",
+    "BOOKING_CANCEL_WINDOW_PASSED": "Free cancellation closes 48 hours before the start!",
+    "RATING_REQUIRES_STAY": "Only a traveler who completed this stay or tour can rate it!"
   },
   "errors": {
     "somethingWentWrong": "Something went wrong!",
@@ -1593,7 +1595,13 @@
       "registeredGuests": "Registered Guests:",
       "totalAmount": "Total Amount:",
       "status": "Status:",
-      "contactAtelierConcierge": "Contact Atelier Concierge"
+      "contactAtelierConcierge": "Contact Atelier Concierge",
+      "cancelPaidConfirm": "Cancel this booking? The full amount is refunded to your card.",
+      "cancelledRefunded": "Booking cancelled and refunded",
+      "awaitingPayment": "Awaiting payment",
+      "loadMore": "Load more",
+      "cancelReason": "Cancellation reason:",
+      "cancelWindowClosed": "Free cancellation closed 48 hours before the start. Contact support if you need to change this booking."
     },
     "operationFailed": "Operation failed.",
     "followers": {
@@ -1943,7 +1951,14 @@
       "loadingBookings": "Loading bookings...",
       "noBookingsFound": "No bookings found.",
       "unknownMember": "Unknown member",
-      "showingRange": "Showing {{startItem}}–{{endItem}} of {{total}} bookings"
+      "showingRange": "Showing {{startItem}}–{{endItem}} of {{total}} bookings",
+      "cancelTitle": "Cancel booking?",
+      "cancelPaidText": "The guest is refunded in full and notified.",
+      "cancelHoldText": "The payment hold is released and the guest is notified.",
+      "cancelPlaceholder": "Reason shown to the guest...",
+      "cancelButton": "Cancel booking",
+      "reasonRequired": "Please provide a reason.",
+      "bookingCancelled": "Booking cancelled"
     },
     "community": {
       "articleStatusUpdated": "Article status updated!",

@@ -642,7 +642,9 @@
     "PROVIDE_ALLOWED_FORMAT": "Faqat PNG va JPG rasmlar qabul qilinadi!",
     "FILE_TOO_LARGE": "Fayl hajmi juda katta!",
     "IMAGE_REQUIRED": "Rasm talab qilinadi!",
-    "ONLY_SPECIFIC_ROLES": "Faqat ma’lum rollar uchun!"
+    "ONLY_SPECIFIC_ROLES": "Faqat ma’lum rollar uchun!",
+    "BOOKING_CANCEL_WINDOW_PASSED": "Bepul bekor qilish boshlanishdan 48 soat oldin yopiladi!",
+    "RATING_REQUIRES_STAY": "Faqat shu joyda turgan yoki sayohatni tugatgan mehmon baho qo‘ya oladi!"
   },
   "errors": {
     "somethingWentWrong": "Xatolik yuz berdi!",
@@ -1593,7 +1595,13 @@
       "registeredGuests": "Ro‘yxatdagi mehmonlar:",
       "totalAmount": "Jami summa:",
       "status": "Holat:",
-      "contactAtelierConcierge": "Konsyerjga murojaat qilish"
+      "contactAtelierConcierge": "Konsyerjga murojaat qilish",
+      "cancelPaidConfirm": "Bron bekor qilinsinmi? To‘langan summa to‘liq kartangizga qaytariladi.",
+      "cancelledRefunded": "Bron bekor qilindi va pul qaytarildi",
+      "awaitingPayment": "To‘lov kutilmoqda",
+      "loadMore": "Yana yuklash",
+      "cancelReason": "Bekor qilish sababi:",
+      "cancelWindowClosed": "Bepul bekor qilish boshlanishdan 48 soat oldin yopildi. Bronni o‘zgartirish kerak bo‘lsa, qo‘llab-quvvatlash xizmatiga murojaat qiling."
     },
     "operationFailed": "Amal bajarilmadi.",
     "followers": {
@@ -1943,7 +1951,14 @@
       "loadingBookings": "Bronlar yuklanmoqda...",
       "noBookingsFound": "Bronlar topilmadi.",
       "unknownMember": "Noma’lum a’zo",
-      "showingRange": "{{total}} ta brondan {{startItem}}–{{endItem}} ko‘rsatilmoqda"
+      "showingRange": "{{total}} ta brondan {{startItem}}–{{endItem}} ko‘rsatilmoqda",
+      "cancelTitle": "Bron bekor qilinsinmi?",
+      "cancelPaidText": "Mehmonga pul to‘liq qaytariladi va xabar yuboriladi.",
+      "cancelHoldText": "To‘lov bloki bo‘shatiladi va mehmonga xabar yuboriladi.",
+      "cancelPlaceholder": "Mehmonga ko‘rsatiladigan sabab...",
+      "cancelButton": "Bronni bekor qilish",
+      "reasonRequired": "Iltimos, sababini kiriting.",
+      "bookingCancelled": "Bron bekor qilindi"
     },
     "community": {
       "articleStatusUpdated": "Maqola holati yangilandi!",

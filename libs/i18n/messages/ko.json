@@ -642,7 +642,9 @@
     "PROVIDE_ALLOWED_FORMAT": "PNG, JPG 이미지만 업로드할 수 있습니다.",
     "FILE_TOO_LARGE": "파일 크기가 너무 큽니다.",
     "IMAGE_REQUIRED": "이미지가 필요합니다.",
-    "ONLY_SPECIFIC_ROLES": "특정 역할만 이용할 수 있습니다."
+    "ONLY_SPECIFIC_ROLES": "특정 역할만 이용할 수 있습니다.",
+    "BOOKING_CANCEL_WINDOW_PASSED": "무료 취소는 시작 48시간 전에 마감됩니다!",
+    "RATING_REQUIRES_STAY": "숙박 또는 투어를 마친 여행자만 평가할 수 있습니다!"
   },
   "errors": {
     "somethingWentWrong": "문제가 발생했습니다.",
@@ -1593,7 +1595,13 @@
       "registeredGuests": "예약 인원:",
       "totalAmount": "총 금액:",
       "status": "상태:",
-      "contactAtelierConcierge": "컨시어지에 문의"
+      "contactAtelierConcierge": "컨시어지에 문의",
+      "cancelPaidConfirm": "예약을 취소할까요? 결제 금액 전액이 카드로 환불됩니다.",
+      "cancelledRefunded": "예약이 취소되고 환불되었습니다",
+      "awaitingPayment": "결제 대기",
+      "loadMore": "더 보기",
+      "cancelReason": "취소 사유:",
+      "cancelWindowClosed": "무료 취소는 시작 48시간 전에 마감되었습니다. 변경이 필요하면 고객센터에 문의하세요."
     },
     "operationFailed": "작업에 실패했습니다.",
     "followers": {
@@ -1943,7 +1951,14 @@
       "loadingBookings": "예약을 불러오는 중...",
       "noBookingsFound": "예약이 없습니다.",
       "unknownMember": "알 수 없는 회원",
-      "showingRange": "예약 {{total}}건 중 {{startItem}}–{{endItem}} 표시"
+      "showingRange": "예약 {{total}}건 중 {{startItem}}–{{endItem}} 표시",
+      "cancelTitle": "예약을 취소할까요?",
+      "cancelPaidText": "고객에게 전액 환불되고 알림이 전송됩니다.",
+      "cancelHoldText": "결제 보류가 해제되고 고객에게 알림이 전송됩니다.",
+      "cancelPlaceholder": "고객에게 표시될 사유...",
+      "cancelButton": "예약 취소",
+      "reasonRequired": "사유를 입력해 주세요.",
+      "bookingCancelled": "예약이 취소되었습니다"
     },
     "community": {
       "articleStatusUpdated": "게시글 상태가 변경되었습니다!",

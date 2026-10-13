@@ -1,14 +1,32 @@
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useReactiveVar } from '@apollo/client';
-import { GET_MY_BOOKINGS } from '../../../apollo/user/query';
+import { GET_MY_BOOKING_COUNTS, GET_MY_BOOKINGS } from '../../../apollo/user/query';
 import { CANCEL_BOOKING, CANCEL_TOUR_BOOKING } from '../../../apollo/user/mutation';
 import { userVar } from '../../../apollo/store';
 import { BookingCategory, BookingStatus } from '../../enums/booking.enum';
 import { Booking } from '../../types/booking/booking';
+import { BISearch } from '../../types/booking/booking.input';
 import { DEFAULT_PROPERTY_IMAGE, DEFAULT_TOUR_IMAGE, getImageUrl } from '../../config';
 import { sweetConfirmAlert, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import { useI18n } from '../../i18n';
+
+const PAGE_LIMIT = 20;
+// Same rule as the API: a paid booking is cancelled online until 48 hours before it starts
+const GUEST_CANCEL_WINDOW_MS = 48 * 60 * 60 * 1000;
+
+const CATEGORY_SEARCH: Record<'ALL' | 'HOTEL' | 'TOUR', BISearch> = {
+	ALL: {},
+	HOTEL: { bookingCategory: BookingCategory.PROPERTY },
+	TOUR: { bookingCategory: BookingCategory.TOUR },
+};
+const STATUS_SEARCH: Record<'ALL' | 'UPCOMING' | 'COMPLETED' | 'CANCELLED', BISearch> = {
+	ALL: {},
+	UPCOMING: { bookingStatusList: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
+	COMPLETED: { bookingStatusList: [BookingStatus.COMPLETED] },
+	CANCELLED: { bookingStatusList: [BookingStatus.CANCELLED] },
+};
+const countInput = (search: BISearch) => ({ page: 1, limit: 1, search });
 
 const MyProfileBookings: React.FC = () => {
 	const { t, tEnum, tError, formatDate } = useI18n();
@@ -22,41 +40,61 @@ const MyProfileBookings: React.FC = () => {
 	const [cancelBookingMutation] = useMutation(CANCEL_BOOKING);
 	const [cancelTourBookingMutation] = useMutation(CANCEL_TOUR_BOOKING);
 
-	const { data, loading, error, refetch } = useQuery(GET_MY_BOOKINGS, {
+	// The API filters and pages, so a member with many bookings sees all of them
+	const search = useMemo(
+		() => ({ ...CATEGORY_SEARCH[activeCategory], ...STATUS_SEARCH[activeStatus] }),
+		[activeCategory, activeStatus],
+	);
+	const { data, loading, error, refetch, fetchMore } = useQuery(GET_MY_BOOKINGS, {
 		fetchPolicy: 'network-only',
-		variables: {
-			input: {
-				page: 1,
-				limit: 100,
-				search: {},
-			},
-		},
+		variables: { input: { page: 1, limit: PAGE_LIMIT, search } },
 		skip: !user?._id,
 		notifyOnNetworkStatusChange: true,
 	});
+	const { data: countData, refetch: refetchCounts } = useQuery(GET_MY_BOOKING_COUNTS, {
+		fetchPolicy: 'network-only',
+		variables: {
+			all: countInput({}),
+			active: countInput(STATUS_SEARCH.UPCOMING),
+			hotels: countInput(CATEGORY_SEARCH.HOTEL),
+			tours: countInput(CATEGORY_SEARCH.TOUR),
+		},
+		skip: !user?._id,
+	});
 
-	const allBookings: Booking[] = data?.getMyBookings?.list || [];
-	const total = data?.getMyBookings?.metaCounter?.[0]?.total ?? allBookings.length;
-	const bookings = useMemo(() => allBookings.filter((booking) => {
-		const categoryMatches = activeCategory === 'ALL' ||
-			(activeCategory === 'HOTEL' && booking.bookingCategory === BookingCategory.PROPERTY) ||
-			(activeCategory === 'TOUR' && booking.bookingCategory === BookingCategory.TOUR);
-		const statusMatches = activeStatus === 'ALL' ||
-			(activeStatus === 'UPCOMING' && [BookingStatus.PENDING, BookingStatus.CONFIRMED].includes(booking.bookingStatus)) ||
-			(activeStatus === 'COMPLETED' && booking.bookingStatus === BookingStatus.COMPLETED) ||
-			(activeStatus === 'CANCELLED' && booking.bookingStatus === BookingStatus.CANCELLED);
-		return categoryMatches && statusMatches;
-	}), [activeCategory, activeStatus, allBookings]);
+	const bookings: Booking[] = data?.getMyBookings?.list || [];
+	const filteredTotal = data?.getMyBookings?.metaCounter?.[0]?.total ?? 0;
+	const countOf = (key: 'all' | 'active' | 'hotels' | 'tours') => countData?.[key]?.metaCounter?.[0]?.total ?? 0;
+	const total = countOf('all');
+	const activeCount = countOf('active');
+	const hotelCount = countOf('hotels');
+	const tourCount = countOf('tours');
 
-	const activeCount = allBookings.filter(
-		(b) => b.bookingStatus === BookingStatus.CONFIRMED || b.bookingStatus === BookingStatus.PENDING,
-	).length;
-	const hotelCount = allBookings.filter((b) => b.bookingCategory === BookingCategory.PROPERTY).length;
-	const tourCount = allBookings.filter((b) => b.bookingCategory === BookingCategory.TOUR).length;
+	const handleLoadMore = async () => {
+		await fetchMore({
+			variables: { input: { page: Math.floor(bookings.length / PAGE_LIMIT) + 1, limit: PAGE_LIMIT, search } },
+			updateQuery: (previous, { fetchMoreResult }) => ({
+				getMyBookings: {
+					...fetchMoreResult.getMyBookings,
+					list: [...previous.getMyBookings.list, ...fetchMoreResult.getMyBookings.list],
+				},
+			}),
+		});
+	};
+
+	/** A paid booking can be cancelled online until 48 hours before it starts, a payment hold any time **/
+	const canCancel = (booking: Booking) => {
+		if (booking.bookingStatus === BookingStatus.PENDING) return true;
+		if (booking.bookingStatus !== BookingStatus.CONFIRMED || !booking.bookingStartDate) return false;
+		return new Date(booking.bookingStartDate).getTime() - Date.now() >= GUEST_CANCEL_WINDOW_MS;
+	};
 
 	/** HANDLERS **/
 	const handleCancel = async (booking: Booking) => {
-		const confirmed = await sweetConfirmAlert(t('profile.bookings.cancelConfirm'));
+		const isPaid = booking.bookingStatus === BookingStatus.CONFIRMED;
+		const confirmed = await sweetConfirmAlert(
+			t(isPaid ? 'profile.bookings.cancelPaidConfirm' : 'profile.bookings.cancelConfirm'),
+		);
 		if (!confirmed) return;
 
 		try {
@@ -64,15 +102,16 @@ const MyProfileBookings: React.FC = () => {
 				? cancelTourBookingMutation
 				: cancelBookingMutation;
 			await cancelMutation({ variables: { bookingId: booking._id } });
-			sweetTopSmallSuccessAlert(t('profile.bookings.cancelled'), 1000);
-			await refetch();
+			sweetTopSmallSuccessAlert(t(isPaid ? 'profile.bookings.cancelledRefunded' : 'profile.bookings.cancelled'), 1500);
+			await Promise.all([refetch(), refetchCounts()]);
 		} catch (err: any) {
 			sweetMixinErrorAlert(tError(err, 'profile.bookings.cancellationFailed'));
 		}
 	};
 
 	const handleExportCalendar = () => {
-		const calendarBookings = allBookings.filter((booking) => booking.checkIn);
+		// Tours carry their dates in bookingStartDate too, so they are exported next to the stays
+		const calendarBookings = bookings.filter((booking) => booking.bookingStartDate);
 		if (!calendarBookings.length) {
 			sweetMixinErrorAlert(t('profile.bookings.nothingToExport'));
 			return;
@@ -82,7 +121,7 @@ const MyProfileBookings: React.FC = () => {
 			: '';
 		const events = calendarBookings.map((booking) => {
 			const title = booking.propertyData?.propertyName || booking.tourData?.tourName || t('profile.bookings.auroraBooking');
-			return ['BEGIN:VEVENT', `UID:${booking._id}@aurora.travel`, `DTSTART:${toDate(booking.checkIn)}`, `DTEND:${toDate(booking.checkOut || booking.checkIn)}`, `SUMMARY:${title.replace(/[;,]/g, ' ')}`, `DESCRIPTION:Booking ${booking.bookingRefId} — ${booking.bookingStatus}`, 'END:VEVENT'].join('\r\n');
+			return ['BEGIN:VEVENT', `UID:${booking._id}@aurora.travel`, `DTSTART:${toDate(booking.bookingStartDate)}`, `DTEND:${toDate(booking.bookingEndDate || booking.bookingStartDate)}`, `SUMMARY:${title.replace(/[;,]/g, ' ')}`, `DESCRIPTION:Booking ${booking.bookingRefId} — ${booking.bookingStatus}`, 'END:VEVENT'].join('\r\n');
 		});
 		const blob = new Blob([['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//AURA Travel//Bookings//EN', ...events, 'END:VCALENDAR'].join('\r\n')], { type: 'text/calendar;charset=utf-8' });
 		const url = URL.createObjectURL(blob);
@@ -216,11 +255,11 @@ const MyProfileBookings: React.FC = () => {
 
 						const refCode = booking.bookingRefId;
 						const rating = isHotel ? booking.propertyData?.propertyRating : booking.tourData?.tourRating;
-						const isConfirmed =
-							booking.bookingStatus === BookingStatus.CONFIRMED ||
-							booking.bookingStatus === BookingStatus.PENDING;
+						// A payment hold is not a booking yet: it says so until the payment arrives
+						const isPending = booking.bookingStatus === BookingStatus.PENDING;
+						const isConfirmed = booking.bookingStatus === BookingStatus.CONFIRMED;
 						const isCancelled = booking.bookingStatus === BookingStatus.CANCELLED;
-						const isCancellable = booking.bookingStatus === BookingStatus.PENDING;
+						const isCancellable = canCancel(booking);
 
 						return (
 							<article key={booking._id} className="booking-card-item">
@@ -242,7 +281,7 @@ const MyProfileBookings: React.FC = () => {
 									<div className="date-guests-line">
 										<span>
 											<span className="material-symbols-outlined">calendar_today</span>
-											{formatDateRange(booking.checkIn, booking.checkOut)}
+											{formatDateRange(booking.bookingStartDate, booking.bookingEndDate)}
 										</span>
 										<span>·</span>
 										<span>
@@ -255,11 +294,17 @@ const MyProfileBookings: React.FC = () => {
 								<div className="card-right-status">
 									<span
 										className={`status-badge ${
-											isCancelled ? 'cancelled' : isConfirmed ? 'confirmed' : 'completed'
+											isCancelled ? 'cancelled' : isPending ? 'pending' : isConfirmed ? 'confirmed' : 'completed'
 										}`}
 									>
 										{isConfirmed && <span className="pulse-dot"></span>}
-										{isCancelled ? t('booking.cancelled') : isConfirmed ? t('booking.confirmed') : t('booking.completed')}
+										{isCancelled
+											? t('booking.cancelled')
+											: isPending
+												? t('profile.bookings.awaitingPayment')
+												: isConfirmed
+													? t('booking.confirmed')
+													: t('booking.completed')}
 									</span>
 
 									<div className="price-block">
@@ -291,6 +336,17 @@ const MyProfileBookings: React.FC = () => {
 							</article>
 						);
 					})}
+					{bookings.length < filteredTotal && (
+						<button
+							type="button"
+							className="view-btn"
+							style={{ alignSelf: 'center' }}
+							onClick={() => void handleLoadMore()}
+							disabled={loading}
+						>
+							{t('profile.bookings.loadMore')}
+						</button>
+					)}
 				</div>
 			) : (
 				<div className="profile-empty-state">
@@ -354,7 +410,7 @@ const MyProfileBookings: React.FC = () => {
 								{selectedBooking.propertyData?.propertyName || selectedBooking.tourData?.tourName || t('profile.bookings.listingUnavailable')}
 							</div>
 							<div>
-								<strong>{t('profile.bookings.stayTourDates')}</strong> {formatDateRange(selectedBooking.checkIn, selectedBooking.checkOut)}
+								<strong>{t('profile.bookings.stayTourDates')}</strong> {formatDateRange(selectedBooking.bookingStartDate, selectedBooking.bookingEndDate)}
 							</div>
 							<div>
 								<strong>{t('profile.bookings.registeredGuests')}</strong> {t('profile.bookings.persons', { bookingGuests: selectedBooking.bookingGuests })}
@@ -366,6 +422,14 @@ const MyProfileBookings: React.FC = () => {
 								<strong>{t('profile.bookings.status')}</strong>{' '}
 								<span style={{ color: '#137333', fontWeight: 600 }}>{tEnum('bookingStatus', selectedBooking.bookingStatus)}</span>
 							</div>
+							{selectedBooking.cancelReason && (
+								<div>
+									<strong>{t('profile.bookings.cancelReason')}</strong> {selectedBooking.cancelReason}
+								</div>
+							)}
+							{selectedBooking.bookingStatus === BookingStatus.CONFIRMED && !canCancel(selectedBooking) && (
+								<div style={{ fontSize: '13px', color: '#545c72' }}>{t('profile.bookings.cancelWindowClosed')}</div>
+							)}
 						</div>
 
 						<div style={{ marginTop: '28px', display: 'flex', gap: '10px' }}>

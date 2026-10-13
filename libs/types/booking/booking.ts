@@ -17,6 +17,10 @@ export interface Booking {
 	bookingCurrency: string;
 	bookingNote?: string;
 	cancelledAt?: Date;
+	cancelReason?: string;
+	/** checkIn/checkOut of a stay, the booked dates of a tour **/
+	bookingStartDate?: Date;
+	bookingEndDate?: Date;
 	expiresAt?: Date;
 	createdAt: Date;
 	updatedAt: Date;

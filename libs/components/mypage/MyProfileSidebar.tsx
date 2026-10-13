@@ -80,6 +80,9 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
     latestApplication?.verificationStatus === AgentVerificationStatus.REJECTED ||
     latestApplication?.verificationStatus === AgentVerificationStatus.REVOKED;
   const isApprovedAgent = user?.memberType === "AGENT" && myAgentType;
+  // A revoked agent is a USER again but still hosts the guests booked before the revoke
+  const isFormerAgent =
+    latestApplication?.verificationStatus === AgentVerificationStatus.REVOKED;
 
   // Partner tab label
   let partnerTabLabel = t("profile.becomeAPartner");
@@ -216,7 +219,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
           );
         })}
 
-        {isApprovedAgent && (
+        {(isApprovedAgent || isFormerAgent) && (
           <>
             <div
               className="sidebar-section-title"
@@ -231,7 +234,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
             >
               {t("profile.sidebar.partnerOperations")}
             </div>
-            {myAgentType === AgentType.HOTEL && (
+            {isApprovedAgent && myAgentType === AgentType.HOTEL && (
               <button
                 type="button"
                 className={`sidebar-item-btn ${
@@ -245,7 +248,7 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
                 </div>
               </button>
             )}
-            {myAgentType === AgentType.TOUR && (
+            {isApprovedAgent && myAgentType === AgentType.TOUR && (
               <button
                 type="button"
                 className={`sidebar-item-btn ${

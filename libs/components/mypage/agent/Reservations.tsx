@@ -17,18 +17,19 @@ const Reservations = () => {
   const [search, setSearch] = useState("");
   const [bookingStatus, setBookingStatus] = useState<BookingStatus | "">("");
 
-  // Get Agent Type
+  // The host type comes from the approved application, or the revoked one of a former agent
   const { data: agentData } = useQuery(GET_MY_AGENT_APPLICATIONS, {
     fetchPolicy: "network-only",
-    skip: user?.memberType !== "AGENT",
-    variables: {
-      input: {
-        page: 1, limit: 1, search: { verificationStatus: AgentVerificationStatus.APPROVED }
-      }
-    }
+    skip: !user?._id,
+    variables: { input: { page: 1, limit: 10, search: {} } },
   });
 
-  const agentType = agentData?.getMyAgentApplications?.list?.[0]?.agentType;
+  const hostApplication = (agentData?.getMyAgentApplications?.list ?? []).find(
+    (application: { verificationStatus: AgentVerificationStatus }) =>
+      application.verificationStatus === AgentVerificationStatus.APPROVED ||
+      application.verificationStatus === AgentVerificationStatus.REVOKED,
+  );
+  const agentType = hostApplication?.agentType;
   const isHotel = agentType === AgentType.HOTEL;
   const isTour = agentType === AgentType.TOUR;
 
@@ -38,7 +39,7 @@ const Reservations = () => {
     skip: !isHotel,
     variables: {
       input: {
-        // BookingsInquiry accepts only page, limit and search.bookingStatusList
+        // BookingsInquiry takes page, limit and search (bookingStatusList, bookingCategory)
         page, limit: 10,
         search: {
           ...(bookingStatus && { bookingStatusList: [bookingStatus] }),
@@ -160,8 +161,8 @@ const Reservations = () => {
                           {isHotel ? booking.propertyData?.propertyName : booking.tourData?.tourName}
                         </span>
                         <span className="unit">
-                          {formatDate(booking.checkIn, "medium")}
-                          {isHotel && booking.checkOut && ` – ${formatDate(booking.checkOut, "medium")}`}
+                          {formatDate(booking.bookingStartDate, "medium")}
+                          {booking.bookingEndDate && ` – ${formatDate(booking.bookingEndDate, "medium")}`}
                         </span>
                       </div>
                     </td>

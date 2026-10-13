@@ -251,6 +251,9 @@ export const GET_ALL_BOOKINGS_BY_ADMIN = gql`
 				memberId
 				bookingCategory
 				bookingStatus
+				bookingStartDate
+				bookingEndDate
+				cancelReason
 				bookingRefId
 				checkIn
 				checkOut

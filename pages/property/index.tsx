@@ -17,6 +17,7 @@ import { userVar } from "../../apollo/store";
 import { sweetMixinErrorAlert } from "../../libs/sweetAlert";
 import { useI18n } from "../../libs/i18n";
 import MobileFilterPanel from "../../libs/components/common/MobileFilterPanel";
+import LoadingSpinner from "../../libs/components/common/LoadingSpinner";
 
 const defaultInput: PropertiesInquiry = {
   page: 1,
@@ -298,7 +299,11 @@ const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
             </div>
 
             {/* Hotels Grid */}
-            {properties.length === 0 && !loading ? (
+            {loading && properties.length === 0 ? (
+              <div className="listing-loader-wrapper">
+                <LoadingSpinner size="lg" label={t("hotels.list.loadingHotels")} />
+              </div>
+            ) : properties.length === 0 ? (
               <div className="no-data-box">
                 <span className="material-symbols-outlined no-data-icon">
                   hotel
@@ -309,7 +314,10 @@ const PropertyList: NextPage = ({ initialInput = defaultInput }: any) => {
                 </p>
               </div>
             ) : (
-              <div className="hotels-grid">
+              <div className="hotels-grid" style={{ position: "relative" }}>
+                {loading && (
+                  <LoadingSpinner overlay size="md" label={t("hotels.list.updatingHotels")} />
+                )}
                 {properties.map((property, idx) => (
                   <PropertyCard
                     key={property._id}

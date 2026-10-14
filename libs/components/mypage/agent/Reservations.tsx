@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import moment from "moment";
 import { userVar } from "../../../../apollo/store";
 import { useI18n } from "../../../i18n";
+import { getImageUrl } from "../../../config";
 
 const Reservations = () => {
   const { tEnum, t, formatDate, tx } = useI18n();
@@ -145,7 +146,7 @@ const Reservations = () => {
                     <td>
                       <div className="customer-cell">
                         {booking.memberData?.memberImage ? (
-                          <img src={`${process.env.REACT_APP_API_URL}/${booking.memberData.memberImage}`} className="avatar" alt={t("agent.reservations.customerAlt")} />
+                          <img src={getImageUrl(booking.memberData.memberImage)} className="avatar" alt={t("agent.reservations.customerAlt")} />
                         ) : (
                           <div className="initials">{booking.memberData?.memberNick?.substring(0,2).toUpperCase() || 'US'}</div>
                         )}
@@ -161,8 +162,8 @@ const Reservations = () => {
                           {isHotel ? booking.propertyData?.propertyName : booking.tourData?.tourName}
                         </span>
                         <span className="unit">
-                          {formatDate(booking.bookingStartDate, "medium")}
-                          {booking.bookingEndDate && ` – ${formatDate(booking.bookingEndDate, "medium")}`}
+                          {formatDate(booking.checkIn, "medium")}
+                          {booking.checkOut && ` – ${formatDate(booking.checkOut, "medium")}`}
                         </span>
                       </div>
                     </td>

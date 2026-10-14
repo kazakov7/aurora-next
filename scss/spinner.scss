@@ -1,0 +1,372 @@
+/**
+ * AURORA DESIGN SYSTEM - SPINNER & LOADING STYLES
+ * High-performance, GPU-accelerated spinners and route transition loaders.
+ */
+@import 'variables.scss';
+
+/* Universal spin keyframes */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes aurora-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes aurora-dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}
+
+@keyframes aurora-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(0.98);
+  }
+}
+
+@keyframes aurora-progress-indeterminate {
+  0% {
+    left: -35%;
+    right: 100%;
+  }
+  60% {
+    left: 100%;
+    right: -90%;
+  }
+  100% {
+    left: 100%;
+    right: -90%;
+  }
+}
+
+/* Base circular loading spinner for backward compatibility and simple CSS usage */
+.loading-spinner,
+.spinner {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(0, 97, 148, 0.15);
+  border-top-color: $primary;
+  animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  vertical-align: middle;
+
+  &.spinner-xs {
+    width: 14px;
+    height: 14px;
+    border-width: 1.75px;
+  }
+
+  &.spinner-sm {
+    width: 18px;
+    height: 18px;
+    border-width: 2px;
+  }
+
+  &.spinner-md {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+  }
+
+  &.spinner-lg {
+    width: 48px;
+    height: 48px;
+    border-width: 3.5px;
+  }
+
+  &.spinner-xl {
+    width: 64px;
+    height: 64px;
+    border-width: 4px;
+  }
+
+  &.spinner-white {
+    border-color: rgba(255, 255, 255, 0.25);
+    border-top-color: #ffffff;
+  }
+}
+
+/* React LoadingSpinner component container */
+.aurora-spinner-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-sizing: border-box;
+
+  &.placement-right {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .aurora-spinner-svg {
+    animation: aurora-spin 1.4s linear infinite;
+    display: block;
+
+    .aurora-spinner-track {
+      stroke: rgba(0, 97, 148, 0.12);
+    }
+
+    .aurora-spinner-path {
+      stroke: $primary;
+      stroke-linecap: round;
+      animation: aurora-dash 1.4s ease-in-out infinite;
+    }
+  }
+
+  .aurora-spinner-label {
+    font-family: $font;
+    font-size: 14px;
+    font-weight: 500;
+    color: $tertiary;
+    letter-spacing: 0.01em;
+    user-select: none;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* Fullscreen Backdrop */
+  &.is-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  /* Overlay over relative parent container */
+  &.is-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    border-radius: inherit;
+  }
+}
+
+/* Dedicated Listing Loader Container (for property, tour, destination grids) */
+.listing-loader-wrapper {
+  width: 100%;
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: transparent;
+  box-sizing: border-box;
+
+  .aurora-spinner-label {
+    font-size: 15px;
+    font-weight: 500;
+    color: #4b5563;
+    margin-top: 4px;
+  }
+}
+
+/* Empty state / placeholder with loader */
+.profile-empty-state,
+.detail-loading-box,
+.community-loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  gap: 12px;
+  text-align: center;
+  min-height: 200px;
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: $tertiary;
+    font-weight: 500;
+  }
+}
+
+/* Table loading container (Admin & Dashboard tables) */
+.table-loading-cell {
+  padding: 56px 24px !important;
+  text-align: center;
+  background: transparent;
+
+  .aurora-spinner-wrapper {
+    margin: 0 auto;
+  }
+}
+
+/* ==========================================================================
+   EXPEDITION RADAR COMPASS - LIGHT THEME LUXURY TRAVEL LOADING
+   ========================================================================== */
+@keyframes compass-dial-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes compass-needle-search {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-38deg); }
+  55% { transform: rotate(48deg); }
+  80% { transform: rotate(-12deg); }
+}
+
+@keyframes radar-sonar-pulse {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(1.65); opacity: 0; }
+}
+
+.aurora-compass-assembly {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .sonar-wave-1,
+  .sonar-wave-2 {
+    position: absolute;
+    width: 90%;
+    height: 90%;
+    border-radius: 50%;
+    border: 1px solid rgba(2, 132, 199, 0.35);
+    background: radial-gradient(circle, rgba(2, 132, 199, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .sonar-wave-1 {
+    animation: radar-sonar-pulse 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  }
+
+  .sonar-wave-2 {
+    animation: radar-sonar-pulse 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite 0.75s;
+  }
+
+  .compass-glass-base {
+    position: absolute;
+    width: 82%;
+    height: 82%;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #ffffff 0%, rgba(240, 249, 255, 0.7) 100%);
+    border: 1px solid rgba(186, 230, 253, 0.7);
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .compass-rotating-dial {
+    position: absolute;
+    width: 82%;
+    height: 82%;
+    animation: compass-dial-spin 14s linear infinite;
+
+    .cardinal-text {
+      font-family: $font;
+      font-size: 10px;
+      font-weight: 700;
+      fill: #64748b;
+      user-select: none;
+
+      &.cardinal-n {
+        fill: $primary;
+        font-weight: 800;
+      }
+    }
+  }
+
+  .compass-hunting-needle {
+    position: absolute;
+    width: 72%;
+    height: 72%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: compass-needle-search 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    transform-origin: center;
+    pointer-events: none;
+    z-index: 2;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+.aurora-compass-text-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  margin-top: 6px;
+
+  .aurora-compass-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: $font;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: $on-surface;
+
+    .compass-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: $primary;
+      animation: aurora-pulse 1.6s ease-in-out infinite;
+    }
+  }
+
+  .aurora-compass-sublabel {
+    font-size: 11px;
+    color: $tertiary;
+    margin: 0;
+    font-weight: 500;
+  }
+}
+

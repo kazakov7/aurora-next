@@ -393,7 +393,8 @@
       "faq5Answer": "Access our {{link}} portfolio and choose the \"Private Departure\" toggle, or send custom coordinates directly to the Concierge Desk using the contact form below. Our alpine logistics team prepares complete flight, guide, and security schedules within 4 hours.",
       "faq6Answer": "All itinerary documents, tax invoices, and cryptographic boarding cards are stored indefinitely in {{link}}. You can export authenticated PDF vouchers or generate Apple Wallet passes for off-grid access.",
       "faq7Answer": "Visit {{link}}. Here, you can configure WebAuthn biometric passkeys, change master passwords, revoke concurrent session tokens, or adjust your public voyager display privacy."
-    }
+    },
+    "viewMyRequests": "View my requests"
   },
   "availability": {
     "title": "Availability",
@@ -434,6 +435,7 @@
       "location": "LOCATION",
       "anywhere": "Anywhere",
       "dates": "DATES",
+      "addDates": "Add dates",
       "travelers": "TRAVELERS",
       "guests": "{{count}} guests",
       "guestOption": "{{count}}+ guest",
@@ -441,13 +443,14 @@
       "checkIn": "Check-in date",
       "checkOut": "Check-out date",
       "searchStays": "Search stays",
+      "searchExperiences": "Search Experiences",
       "guests_one": "{{count}} guest",
       "imageAlt": "Traveler ready for a trip"
     },
     "trending": {
       "eyebrow": "Curation Grid",
       "title": "Trending Destinations",
-      "exploreAll": "Explore all destinations",
+      "exploreAll": "Explore all",
       "loading": "Loading destinations…",
       "unavailable": "Destinations are unavailable right now.",
       "empty": "No ranked destinations available yet.",
@@ -472,7 +475,7 @@
     "experiences": {
       "eyebrow": "Guided Immersions",
       "title": "Experiences Worth Taking",
-      "browse": "View curated tours",
+      "browse": "All tours",
       "loading": "Loading top tours…",
       "unavailable": "Top tours are unavailable right now.",
       "empty": "No ranked tours available yet.",
@@ -485,8 +488,8 @@
     },
     "community": {
       "eyebrow": "Community Curators",
-      "title": "Meet the creative minds behind our success",
-      "explore": "Explore community",
+      "title": "Meet the creative minds",
+      "explore": "Explore",
       "loading": "Loading top travelers…",
       "unavailable": "Top travelers are unavailable right now.",
       "empty": "No ranked travelers available yet.",
@@ -504,7 +507,8 @@
       "empty": "No ranked partners available yet.",
       "hotelPartner": "Hotel Partner",
       "tourPartner": "Tour Partner",
-      "approved": "Approved AURORA Partner"
+      "approved": "Approved AURORA Partner",
+      "approvedShort": "Approved"
     },
     "dispatches": {
       "eyebrow": "Live Dispatches",
@@ -644,7 +648,8 @@
     "IMAGE_REQUIRED": "Image is required!",
     "ONLY_SPECIFIC_ROLES": "Only specific roles!",
     "BOOKING_CANCEL_WINDOW_PASSED": "Free cancellation closes 48 hours before the start!",
-    "RATING_REQUIRES_STAY": "Only a traveler who completed this stay or tour can rate it!"
+    "RATING_REQUIRES_STAY": "Only a traveler who completed this stay or tour can rate it!",
+    "TOO_MANY_LOGIN_ATTEMPTS": "Too many failed logins, please try again in 15 minutes!"
   },
   "errors": {
     "somethingWentWrong": "Something went wrong!",
@@ -739,7 +744,8 @@
       "BOOKING": "Booking",
       "REVIEW": "Review",
       "MESSAGE": "Message",
-      "SYSTEM": "System"
+      "SYSTEM": "System",
+      "SUPPORT": "Support"
     },
     "supportCategory": {
       "BOOKING": "Booking",
@@ -776,7 +782,7 @@
     },
     "comments": {
       "emptyComment": "Please enter a comment before submitting.",
-      "commentTooLong": "Comment must not exceed 500 characters.",
+      "commentTooLong": "Comment must not exceed {{max}} characters.",
       "failedToPostComment": "Failed to post comment.",
       "guestComments": "Guest Comments",
       "mostRecent": "Most Recent",
@@ -790,7 +796,7 @@
       "formIntro": "Share your verified sanctuary experience with future voyagers",
       "currentUser": "Current user",
       "placeholder": "Share your experience (e.g. scenic views, check-in, breakfast quality, spa temperatures)...",
-      "characterCount": "{{count}} / 500 characters",
+      "characterCount": "{{count}} / {{max}} characters",
       "evaluationsFor": "{{count}} evaluations for {{name}}",
       "evaluationsFor_one": "{{count}} evaluation for {{name}}"
     },
@@ -881,6 +887,8 @@
       "priceLowToHigh": "Price: Low to High",
       "priceHighToLow": "Price: High to Low",
       "noStaysFound": "No Stays Found",
+      "loadingHotels": "Loading luxury stays...",
+      "updatingHotels": "Updating stays...",
       "adjustFilters": "Try adjusting your search filters or destination criteria.",
       "totalAvailable": "Total {{count}} properties available",
       "totalAvailable_one": "Total {{count}} property available",
@@ -946,7 +954,7 @@
     },
     "comments": {
       "emptyComment": "Please enter your evaluation before submitting.",
-      "commentTooLong": "Comment must not exceed 500 characters.",
+      "commentTooLong": "Comment must not exceed {{max}} characters.",
       "failedToPostComment": "Failed to post comment.",
       "travelerComments": "Traveler Comments",
       "mostRecent": "Most Recent",
@@ -959,7 +967,7 @@
       "formIntro": "Share your verified sanctuary experience with future voyagers",
       "currentUser": "Current user",
       "placeholder": "Share your experience (e.g. scenic views, check-in, breakfast quality, spa temperatures)...",
-      "characterCount": "{{count}} / 500 characters",
+      "characterCount": "{{count}} / {{max}} characters",
       "evaluationsFor": "{{count}} evaluations for {{name}}",
       "evaluationsFor_one": "{{count}} evaluation for {{name}}"
     },
@@ -1039,6 +1047,8 @@
       "departureDate": "Departure Date",
       "mostPopular": "Most Popular",
       "noJourneysFound": "No Journeys Found",
+      "loadingTours": "Curating extraordinary journeys...",
+      "updatingTours": "Updating journeys...",
       "adjustFilters": "Try adjusting your search filters or destination criteria.",
       "totalAvailable": "Total {{count}} journeys available",
       "totalAvailable_one": "Total {{count}} journey available"
@@ -1286,7 +1296,7 @@
       "userProfile": "User profile",
       "joinTheConversation": "Join the Conversation",
       "placeholder": "Share your thoughts, experience, or a question about this article...",
-      "characterCount": "{{count}} / 500 characters"
+      "characterCount": "{{count}} / {{max}} characters"
     },
     "detailEngagementBar": {
       "comments": "{{commentsCount}} Comments",
@@ -1601,7 +1611,18 @@
       "awaitingPayment": "Awaiting payment",
       "loadMore": "Load more",
       "cancelReason": "Cancellation reason:",
-      "cancelWindowClosed": "Free cancellation closed 48 hours before the start. Contact support if you need to change this booking."
+      "cancelWindowClosed": "Free cancellation closed 48 hours before the start. Contact support if you need to change this booking.",
+      "rate": "Rate",
+      "yourRating": "Your rating",
+      "yourRatingValue": "Your rating: {{rating}} of 5",
+      "rateYourStay": "Rate your stay",
+      "rateYourTour": "Rate your tour",
+      "starsLabel": "{{count}} stars",
+      "starsLabel_one": "{{count}} star",
+      "ratingOnce": "A rating is given once and helps other travelers choose.",
+      "submitRating": "Submit rating",
+      "ratingSaved": "Thank you for your rating!",
+      "ratingFailed": "The rating could not be saved."
     },
     "operationFailed": "Operation failed.",
     "followers": {
@@ -1711,7 +1732,8 @@
       "conciergeText": "Need adjustments, private helicopter transfers, or custom dietary arrangements?",
       "chatWithCurator": "Chat with Curator",
       "activeCount": "{{count}} active",
-      "unreadCount": "{{count}} unread"
+      "unreadCount": "{{count}} unread",
+      "myRequests": "My Requests"
     },
     "visitedTours": {
       "title": "Visited Tours",
@@ -1752,7 +1774,27 @@
       "titleMyTours": "My Tours — AURORA Agent",
       "titleReservations": "Reservations — AURORA Agent",
       "titleDefault": "My Profile — AURORA Travel",
-      "metaDescription": "Manage your AURORA Travel profile, bookings, articles, and wishlist."
+      "metaDescription": "Manage your AURORA Travel profile, bookings, articles, and wishlist.",
+      "titleRequests": "My Requests — AURORA Profile"
+    },
+    "requests": {
+      "myRequests": "My Requests",
+      "summary": "{{count}} requests",
+      "summary_one": "{{count}} request",
+      "intro": "Every request you send to AURORA support, with our team's replies.",
+      "newRequest": "New request",
+      "statusAll": "All",
+      "loading": "Loading your requests...",
+      "unavailable": "Requests are unavailable",
+      "sentOn": "Sent {{date}}",
+      "viewAttachment": "View attachment",
+      "replyFrom": "AURORA Support replied",
+      "awaitingReply": "Our team has your request. The reply will appear here.",
+      "loadMore": "Load more",
+      "emptyTitle": "No requests yet",
+      "emptyFilteredTitle": "No requests with this status",
+      "emptyText": "Questions about a booking, a payment or your account? Send us a request and read our reply here.",
+      "contactSupport": "Contact support"
     }
   },
   "agent": {
@@ -1898,7 +1940,20 @@
       "members": "Members",
       "agentVerification": "Agent Verification",
       "notices": "Notices",
-      "administrationPortal": "Administration Portal"
+      "administrationPortal": "Administration Portal",
+      "reviews": "Comments & Reviews"
+    },
+    "mobileRestricted": {
+      "badge": "Desktop Only",
+      "title": "Admin Dashboard is only accessible on Desktop",
+      "description": "Administrative tables, in-depth analytics, and management tools are strictly optimized for larger screens (Desktop / Laptop) to ensure security and productivity.",
+      "switchNotice": "Please access the administrative portal from a desktop or laptop computer.",
+      "featureLargeScreens": "High-density data tables and multi-column views",
+      "featureSecurity": "Advanced administrative security and access control",
+      "featureAnalytics": "Comprehensive reporting and export capabilities",
+      "currentDevice": "You are currently visiting from a mobile device",
+      "backToHome": "Return to Homepage",
+      "myPage": "Go to My Profile"
     },
     "agentVerification": {
       "approveTitle": "Approve Verification?",
@@ -2015,7 +2070,23 @@
       "noDestinationsFound": "No destinations found.",
       "hotels": "Hotels: {{destinationProperties}}",
       "tours": "Tours: {{destinationTours}}",
-      "moderateTitle": "Moderate Destination"
+      "moderateTitle": "Moderate Destination",
+      "addDestination": "Add Destination",
+      "createTitle": "New Destination",
+      "namePlaceholder": "e.g. Busan",
+      "countryPlaceholder": "e.g. South Korea",
+      "descPlaceholder": "What makes this city worth the trip?",
+      "latitude": "Latitude",
+      "longitude": "Longitude",
+      "photos": "Photos",
+      "photosHint": "Up to {{max}} photos, JPG or PNG.",
+      "addPhoto": "Add photo",
+      "removePhoto": "Remove photo",
+      "uploading": "Uploading...",
+      "requiredFields": "Enter the destination name and country.",
+      "invalidCoordinates": "Latitude must be between -90 and 90, longitude between -180 and 180.",
+      "destinationCreated": "Destination created!",
+      "createDestination": "Create Destination"
     },
     "dashboard": {
       "systemOverview": "System Overview",
@@ -2102,10 +2173,8 @@
       "verifiedAgent": "Verified Agent"
     },
     "reviews": {
-      "commentsApiUnsupported": "Global Comments API is not supported by the backend.",
-      "actionUnsupported": "This action is not supported by the backend API.",
       "commentsReviewsManagement": "Comments & Reviews Management",
-      "intro": "Moderate user feedback, property reviews, and community comments.",
+      "intro": "Moderate comments on hotels, tours, cities and stories, and the reviews of cities.",
       "reviews": "Reviews",
       "allContexts": "All Contexts",
       "author": "Author",
@@ -2113,8 +2182,15 @@
       "rating": "Rating",
       "searchComments": "Search comments...",
       "searchReviews": "Search reviews...",
-      "unsupportedComments": "The backend does not support fetching all comments globally without a specific target ID.",
-      "unsupportedReviews": "The backend does not support fetching all reviews globally without a specific target ID."
+      "deleteCommentConfirm": "Delete this comment permanently?",
+      "commentDeleted": "Comment deleted!",
+      "removeReviewConfirm": "Remove this review from the city page?",
+      "reviewRemoved": "Review removed!",
+      "noCommentsFound": "No comments found.",
+      "noReviewsFound": "No reviews found.",
+      "openTarget": "Open in a new tab",
+      "noContent": "Rating only, no text",
+      "delete": "Delete"
     },
     "unsupportedFeature": "Unsupported Feature",
     "settings": {

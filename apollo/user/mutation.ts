@@ -223,6 +223,21 @@ export const REMOVE_DESTINATION_REVIEW = gql`
 `;
 
 /**************************
+ *         RATING         *
+ *************************/
+
+export const SUBMIT_RATING = gql`
+	mutation SubmitRating($input: RatingInput!) {
+		submitRating(input: $input) {
+			_id
+			reviewGroup
+			reviewRefId
+			reviewRating
+		}
+	}
+`;
+
+/**************************
  *        PROPERTY        *
  *************************/
 

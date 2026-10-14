@@ -45,19 +45,10 @@
 
 	/* ---------- Footer ---------- */
 	.footer-main {
-		padding: 40px 0 24px;
+		padding: 20px 16px 14px;
 
 		.footer-container {
-			padding: 0 16px;
-		}
-
-		.footer-top-grid {
-			grid-template-columns: 1fr 1fr;
-			gap: 28px 16px;
-
-			> :first-child {
-				grid-column: 1 / -1;
-			}
+			padding: 0;
 		}
 	}
 

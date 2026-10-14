@@ -6,6 +6,7 @@ import { DEFAULT_PROPERTY_IMAGE } from '../../../config';
 import { ApolloError } from '@apollo/client';
 import { useI18n } from '../../../i18n';
 import { RevealOnScroll } from '../../motion/RevealOnScroll';
+import LoadingSpinner from '../../common/LoadingSpinner';
 
 interface DestinationTopStaysProps {
 	destinationName: string;
@@ -45,7 +46,11 @@ const DestinationTopStays = ({
 
 			{/* Exactly 4 Hotel Cards in 1 Row on Desktop */}
 			<div className="stays-cards-grid">
-				{loading ? <p>{t('destinations.topStays.loading')}</p> : null}
+				{loading ? (
+					<div style={{ gridColumn: '1 / -1', padding: '36px 0', display: 'flex', justifyContent: 'center' }}>
+						<LoadingSpinner size="md" label={t('destinations.topStays.loading')} />
+					</div>
+				) : null}
 				{!loading && error ? <p>{t('destinations.topStays.unavailable')}</p> : null}
 				{displayProperties.map((property, idx) => {
 					const imgUrl = getImageUrl(property.propertyImages?.[0], DEFAULT_PROPERTY_IMAGE);

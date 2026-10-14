@@ -17,6 +17,7 @@ import { LIKE_TARGET_ARTICLE, SUBSCRIBE, UNSUBSCRIBE } from '../../apollo/user/m
 import { userVar } from '../../apollo/store';
 import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
 import { useI18n } from '../../libs/i18n';
+import LoadingSpinner from '../../libs/components/common/LoadingSpinner';
 
 /** Article category -> community filter key; labels come from enums.articleCategory.* **/
 const categoryFilterKeys: Record<string, string> = {
@@ -164,9 +165,8 @@ const CommunityDetailPage: NextPage = () => {
 
 			<main className="community-detail-main">
 				{loading && !article ? (
-					<div className="community-detail-loading-box">
-						<div className="loading-spinner" />
-						<p>{t('community.detail.loadingDispatch')}</p>
+					<div className="listing-loader-wrapper">
+						<LoadingSpinner size="lg" label={t('community.detail.loadingDispatch')} />
 					</div>
 				) : article ? (
 					<div className="community-detail-content-flow">

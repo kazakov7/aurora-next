@@ -1715,6 +1715,92 @@
   gap: 16px;
 }
 
+/* Moderation rows mix an avatar with free text: the cells are centred, not aligned on the avatar's baseline */
+.admin-table.moderation-table tbody td {
+  vertical-align: middle;
+}
+
+/* Photos picked in a drawer form: thumbnails with a remove button, then an add tile */
+.admin-image-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+
+  .image-thumb,
+  .image-add {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .image-thumb {
+    background: $surface-container-low;
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    button {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(20, 27, 43, 0.65);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+
+      .material-symbols-outlined {
+        font-size: 16px;
+      }
+
+      &:hover {
+        background: $error;
+      }
+    }
+  }
+
+  .image-add {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 1px dashed $outline-variant;
+    color: $primary;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      background 0.2s;
+
+    .material-symbols-outlined {
+      font-size: 22px;
+    }
+
+    &:hover {
+      border-color: $primary;
+      background: rgba(0, 97, 148, 0.04);
+    }
+
+    &.disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+  }
+}
+
 .admin-drawer {
   position: fixed;
   top: 0;
@@ -1731,7 +1817,8 @@
 
   .drawer-header {
     height: 64px;
-
+    flex-shrink: 0;
+    padding: 0 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1771,6 +1858,62 @@
 
       .material-symbols-outlined {
         font-size: 20px;
+      }
+    }
+  }
+
+  /* Body and footer shared by the edit drawers (notices, support, community, cities, tours) */
+  .drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .drawer-footer {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #dce2f7;
+    background-color: #ffffff;
+
+    .btn {
+      min-width: 112px;
+      height: 42px;
+      padding: 0 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition:
+        background-color 0.2s,
+        border-color 0.2s;
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+
+      &.secondary {
+        border: 1px solid #dce2f7;
+        background-color: #ffffff;
+        color: #3f4850;
+
+        &:hover:not(:disabled) {
+          background-color: #f8fafc;
+        }
+      }
+
+      &.primary {
+        border: none;
+        background-color: #006399;
+        color: #ffffff;
+
+        &:hover:not(:disabled) {
+          background-color: #004b73;
+        }
       }
     }
   }

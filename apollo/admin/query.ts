@@ -251,9 +251,7 @@ export const GET_ALL_BOOKINGS_BY_ADMIN = gql`
 				memberId
 				bookingCategory
 				bookingStatus
-				bookingStartDate
-				bookingEndDate
-				cancelReason
+				cancelledAt
 				bookingRefId
 				checkIn
 				checkOut
@@ -309,6 +307,60 @@ export const GET_ALL_SUPPORT_TICKETS_BY_ADMIN = gql`
 				memberId
 				createdAt
 				updatedAt
+			}
+			metaCounter {
+				total
+			}
+		}
+	}
+`;
+
+/**************************
+ *    COMMENT & REVIEW    *
+ *************************/
+
+export const GET_ALL_COMMENTS_BY_ADMIN = gql`
+	query GetAllCommentsByAdmin($input: AllCommentsInquiry!) {
+		getAllCommentsByAdmin(input: $input) {
+			list {
+				_id
+				commentStatus
+				commentGroup
+				commentContent
+				commentRefId
+				memberId
+				createdAt
+				memberData {
+					_id
+					memberNick
+					memberFullName
+					memberImage
+				}
+			}
+			metaCounter {
+				total
+			}
+		}
+	}
+`;
+
+export const GET_ALL_DESTINATION_REVIEWS_BY_ADMIN = gql`
+	query GetAllDestinationReviewsByAdmin($input: AllDestinationReviewsInquiry!) {
+		getAllDestinationReviewsByAdmin(input: $input) {
+			list {
+				_id
+				reviewStatus
+				reviewRefId
+				reviewRating
+				reviewContent
+				memberId
+				createdAt
+				memberData {
+					_id
+					memberNick
+					memberFullName
+					memberImage
+				}
 			}
 			metaCounter {
 				total

@@ -18,6 +18,7 @@ import {
 } from "../../../libs/sweetAlert";
 import moment from "moment";
 import { useI18n } from "../../../libs/i18n";
+import LoadingSpinner from "../../../libs/components/common/LoadingSpinner";
 
 const AdminToursPage: NextPage = () => {
   const { t, tEnum, tError, formatDate } = useI18n();
@@ -231,9 +232,9 @@ const AdminToursPage: NextPage = () => {
                 <tr>
                   <td
                     colSpan={6}
-                    style={{ textAlign: "center", padding: "40px" }}
+                    className="table-loading-cell"
                   >
-                    {t("common.loading")}
+                    <LoadingSpinner size="md" label={t("common.loading")} />
                   </td>
                 </tr>
               ) : tours.length === 0 ? (

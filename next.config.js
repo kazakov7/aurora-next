@@ -7,8 +7,22 @@ const graphqlUrl =
   process.env.REACT_APP_API_GRAPHQL_URL ||
   `${apiUrl.replace(/\/$/, '')}/graphql`;
 
+/** Every page: no MIME sniffing, no framing by other sites, no full URL sent to other origins. HSTS belongs to nginx **/
+const securityHeaders = [
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+];
+
 const nextConfig = {
   reactStrictMode: true,
+  poweredByHeader: false,
+  // The app shows its images with plain <img> tags, so the built-in optimizer is not used. Turning it off
+  // keeps the /_next/image endpoint from processing remote images (Next 14 advisories on that path)
+  images: { unoptimized: true },
+  async headers() {
+    return [{ source: '/:path*', headers: securityHeaders }];
+  },
   i18n: {
     locales: ['en', 'ko', 'uz'],
     defaultLocale: 'en',

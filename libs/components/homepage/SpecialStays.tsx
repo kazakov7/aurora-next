@@ -13,6 +13,7 @@ import LikeButton from '../common/LikeButton';
 import { useI18n } from '../../i18n';
 import { RevealOnScroll } from '../motion/RevealOnScroll';
 import { HoverLift } from '../motion/HoverLift';
+import LoadingSpinner from '../common/LoadingSpinner';
 
 interface SpecialStaysProps {
 	properties: Property[];
@@ -109,11 +110,12 @@ const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
 								nextEl,
 							}}
 							keyboard={{ enabled: true }}
-							spaceBetween={14}
-							slidesPerView={1.22}
+							spaceBetween={12}
+							slidesPerView="auto"
+							slidesOffsetBefore={16}
+							slidesOffsetAfter={16}
 							breakpoints={{
-								480: { slidesPerView: 1.35, spaceBetween: 16 },
-								680: { slidesPerView: 2.15, spaceBetween: 20 },
+								768: { slidesPerView: 2.5, spaceBetween: 20 },
 								1024: { slidesPerView: 3, spaceBetween: 24 },
 								1280: { slidesPerView: 4, spaceBetween: 24 },
 							}}
@@ -187,6 +189,10 @@ const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
 								);
 							})}
 						</Swiper>
+					</div>
+				) : loading ? (
+					<div style={{ minHeight: '260px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+						<LoadingSpinner size="lg" label={t('common.loading')} />
 					</div>
 				) : null}
 			</div>

@@ -393,7 +393,8 @@
       "faq5Answer": "{{link}} bo‘limiga kirib, \"Xususiy jo‘nash\" variantini tanlang yoki quyidagi aloqa shakli orqali talablaringizni Konsyerj bo‘limiga bevosita yuboring. Logistika jamoamiz 4 soat ichida parvoz, gid va xavfsizlik jadvallarini to‘liq tayyorlaydi.",
       "faq6Answer": "Barcha marshrut hujjatlari, soliq hisob-fakturalari va chiptalar {{link}} bo‘limida muddatsiz saqlanadi. Tasdiqlangan PDF vaucherlarni yuklab olishingiz yoki internetsiz foydalanish uchun Apple Wallet kartalarini yaratishingiz mumkin.",
       "faq7Answer": "{{link}} bo‘limiga o‘ting. U yerda WebAuthn biometrik kalitlarini sozlash, asosiy parolni o‘zgartirish, parallel sessiyalarni bekor qilish yoki ommaviy profilingiz ko‘rinishini sozlash mumkin."
-    }
+    },
+    "viewMyRequests": "Murojaatlarimni ko‘rish"
   },
   "availability": {
     "title": "Bo‘sh sanalar",
@@ -434,6 +435,7 @@
       "location": "MANZIL",
       "anywhere": "Istalgan joy",
       "dates": "SANALAR",
+      "addDates": "Sana qo‘shish",
       "travelers": "SAYOHATCHILAR",
       "guests": "{{count}} mehmon",
       "guestOption": "{{count}}+ mehmon",
@@ -441,6 +443,7 @@
       "checkIn": "Kirish sanasi",
       "checkOut": "Chiqish sanasi",
       "searchStays": "Turar joylarni qidirish",
+      "searchExperiences": "Tajribalarni qidirish",
       "guests_one": "{{count}} mehmon",
       "imageAlt": "Safarga otlangan sayohatchi"
     },
@@ -472,7 +475,7 @@
     "experiences": {
       "eyebrow": "Yo‘lboshchili tajribalar",
       "title": "Arziydigan tajribalar",
-      "browse": "Saralangan sayohatlarni ko‘rish",
+      "browse": "Barcha turlar",
       "loading": "Eng yaxshi sayohatlar yuklanmoqda…",
       "unavailable": "Hozir eng yaxshi sayohatlarni yuklab bo‘lmaydi.",
       "empty": "Hali reytingdagi sayohatlar yo‘q.",
@@ -485,8 +488,8 @@
     },
     "community": {
       "eyebrow": "Hamjamiyat saralovchilari",
-      "title": "Muvaffaqiyatimiz ortidagi ijodkorlar bilan tanishing",
-      "explore": "Hamjamiyatni ko‘rish",
+      "title": "Ijodiy fikr egalari bilan tanishing",
+      "explore": "Ko‘rish",
       "loading": "Eng yaxshi sayohatchilar yuklanmoqda…",
       "unavailable": "Hozir eng yaxshi sayohatchilarni yuklab bo‘lmaydi.",
       "empty": "Hali reytingdagi sayohatchilar yo‘q.",
@@ -504,7 +507,8 @@
       "empty": "Hali reytingdagi hamkorlar yo‘q.",
       "hotelPartner": "Mehmonxona hamkori",
       "tourPartner": "Sayohat hamkori",
-      "approved": "AURORA tasdiqlagan hamkor"
+      "approved": "AURORA tasdiqlagan hamkor",
+      "approvedShort": "Tasdiqlangan"
     },
     "dispatches": {
       "eyebrow": "Jonli yo‘nalishlar",
@@ -644,7 +648,8 @@
     "IMAGE_REQUIRED": "Rasm talab qilinadi!",
     "ONLY_SPECIFIC_ROLES": "Faqat ma’lum rollar uchun!",
     "BOOKING_CANCEL_WINDOW_PASSED": "Bepul bekor qilish boshlanishdan 48 soat oldin yopiladi!",
-    "RATING_REQUIRES_STAY": "Faqat shu joyda turgan yoki sayohatni tugatgan mehmon baho qo‘ya oladi!"
+    "RATING_REQUIRES_STAY": "Faqat shu joyda turgan yoki sayohatni tugatgan mehmon baho qo‘ya oladi!",
+    "TOO_MANY_LOGIN_ATTEMPTS": "Muvaffaqiyatsiz kirishlar juda ko‘p, 15 daqiqadan keyin qayta urinib ko‘ring!"
   },
   "errors": {
     "somethingWentWrong": "Xatolik yuz berdi!",
@@ -739,7 +744,8 @@
       "BOOKING": "Bron",
       "REVIEW": "Sharh",
       "MESSAGE": "Xabar",
-      "SYSTEM": "Tizim"
+      "SYSTEM": "Tizim",
+      "SUPPORT": "Yordam"
     },
     "supportCategory": {
       "BOOKING": "Bron",
@@ -776,7 +782,7 @@
     },
     "comments": {
       "emptyComment": "Yuborishdan oldin izoh yozing.",
-      "commentTooLong": "Izoh 500 belgidan oshmasligi kerak.",
+      "commentTooLong": "Izoh {{max}} belgidan oshmasligi kerak.",
       "failedToPostComment": "Izohni joylab bo‘lmadi.",
       "guestComments": "Mehmonlar izohlari",
       "mostRecent": "Eng so‘nggi",
@@ -790,7 +796,7 @@
       "formIntro": "O‘z taassurotlaringizni kelgusi sayohatchilar bilan baham ko‘ring",
       "currentUser": "Joriy foydalanuvchi",
       "placeholder": "Taassurotingizni yozing (masalan: manzara, ro‘yxatdan o‘tish, nonushta sifati, spa harorati)...",
-      "characterCount": "{{count}} / 500 belgi",
+      "characterCount": "{{count}} / {{max}} belgi",
       "evaluationsFor": "{{name}} uchun {{count}} ta sharh",
       "evaluationsFor_one": "{{name}} uchun {{count}} ta sharh"
     },
@@ -881,6 +887,8 @@
       "priceLowToHigh": "Narx: arzondan qimmatga",
       "priceHighToLow": "Narx: qimmatdan arzonga",
       "noStaysFound": "Turar joy topilmadi",
+      "loadingHotels": "Turar joylar yuklanmoqda...",
+      "updatingHotels": "Turar joylar yangilanmoqda...",
       "adjustFilters": "Qidiruv filtrlari yoki manzil mezonlarini o‘zgartirib ko‘ring.",
       "totalAvailable": "Jami {{count}} ta turar joy mavjud",
       "totalAvailable_one": "Jami {{count}} ta turar joy mavjud",
@@ -946,7 +954,7 @@
     },
     "comments": {
       "emptyComment": "Yuborishdan oldin sharhingizni yozing.",
-      "commentTooLong": "Izoh 500 belgidan oshmasligi kerak.",
+      "commentTooLong": "Izoh {{max}} belgidan oshmasligi kerak.",
       "failedToPostComment": "Izohni joylab bo‘lmadi.",
       "travelerComments": "Sayohatchilar izohlari",
       "mostRecent": "Eng so‘nggi",
@@ -959,7 +967,7 @@
       "formIntro": "O‘z taassurotlaringizni kelgusi sayohatchilar bilan baham ko‘ring",
       "currentUser": "Joriy foydalanuvchi",
       "placeholder": "Taassurotingizni yozing (masalan: manzara, ro‘yxatdan o‘tish, nonushta sifati, spa harorati)...",
-      "characterCount": "{{count}} / 500 belgi",
+      "characterCount": "{{count}} / {{max}} belgi",
       "evaluationsFor": "{{name}} uchun {{count}} ta sharh",
       "evaluationsFor_one": "{{name}} uchun {{count}} ta sharh"
     },
@@ -1039,6 +1047,8 @@
       "departureDate": "Jo‘nash sanasi",
       "mostPopular": "Eng ommabop",
       "noJourneysFound": "Sayohat topilmadi",
+      "loadingTours": "Sayohatlar yuklanmoqda...",
+      "updatingTours": "Sayohatlar yangilanmoqda...",
       "adjustFilters": "Qidiruv filtrlari yoki manzil mezonlarini o‘zgartirib ko‘ring.",
       "totalAvailable": "Jami {{count}} ta sayohat mavjud",
       "totalAvailable_one": "Jami {{count}} ta sayohat mavjud"
@@ -1286,7 +1296,7 @@
       "userProfile": "Foydalanuvchi profili",
       "joinTheConversation": "Suhbatga qo‘shiling",
       "placeholder": "Bu maqola haqida fikr, tajriba yoki savolingizni yozing...",
-      "characterCount": "{{count}} / 500 belgi"
+      "characterCount": "{{count}} / {{max}} belgi"
     },
     "detailEngagementBar": {
       "comments": "{{commentsCount}} ta izoh",
@@ -1601,7 +1611,18 @@
       "awaitingPayment": "To‘lov kutilmoqda",
       "loadMore": "Yana yuklash",
       "cancelReason": "Bekor qilish sababi:",
-      "cancelWindowClosed": "Bepul bekor qilish boshlanishdan 48 soat oldin yopildi. Bronni o‘zgartirish kerak bo‘lsa, qo‘llab-quvvatlash xizmatiga murojaat qiling."
+      "cancelWindowClosed": "Bepul bekor qilish boshlanishdan 48 soat oldin yopildi. Bronni o‘zgartirish kerak bo‘lsa, qo‘llab-quvvatlash xizmatiga murojaat qiling.",
+      "rate": "Baholash",
+      "yourRating": "Bahoyingiz",
+      "yourRatingValue": "Bahoyingiz: 5 dan {{rating}}",
+      "rateYourStay": "Turar joyni baholang",
+      "rateYourTour": "Turni baholang",
+      "starsLabel": "{{count}} yulduz",
+      "starsLabel_one": "{{count}} yulduz",
+      "ratingOnce": "Baho bir marta beriladi va boshqa sayohatchilarga tanlashda yordam beradi.",
+      "submitRating": "Bahoni yuborish",
+      "ratingSaved": "Bahoyingiz uchun rahmat!",
+      "ratingFailed": "Bahoni saqlab bo‘lmadi."
     },
     "operationFailed": "Amal bajarilmadi.",
     "followers": {
@@ -1711,7 +1732,8 @@
       "conciergeText": "O‘zgartirishlar, xususiy vertolyot transferi yoki maxsus ovqatlanish kerakmi?",
       "chatWithCurator": "Kurator bilan suhbat",
       "activeCount": "{{count}} ta faol",
-      "unreadCount": "{{count}} ta o‘qilmagan"
+      "unreadCount": "{{count}} ta o‘qilmagan",
+      "myRequests": "Mening murojaatlarim"
     },
     "visitedTours": {
       "title": "Ko‘rilgan sayohatlar",
@@ -1752,7 +1774,27 @@
       "titleMyTours": "Mening sayohatlarim — AURORA agenti",
       "titleReservations": "Bronlar — AURORA agenti",
       "titleDefault": "Mening profilim — AURORA Travel",
-      "metaDescription": "AURORA Travel profilingiz, bronlaringiz, maqolalaringiz va sevimlilaringizni boshqaring."
+      "metaDescription": "AURORA Travel profilingiz, bronlaringiz, maqolalaringiz va sevimlilaringizni boshqaring.",
+      "titleRequests": "Mening murojaatlarim — AURORA profili"
+    },
+    "requests": {
+      "myRequests": "Mening murojaatlarim",
+      "summary": "{{count}} ta murojaat",
+      "summary_one": "{{count}} ta murojaat",
+      "intro": "AURORA yordam jamoasiga yuborgan barcha murojaatlaringiz va jamoamiz javoblari.",
+      "newRequest": "Yangi murojaat",
+      "statusAll": "Barchasi",
+      "loading": "Murojaatlaringiz yuklanmoqda...",
+      "unavailable": "Murojaatlar mavjud emas",
+      "sentOn": "Yuborilgan: {{date}}",
+      "viewAttachment": "Ilovani ko‘rish",
+      "replyFrom": "AURORA yordam jamoasi javobi",
+      "awaitingReply": "Murojaatingiz qabul qilindi. Javob shu yerda paydo bo‘ladi.",
+      "loadMore": "Yana yuklash",
+      "emptyTitle": "Hali murojaatlar yo‘q",
+      "emptyFilteredTitle": "Bu holatdagi murojaatlar yo‘q",
+      "emptyText": "Bron, to‘lov yoki akkauntingiz bo‘yicha savolingiz bormi? Murojaat yuboring va javobini shu yerda o‘qing.",
+      "contactSupport": "Yordam jamoasiga yozish"
     }
   },
   "agent": {
@@ -1898,7 +1940,20 @@
       "members": "A’zolar",
       "agentVerification": "Agentlarni tasdiqlash",
       "notices": "E’lonlar",
-      "administrationPortal": "Boshqaruv portali"
+      "administrationPortal": "Boshqaruv portali",
+      "reviews": "Izoh va sharhlar"
+    },
+    "mobileRestricted": {
+      "badge": "Faqat kompyuter uchun",
+      "title": "Admin boshqaruv paneliga faqat kompyuter orqali kirish mumkin",
+      "description": "Admin panelidagi jadvallar, kengaytirilgan analitika va xavfsiz boshqaruv vositalari faqat katta ekranli qurilmalarda (Desktop / Laptop) ishlashga mo‘ljallangan.",
+      "switchNotice": "Iltimos, boshqaruv panelidan to‘liq foydalanish uchun kompyuter brauzeridan kiring.",
+      "featureLargeScreens": "Katta ekran (min. 1024px) va ko‘p ustunli jadvallar",
+      "featureSecurity": "Kengaytirilgan ma’muriy xavfsizlik va nazorat",
+      "featureAnalytics": "To‘liq hisobotlar va ma’lumotlarni eksport qilish",
+      "currentDevice": "Siz hozir mobil qurilmadan kirmoqdasiz",
+      "backToHome": "Bosh sahifaga qaytish",
+      "myPage": "Mening profilim"
     },
     "agentVerification": {
       "approveTitle": "Tasdiqlash ma’qullansinmi?",
@@ -2015,7 +2070,23 @@
       "noDestinationsFound": "Manzillar topilmadi.",
       "hotels": "Mehmonxonalar: {{destinationProperties}}",
       "tours": "Sayohatlar: {{destinationTours}}",
-      "moderateTitle": "Manzilni moderatsiya qilish"
+      "moderateTitle": "Manzilni moderatsiya qilish",
+      "addDestination": "Manzil qo‘shish",
+      "createTitle": "Yangi manzil",
+      "namePlaceholder": "Masalan: Busan",
+      "countryPlaceholder": "Masalan: Janubiy Koreya",
+      "descPlaceholder": "Bu shahar nimasi bilan sayohatga arziydi?",
+      "latitude": "Kenglik",
+      "longitude": "Uzunlik",
+      "photos": "Rasmlar",
+      "photosHint": "JPG yoki PNG, ko‘pi bilan {{max}} ta rasm.",
+      "addPhoto": "Rasm qo‘shish",
+      "removePhoto": "Rasmni olib tashlash",
+      "uploading": "Yuklanmoqda...",
+      "requiredFields": "Manzil nomi va davlatini kiriting.",
+      "invalidCoordinates": "Kenglik -90 dan 90 gacha, uzunlik -180 dan 180 gacha bo‘lishi kerak.",
+      "destinationCreated": "Manzil yaratildi!",
+      "createDestination": "Manzilni yaratish"
     },
     "dashboard": {
       "systemOverview": "Tizim ko‘rinishi",
@@ -2102,10 +2173,8 @@
       "verifiedAgent": "Tasdiqlangan agent"
     },
     "reviews": {
-      "commentsApiUnsupported": "Umumiy izohlar API’si backendda qo‘llab-quvvatlanmaydi.",
-      "actionUnsupported": "Bu amal backend API’sida qo‘llab-quvvatlanmaydi.",
       "commentsReviewsManagement": "Izoh va sharhlarni boshqarish",
-      "intro": "Foydalanuvchi fikrlari, turar joy sharhlari va hamjamiyat izohlarini nazorat qiling.",
+      "intro": "Mehmonxonalar, turlar, shaharlar va hikoyalardagi izohlarni hamda shahar sharhlarini nazorat qiling.",
       "reviews": "Sharhlar",
       "allContexts": "Barcha kontekstlar",
       "author": "Muallif",
@@ -2113,8 +2182,15 @@
       "rating": "Reyting",
       "searchComments": "Izohlarni qidirish...",
       "searchReviews": "Sharhlarni qidirish...",
-      "unsupportedComments": "Backend aniq obyekt ID’sisiz barcha izohlarni umumiy olishni qo‘llab-quvvatlamaydi.",
-      "unsupportedReviews": "Backend aniq obyekt ID’sisiz barcha sharhlarni umumiy olishni qo‘llab-quvvatlamaydi."
+      "deleteCommentConfirm": "Bu izohni butunlay o‘chirmoqchimisiz?",
+      "commentDeleted": "Izoh o‘chirildi!",
+      "removeReviewConfirm": "Bu sharhni shahar sahifasidan olib tashlaysizmi?",
+      "reviewRemoved": "Sharh olib tashlandi!",
+      "noCommentsFound": "Izohlar topilmadi.",
+      "noReviewsFound": "Sharhlar topilmadi.",
+      "openTarget": "Yangi oynada ochish",
+      "noContent": "Faqat baho, matn yo‘q",
+      "delete": "O‘chirish"
     },
     "unsupportedFeature": "Qo‘llab-quvvatlanmaydigan funksiya",
     "settings": {

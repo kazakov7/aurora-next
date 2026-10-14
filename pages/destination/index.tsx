@@ -15,6 +15,7 @@ import { LIKE_TARGET_DESTINATION } from '../../apollo/user/mutation';
 import { userVar } from '../../apollo/store';
 import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
 import { useI18n } from '../../libs/i18n';
+import LoadingSpinner from '../../libs/components/common/LoadingSpinner';
 
 // Exact destinationCountry values: a continent is the list of its countries, never a word in the description
 const continentCountryMap: Record<string, string[]> = {
@@ -184,11 +185,8 @@ const DestinationList: NextPage = () => {
 
 				{/* 3. Destinations 5-Column Grid */}
 				{loading && destinations.length === 0 ? (
-					<div className="destinations-grid-layout" style={{ opacity: 0.6 }}>
-						<div className="empty-destinations-state" style={{ gridColumn: '1 / -1' }}>
-							<span className="material-symbols-outlined empty-icon">sync</span>
-							<h3 className="empty-title">{t('destinations.list.loadingDestinations')}</h3>
-						</div>
+					<div className="listing-loader-wrapper">
+						<LoadingSpinner size="lg" label={t('destinations.list.loadingDestinations')} />
 					</div>
 				) : destinations.length === 0 ? (
 					<div className="empty-destinations-state">
@@ -199,7 +197,10 @@ const DestinationList: NextPage = () => {
 						</p>
 					</div>
 				) : (
-					<div className="destinations-grid-layout">
+					<div className="destinations-grid-layout" style={{ position: 'relative' }}>
+						{loading && (
+							<LoadingSpinner overlay size="md" label={t('destinations.list.loadingDestinations')} />
+						)}
 						{destinations.map((dest, idx) => (
 							<DestinationCard
 								key={dest._id || `destination-${idx}`}

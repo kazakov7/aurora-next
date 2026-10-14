@@ -6,6 +6,7 @@ export enum NotificationType {
 	REVIEW = 'REVIEW',
 	MESSAGE = 'MESSAGE',
 	SYSTEM = 'SYSTEM',
+	SUPPORT = 'SUPPORT',
 }
 
 export enum NotificationStatus {
@@ -23,4 +24,5 @@ export enum NotificationGroup {
 	SYSTEM = 'SYSTEM',
 	CHAT = 'CHAT',
 	MESSAGE = 'MESSAGE',
+	SUPPORT = 'SUPPORT',
 }

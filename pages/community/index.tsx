@@ -14,6 +14,7 @@ import CommunitySidebar, {
   AgencyItem,
 } from "../../libs/components/community/CommunitySidebar";
 import WriteStoryModal from "../../libs/components/community/WriteStoryModal";
+import LoadingSpinner from "../../libs/components/common/LoadingSpinner";
 import { BoardArticlesInquiry } from "../../libs/types/board-article/board-article.input";
 import { BoardArticle } from "../../libs/types/board-article/board-article";
 import { BoardArticleCategory } from "../../libs/enums/board-article.enum";
@@ -350,9 +351,8 @@ const CommunityPage: NextPage = () => {
             {/* LEFT COLUMN: Main Community Feed */}
             <section className="community-feed-column">
               {loading && articles.length === 0 ? (
-                <div className="community-loading-box">
-                  <div className="loading-spinner" />
-                  <p>{t("community.list.loading")}</p>
+                <div className="listing-loader-wrapper">
+                  <LoadingSpinner size="lg" label={t("community.list.loading")} />
                 </div>
               ) : error ? (
                 <div className="community-empty-state">
@@ -365,7 +365,10 @@ const CommunityPage: NextPage = () => {
                   <p className="empty-desc">{error.message}</p>
                 </div>
               ) : articles.length > 0 ? (
-                <div className="community-cards-stack">
+                <div className="community-cards-stack" style={{ position: "relative" }}>
+                  {loading && (
+                    <LoadingSpinner overlay size="md" label={t("common.updating")} />
+                  )}
                   {articles.map((article) => (
                     <CommunityCard
                       key={article._id}

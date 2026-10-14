@@ -1,33 +1,17 @@
 declare module 'swiper' {
   import Swiper from 'swiper/types/swiper-class';
-  import { SwiperModule } from 'swiper/types/shared';
-  import { SwiperOptions } from 'swiper/types/swiper-options';
-
-  export const A11y: SwiperModule;
-  export const Autoplay: SwiperModule;
-  export const Controller: SwiperModule;
-  export const EffectCoverflow: SwiperModule;
-  export const EffectCube: SwiperModule;
-  export const EffectFade: SwiperModule;
-  export const EffectFlip: SwiperModule;
-  export const EffectCreative: SwiperModule;
-  export const EffectCards: SwiperModule;
-  export const HashNavigation: SwiperModule;
-  export const History: SwiperModule;
-  export const Keyboard: SwiperModule;
-  export const Lazy: SwiperModule;
-  export const Mousewheel: SwiperModule;
-  export const Navigation: SwiperModule;
-  export const Pagination: SwiperModule;
-  export const Parallax: SwiperModule;
-  export const Scrollbar: SwiperModule;
-  export const Thumbs: SwiperModule;
-  export const Virtual: SwiperModule;
-  export const Zoom: SwiperModule;
-  export const FreeMode: SwiperModule;
-  export const Grid: SwiperModule;
-  export const Manipulation: SwiperModule;
-
+  export * from 'swiper/types';
+  export { default as Swiper } from 'swiper/types/swiper-class';
+  export const Navigation: any;
+  export const A11y: any;
+  export const Keyboard: any;
+  export const Pagination: any;
+  export const Autoplay: any;
+  export const EffectFade: any;
+  export const EffectCoverflow: any;
+  export const Scrollbar: any;
+  export const Thumbs: any;
+  export const FreeMode: any;
+  export const Grid: any;
   export default Swiper;
-  export { Swiper, SwiperOptions };
 }

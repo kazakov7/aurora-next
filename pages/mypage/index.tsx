@@ -16,6 +16,7 @@ import MyProfileBookings from '../../libs/components/mypage/MyProfileBookings';
 import MyProfileVisitedTours from "../../libs/components/mypage/MyProfileVisitedTours";
 import MyProfileHistory from '../../libs/components/mypage/MyProfileHistory';
 import MyProfileNotifications from '../../libs/components/mypage/MyProfileNotifications';
+import MyProfileRequests from '../../libs/components/mypage/MyProfileRequests';
 import MyProfileSettings from '../../libs/components/mypage/MyProfileSettings';
 import AgentApplicationPage from '../../libs/components/mypage/AgentApplicationPage';
 import MyHotels from '../../libs/components/mypage/agent/MyHotels';
@@ -30,7 +31,7 @@ const MyPage: NextPage = () => {
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 
-	const allowedCategories = ['articles', 'followers', 'following', 'wishlist', 'bookings', 'history', 'visitedTours', 'notifications', 'settings', 'partner', 'myHotels', 'myTours', 'reservations'];
+	const allowedCategories = ['articles', 'followers', 'following', 'wishlist', 'bookings', 'history', 'visitedTours', 'notifications', 'requests', 'settings', 'partner', 'myHotels', 'myTours', 'reservations'];
 	const requestedCategory = (router.query?.category as string) || 'articles';
 	const category = allowedCategories.includes(requestedCategory) ? requestedCategory : 'articles';
 
@@ -76,6 +77,8 @@ const MyPage: NextPage = () => {
 				return t('profile.page.titleHistory');
 			case 'notifications':
 				return t('profile.page.titleNotifications');
+			case 'requests':
+				return t('profile.page.titleRequests');
 			case 'settings':
 				return t('profile.page.titleSettings');
 			case 'partner':
@@ -129,6 +132,7 @@ const MyPage: NextPage = () => {
 									{category === "history" && <MyProfileHistory />}
 									{category === "visitedTours" && <MyProfileVisitedTours />}
 									{category === 'notifications' && <MyProfileNotifications />}
+									{category === 'requests' && <MyProfileRequests />}
 									{category === 'settings' && <MyProfileSettings />}
 									{category === 'partner' && <AgentApplicationPage />}
 									{category === 'myHotels' && <MyHotels />}

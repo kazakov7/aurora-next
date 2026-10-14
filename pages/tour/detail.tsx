@@ -17,6 +17,7 @@ import { userVar } from '../../apollo/store';
 import { sweetErrorAlert } from '../../libs/sweetAlert';
 import { Message } from '../../libs/enums/common.enum';
 import { useI18n } from '../../libs/i18n';
+import LoadingSpinner from '../../libs/components/common/LoadingSpinner';
 
 const TourDetail: NextPage = () => {
 	const { t, tError } = useI18n();
@@ -58,28 +59,8 @@ const TourDetail: NextPage = () => {
 		return (
 			<div className="tour-detail-page">
 				<div className="detail-container">
-					<div
-						style={{
-							minHeight: '60vh',
-							display: 'flex',
-							alignItems: 'center',
-							justifyContent: 'center',
-							gap: '12px',
-							color: '#545c72',
-							fontSize: '16px',
-						}}
-					>
-						<span
-							className="material-symbols-outlined"
-							style={{
-								fontSize: '32px',
-								color: '#006194',
-								animation: 'spin 1s linear infinite',
-							}}
-						>
-							sync
-						</span>
-						<span>{t('tours.detail.loading')}</span>
+					<div className="listing-loader-wrapper" style={{ minHeight: '60vh' }}>
+						<LoadingSpinner size="xl" label={t('tours.detail.loading')} />
 					</div>
 				</div>
 			</div>

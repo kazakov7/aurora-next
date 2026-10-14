@@ -40,8 +40,10 @@ export const PRICE_FILTER_STEP = 10;
 export const DEFAULT_USER_AVATAR = '/img/profile/default-user.png';
 export const DEFAULT_PROPERTY_IMAGE = '/img/banner/hero-hotels.jpg';
 export const DEFAULT_TOUR_IMAGE = '/img/banner/hero-tour.jpg';
-export const DEFAULT_DESTINATION_IMAGE = '/img/banner/hero_traveler.jpg';
-export const DEFAULT_ARTICLE_IMAGE = '/img/banner/hero_traveler.jpg';
+export const DEFAULT_DESTINATION_IMAGE = '/img/banner/hero_traveler.avif';
+export const DEFAULT_ARTICLE_IMAGE = '/img/banner/hero_traveler.avif';
+/** The API refuses a longer comment (CommentInput, CommentUpdate) **/
+export const COMMENT_MAX_LENGTH = 100;
 
 /** Values are dictionary keys (libs/i18n/messages); render them with `t(Messages.errorN)` **/
 export const Messages = {

@@ -9,6 +9,7 @@ import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../../libs/s
 import { Booking, Bookings } from '../../../libs/types/booking/booking';
 import { BookingStatus } from '../../../libs/enums/booking.enum';
 import { useI18n } from '../../../libs/i18n';
+import LoadingSpinner from '../../../libs/components/common/LoadingSpinner';
 
 interface GetAllBookingsByAdminData {
 	getAllBookingsByAdmin: Bookings;
@@ -76,9 +77,8 @@ const AdminBookingsPage: NextPage = () => {
 	const endItem = Math.min(page * PAGE_LIMIT, total);
 
 	const getBookingItem = (booking: Booking): string => booking.propertyData?.propertyName ?? booking.tourData?.tourName ?? t('admin.bookings.unavailableListing');
-	// Stays and tours both carry their dates in bookingStartDate/bookingEndDate
 	const getBookingDate = (booking: Booking): string =>
-		`${formatDate(booking.bookingStartDate) || '—'} – ${formatDate(booking.bookingEndDate) || '—'}`;
+		`${formatDate(booking.checkIn) || '—'} – ${formatDate(booking.checkOut) || '—'}`;
 
 	return (
 		<div className="admin-overview dashboard-container">
@@ -107,7 +107,7 @@ const AdminBookingsPage: NextPage = () => {
 						<thead><tr><th>{t('common.bookingId')}</th><th>{t('common.customer')}</th><th>{t('common.category')}</th><th>{t('admin.bookings.listing')}</th><th>{t('admin.bookings.dates')}</th><th>{t('common.total')}</th><th>{t('common.status')}</th><th /></tr></thead>
 						<tbody>
 							{loading ? (
-								<tr><td colSpan={8} style={{ textAlign: 'center', padding: '48px' }}>{t('admin.bookings.loadingBookings')}</td></tr>
+								<tr><td colSpan={8} className="table-loading-cell"><LoadingSpinner size="md" label={t('admin.bookings.loadingBookings')} /></td></tr>
 							) : error ? (
 								<tr><td colSpan={8} style={{ textAlign: 'center', padding: '48px', color: '#ba1a1a' }}>{error.message}</td></tr>
 							) : bookings.length === 0 ? (

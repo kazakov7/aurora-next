@@ -5,6 +5,7 @@ import { DEFAULT_TOUR_IMAGE, getImageUrl } from '../../../config';
 import { ApolloError } from '@apollo/client';
 import { useI18n } from '../../../i18n';
 import { RevealOnScroll } from '../../motion/RevealOnScroll';
+import LoadingSpinner from '../../common/LoadingSpinner';
 
 interface DestinationPopularToursProps {
 	destinationName: string;
@@ -44,7 +45,11 @@ const DestinationPopularTours = ({
 
 			{/* Exactly 4 Tour Package Cards in 1 Row on Desktop */}
 			<div className="tours-cards-grid">
-				{loading ? <p>{t('destinations.popularTours.loading')}</p> : null}
+				{loading ? (
+					<div style={{ gridColumn: '1 / -1', padding: '36px 0', display: 'flex', justifyContent: 'center' }}>
+						<LoadingSpinner size="md" label={t('destinations.popularTours.loading')} />
+					</div>
+				) : null}
 				{!loading && error ? <p>{t('destinations.popularTours.unavailable')}</p> : null}
 				{displayTours.map((tour, idx) => {
 					const imgUrl = getImageUrl(tour.tourImages?.[0], DEFAULT_TOUR_IMAGE);

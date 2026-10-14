@@ -62,9 +62,11 @@ const LiveDispatches = ({ destinations, loading, error }: LiveDispatchesProps) =
 			<div className="section-container">
 				<RevealOnScroll distance={16}>
 					<div className="section-header">
-						<span className="section-tag">{t('home.dispatches.eyebrow')}</span>
-						<h2 className="section-title">{t('home.dispatches.title')}</h2>
-						<p className="section-subtitle">{t('home.dispatches.description')}</p>
+						<div>
+							<span className="section-tag">{t('home.dispatches.eyebrow')}</span>
+							<h2 className="section-title">{t('home.dispatches.title')}</h2>
+							<p className="section-subtitle">{t('home.dispatches.description')}</p>
+						</div>
 					</div>
 				</RevealOnScroll>
 
@@ -76,8 +78,8 @@ const LiveDispatches = ({ destinations, loading, error }: LiveDispatchesProps) =
 						<Swiper
 							modules={[A11y, Keyboard]}
 							keyboard={{ enabled: true }}
-							spaceBetween={14}
-							slidesPerView={1.22}
+							spaceBetween={10}
+							slidesPerView="auto"
 							slidesOffsetBefore={16}
 							slidesOffsetAfter={16}
 							className="dispatches-swiper"

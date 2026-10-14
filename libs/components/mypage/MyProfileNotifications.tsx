@@ -137,6 +137,11 @@ const MyProfileNotifications = () => {
 			// Owner notifications are authored by the guest; the guest's own notification has no author
 			return authorId ? '/mypage?category=reservations' : '/mypage?category=bookings';
 		}
+		// A support notification opens the request with the reply; for an admin, the support desk
+		if (notificationType === NotificationType.SUPPORT) {
+			if (user?.memberType === MemberType.ADMIN) return '/_admin/support';
+			return notificationRefId ? `/mypage?category=requests&ticket=${notificationRefId}` : '/mypage?category=requests';
+		}
 		const contentRoute = CONTENT_ROUTES[notificationGroup];
 		if (contentRoute && notificationRefId && [NotificationType.LIKE, NotificationType.COMMENT, NotificationType.REVIEW].includes(notificationType)) {
 			return `${contentRoute}?id=${notificationRefId}`;
@@ -186,6 +191,8 @@ const MyProfileNotifications = () => {
 				return 'explore';
 			case 'MESSAGE':
 				return 'mail';
+			case 'SUPPORT':
+				return 'support_agent';
 			case 'SYSTEM':
 			default:
 				return 'auto_awesome';

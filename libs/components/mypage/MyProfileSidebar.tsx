@@ -173,6 +173,12 @@ const MyProfileSidebar: React.FC<MyProfileSidebarProps> = ({
       badge: t("profile.sidebar.unreadCount", { count: unreadCount }),
     },
     {
+      id: "requests",
+      label: t("profile.sidebar.myRequests"),
+      icon: "support_agent",
+      trailingIcon: "chevron_right",
+    },
+    {
       id: "settings",
       label: t("profile.sidebar.settings"),
       icon: "tune",

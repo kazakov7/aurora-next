@@ -12,6 +12,7 @@ import { Direction } from '../../../libs/enums/common.enum';
 import { sweetTopSmallSuccessAlert, sweetMixinErrorAlert, sweetConfirmAlert } from '../../../libs/sweetAlert';
 import { DEFAULT_USER_AVATAR, getImageUrl } from '../../../libs/config';
 import { useI18n } from '../../../libs/i18n';
+import LoadingSpinner from '../../../libs/components/common/LoadingSpinner';
 
 const AdminPropertiesPage: NextPage = () => {
 	const { t, tEnum, tError, formatDate } = useI18n();
@@ -282,8 +283,8 @@ const AdminPropertiesPage: NextPage = () => {
 						<tbody>
 							{loading ? (
 								<tr>
-									<td colSpan={6} style={{ textAlign: 'center', padding: '40px' }}>
-										{t('common.loading')}
+									<td colSpan={6} className="table-loading-cell">
+										<LoadingSpinner size="md" label={t('common.loading')} />
 									</td>
 								</tr>
 							) : properties.length === 0 ? (

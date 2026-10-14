@@ -122,6 +122,7 @@ const GlobalSearch = () => {
 				<span className="material-symbols-outlined search-icon">search</span>
 				<input
 					type="search"
+					maxLength={100}
 					value={value}
 					onChange={(event) => {
 						setValue(event.target.value);

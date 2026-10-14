@@ -7,9 +7,11 @@ import useAuthSession from "../../hooks/useAuthSession";
 import { useNotificationRealtime } from "../../hooks/useNotificationRealtime";
 import { GET_UNREAD_NOTIFICATION_COUNT } from "../../../apollo/user/query";
 import Link from "next/link";
-import { DEFAULT_USER_AVATAR, REACT_APP_API_URL } from "../../config";
+import { DEFAULT_USER_AVATAR, getImageUrl } from "../../config";
 import AuroraLogo3D from "../AuroraLogo3D";
 import { useI18n } from "../../i18n";
+import useDeviceDetect from "../../hooks/useDeviceDetect";
+import AdminMobileRestricted from "../admin/AdminMobileRestricted";
 
 const withAdminLayout = (Component: any) => {
   return (props: any) => {
@@ -19,16 +21,40 @@ const withAdminLayout = (Component: any) => {
     const activePath = router.pathname.replace("/_admin/", "");
     const authChecked = useAuthSession();
     const isAdmin = user.memberType === "ADMIN";
+    const device = useDeviceDetect();
+    const [mounted, setMounted] = useState(false);
+    const [isMobileScreen, setIsMobileScreen] = useState(false);
     const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
     const navigationTriggerRef = useRef<HTMLButtonElement>(null);
     const navigationDrawerRef = useRef<HTMLElement>(null);
+
+    useEffect(() => {
+      setMounted(true);
+    }, []);
+
+    useEffect(() => {
+      const checkScreen = () => {
+        const isSmallScreen = window.innerWidth <= 767;
+        const isMobileUA =
+          typeof navigator !== "undefined" &&
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent,
+          );
+        setIsMobileScreen(isSmallScreen || isMobileUA);
+      };
+      checkScreen();
+      window.addEventListener("resize", checkScreen);
+      return () => window.removeEventListener("resize", checkScreen);
+    }, []);
+
+    const isMobile = device === "mobile" || isMobileScreen;
 
     /** APOLLO REQUESTS **/
     const { data: unreadData, refetch: refetchUnread } = useQuery(
       GET_UNREAD_NOTIFICATION_COUNT,
       {
         fetchPolicy: "network-only",
-        skip: !isAdmin,
+        skip: !mounted || !isAdmin || isMobile,
       },
     );
     const unreadCount: number = unreadData?.getUnreadNotificationCount ?? 0;
@@ -36,16 +62,16 @@ const withAdminLayout = (Component: any) => {
       void refetchUnread();
     }, [refetchUnread]);
     useNotificationRealtime({
-      memberId: isAdmin ? user._id : undefined,
+      memberId: isAdmin && !isMobile ? user._id : undefined,
       onNotification: handleRealtimeNotification,
     });
 
     /** LIFECYCLES **/
     useEffect(() => {
-      if (authChecked && user.memberType !== "ADMIN") {
+      if (!isMobile && authChecked && user.memberType !== "ADMIN") {
         router.push("/");
       }
-    }, [authChecked, user, router]);
+    }, [authChecked, user, router, isMobile]);
 
     useEffect(() => {
       setMobileNavigationOpen(false);
@@ -85,6 +111,22 @@ const withAdminLayout = (Component: any) => {
         document.removeEventListener("keydown", handleKeyDown);
       };
     }, [mobileNavigationOpen]);
+
+    if (!mounted) {
+      return null;
+    }
+
+    if (isMobile) {
+      return (
+        <>
+          <Head>
+            <title>{t("admin.layout.metaTitle")}</title>
+            <meta name="robots" content="noindex, nofollow" />
+          </Head>
+          <AdminMobileRestricted />
+        </>
+      );
+    }
 
     if (!user || user.memberType !== "ADMIN") {
       return null;
@@ -213,6 +255,15 @@ const withAdminLayout = (Component: any) => {
                     <span>{t("navigation.community")}</span>
                   </Link>
                   <Link
+                    href="/_admin/reviews"
+                    className={`nav-item ${
+                      activePath === "reviews" ? "active" : ""
+                    }`}
+                  >
+                    <span className="material-symbols-outlined">rate_review</span>
+                    <span>{t("admin.layout.reviews")}</span>
+                  </Link>
+                  <Link
                     href="/_admin/cs"
                     className={`nav-item ${
                       activePath.startsWith("cs") ? "active" : ""
@@ -268,11 +319,7 @@ const withAdminLayout = (Component: any) => {
                   </div>
                   <img
                     className="user-avatar"
-                    src={
-                      user.memberImage
-                        ? `${REACT_APP_API_URL}/${user.memberImage}`
-                        : DEFAULT_USER_AVATAR
-                    }
+                    src={getImageUrl(user.memberImage, DEFAULT_USER_AVATAR)}
                     alt={t("navigation.profile")}
                   />
                 </div>

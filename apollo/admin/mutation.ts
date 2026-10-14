@@ -238,7 +238,6 @@ export const CANCEL_BOOKING_BY_ADMIN = gql`
 		cancelBookingByAdmin(input: $input) {
 			_id
 			bookingStatus
-			cancelReason
 			cancelledAt
 		}
 	}

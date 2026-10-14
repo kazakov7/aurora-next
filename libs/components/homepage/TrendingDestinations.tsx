@@ -10,6 +10,7 @@ import { RevealOnScroll } from "../motion/RevealOnScroll";
 import { StaggerContainer } from "../motion/StaggerContainer";
 import { StaggerItem } from "../motion/StaggerItem";
 import useDeviceDetect from "../../hooks/useDeviceDetect";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 interface TrendingDestinationsProps {
   destinations: Destination[];
@@ -130,13 +131,17 @@ const TrendingDestinations = ({
           </p>
         ) : null}
 
-        {isMobile ? (
+        {loading && visibleDestinations.length === 0 ? (
+          <div style={{ minHeight: "300px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <LoadingSpinner size="lg" label={t("common.loading")} />
+          </div>
+        ) : isMobile ? (
           <div className="trending-mobile-swiper">
             <Swiper
               modules={[A11y, Keyboard]}
               keyboard={{ enabled: true }}
-              spaceBetween={14}
-              slidesPerView={1.22}
+              spaceBetween={12}
+              slidesPerView="auto"
               slidesOffsetBefore={16}
               slidesOffsetAfter={16}
             >

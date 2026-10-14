@@ -13,6 +13,7 @@ import MemberFollowers from '../../libs/components/member/MemberFollowers';
 import MemberFollowing from '../../libs/components/member/MemberFollowing';
 import MemberProducts from '../../libs/components/member/MemberProducts';
 import { useI18n } from '../../libs/i18n';
+import LoadingSpinner from '../../libs/components/common/LoadingSpinner';
 
 interface GetMemberResponse {
 	getMember?: Member;
@@ -72,7 +73,11 @@ const MemberPage: NextPage = () => {
 			</Head>
 
 			<div className="member-profile-container">
-				{loading && !member && <p className="member-profile-state">{t('member.page.loadingMemberProfile')}</p>}
+				{loading && !member && (
+					<div className="listing-loader-wrapper" style={{ minHeight: '50vh' }}>
+						<LoadingSpinner size="lg" label={t('member.page.loadingMemberProfile')} />
+					</div>
+				)}
 				{!loading && !memberId && (
 					<p className="member-profile-state">{t('member.page.idRequired')}</p>
 				)}

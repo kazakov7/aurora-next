@@ -3,112 +3,99 @@ import Link from "next/link";
 import AuroraLogo3D from "./AuroraLogo3D";
 import { AppLocale, useI18n } from "../i18n";
 
-const Footer = () => {
+const Footer: React.FC = () => {
   const { locale, t, changeLocale } = useI18n();
+
   return (
     <footer className="footer-main">
       <div className="footer-container">
-        <div className="footer-top-grid">
-          {/* Brand Column */}
-          <div className="brand-col">
-            {/* <div className="brand-logo"> */}
-            <section style={{ height: 120 }}>
-              <AuroraLogo3D align="left" />
-            </section>
-            {/* </div> */}
-            <p className="brand-desc">{t("footer.description")}</p>
-            <div className="locale-selectors">
-              <span className="material-symbols-outlined">public</span>
-              <label className="sr-only" htmlFor="footer-language-selector">
-                {t("language.select")}
-              </label>
-              <select
-                id="footer-language-selector"
-                className="locale-btn"
-                value={locale}
-                onChange={(event) =>
-                  void changeLocale(event.target.value as AppLocale)
-                }
-                aria-label={t("language.select")}
-              >
-                <option value="en">{t("language.english")}</option>
-                <option value="ko">{t("language.korean")}</option>
-                <option value="uz">{t("language.uzbek")}</option>
-              </select>
-              <button className="locale-btn" type="button">
-                <span>USD ($)</span>
-                <span className="material-symbols-outlined">expand_more</span>
-              </button>
+        <div className="footer-compact-body">
+          {/* Brand Info */}
+          <div className="brand-section">
+            <div className="brand-logo-wrap">
+              <Link href="/" className="brand-logo-link" aria-label="AURORA Home">
+                <section className="footer-logo-canvas" style={{ width: 125, height: 38 }}>
+                  <AuroraLogo3D align="left" />
+                </section>
+              </Link>
             </div>
+            <p className="brand-tagline">{t("footer.description")}</p>
           </div>
 
-          {/* Explore Links */}
-          <div className="footer-col">
-            <h4>{t("footer.explore")}</h4>
-            <ul>
-              <li>
+          {/* Quick Essential Navigation */}
+          <div className="footer-nav-section">
+            <div className="footer-nav-group">
+              <span className="nav-heading">{t("footer.explore")}</span>
+              <div className="nav-links">
                 <Link href="/property">{t("navigation.hotels")}</Link>
-              </li>
-              <li>
                 <Link href="/tour">{t("navigation.tours")}</Link>
-              </li>
-              <li>
                 <Link href="/destination">{t("navigation.destinations")}</Link>
-              </li>
-            </ul>
-          </div>
+                <Link href="/community">{t("navigation.community")}</Link>
+              </div>
+            </div>
 
-          {/* Company Links */}
-          <div className="footer-col">
-            <h4>{t("footer.company")}</h4>
-            <ul>
-              <li>
+            <div className="footer-nav-group">
+              <span className="nav-heading">{t("footer.company")}</span>
+              <div className="nav-links">
                 <Link href="/cs">{t("footer.contact")}</Link>
-              </li>
-              <li>
                 <Link href="/cs?tab=faq">{t("footer.helpCenter")}</Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal Links */}
-          <div className="footer-col">
-            <h4>{t("footer.legal")}</h4>
-            <ul>
-              <li>
                 <Link href="/cs?tab=terms">{t("footer.privacy")}</Link>
-              </li>
-              <li>
                 <Link href="/cs?tab=terms">{t("footer.terms")}</Link>
-              </li>
-              <li>
-                <Link href="/cs?tab=terms">{t("footer.trust")}</Link>
-              </li>
-            </ul>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* Bottom Bar: Copyright & Preferences & Socials */}
         <div className="footer-bottom-bar">
-          <p>{t("footer.rights", { year: new Date().getFullYear() })}</p>
+          <p className="copyright-text">
+            {t("footer.rights", { year: new Date().getFullYear() })}
+          </p>
+
+          {/* Language & Currency Selector */}
+          <div className="footer-prefs-box">
+            <span className="material-symbols-outlined globe-icon">public</span>
+            <select
+              id="footer-language-selector"
+              className="locale-select"
+              value={locale}
+              onChange={(event) =>
+                void changeLocale(event.target.value as AppLocale)
+              }
+              aria-label={t("language.select")}
+            >
+              <option value="en">{t("language.english")}</option>
+              <option value="ko">{t("language.korean")}</option>
+              <option value="uz">{t("language.uzbek")}</option>
+            </select>
+            <span className="currency-pill">USD ($)</span>
+          </div>
+
+          {/* Social Links */}
           <div className="social-links">
             <a
               aria-label={t("footer.instagramLink")}
-              href="#"
+              href="https://instagram.com"
+              target="_blank"
+              rel="noreferrer"
               className="social-btn"
             >
               <span className="material-symbols-outlined">photo_camera</span>
             </a>
             <a
               aria-label={t("footer.socialUpdatesLink")}
-              href="#"
+              href="https://x.com"
+              target="_blank"
+              rel="noreferrer"
               className="social-btn"
             >
               <span className="material-symbols-outlined">tag</span>
             </a>
             <a
               aria-label={t("footer.videoChannelLink")}
-              href="#"
+              href="https://youtube.com"
+              target="_blank"
+              rel="noreferrer"
               className="social-btn"
             >
               <span className="material-symbols-outlined">smart_display</span>

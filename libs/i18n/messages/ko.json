@@ -393,7 +393,8 @@
       "faq5Answer": "{{link}} 포트폴리오에서 \"프라이빗 출발\" 옵션을 선택하거나, 아래 문의 양식으로 컨시어지 데스크에 원하는 조건을 직접 보내 주세요. 물류 팀이 4시간 이내에 항공편, 가이드, 보안 일정을 모두 준비합니다.",
       "faq6Answer": "모든 일정 문서, 세금 계산서, 탑승권은 {{link}}에 기간 제한 없이 보관됩니다. 인증된 PDF 바우처를 내보내거나 오프라인에서도 쓸 수 있는 Apple Wallet 패스를 생성할 수 있습니다.",
       "faq7Answer": "{{link}} 메뉴로 이동하세요. 여기에서 WebAuthn 생체 인증 패스키 설정, 마스터 비밀번호 변경, 동시 접속 세션 해제, 공개 프로필 표시 범위 조정을 할 수 있습니다."
-    }
+    },
+    "viewMyRequests": "내 문의 보기"
   },
   "availability": {
     "title": "예약 가능 여부",
@@ -434,6 +435,7 @@
       "location": "위치",
       "anywhere": "어디든",
       "dates": "날짜",
+      "addDates": "날짜 추가",
       "travelers": "여행자",
       "guests": "여행자 {{count}}명",
       "guestOption": "{{count}}명 이상",
@@ -441,6 +443,7 @@
       "checkIn": "체크인 날짜",
       "checkOut": "체크아웃 날짜",
       "searchStays": "숙소 검색",
+      "searchExperiences": "여행 경험 검색",
       "guests_one": "여행자 {{count}}명",
       "imageAlt": "여행을 떠나는 여행자"
     },
@@ -472,7 +475,7 @@
     "experiences": {
       "eyebrow": "가이드 체험",
       "title": "꼭 경험해 볼 투어",
-      "browse": "추천 투어 보기",
+      "browse": "모든 투어",
       "loading": "인기 투어를 불러오는 중…",
       "unavailable": "지금은 인기 투어를 불러올 수 없습니다.",
       "empty": "아직 순위가 있는 투어가 없습니다.",
@@ -485,8 +488,8 @@
     },
     "community": {
       "eyebrow": "커뮤니티 큐레이터",
-      "title": "AURORA를 이끄는 창의적인 사람들을 만나보세요",
-      "explore": "커뮤니티 둘러보기",
+      "title": "창의적인 여행 큐레이터",
+      "explore": "둘러보기",
       "loading": "인기 여행자를 불러오는 중…",
       "unavailable": "지금은 인기 여행자를 불러올 수 없습니다.",
       "empty": "아직 순위가 있는 여행자가 없습니다.",
@@ -504,7 +507,8 @@
       "empty": "아직 순위가 있는 파트너가 없습니다.",
       "hotelPartner": "호텔 파트너",
       "tourPartner": "투어 파트너",
-      "approved": "AURORA 인증 파트너"
+      "approved": "AURORA 인증 파트너",
+      "approvedShort": "승인됨"
     },
     "dispatches": {
       "eyebrow": "실시간 여행 소식",
@@ -644,7 +648,8 @@
     "IMAGE_REQUIRED": "이미지가 필요합니다.",
     "ONLY_SPECIFIC_ROLES": "특정 역할만 이용할 수 있습니다.",
     "BOOKING_CANCEL_WINDOW_PASSED": "무료 취소는 시작 48시간 전에 마감됩니다!",
-    "RATING_REQUIRES_STAY": "숙박 또는 투어를 마친 여행자만 평가할 수 있습니다!"
+    "RATING_REQUIRES_STAY": "숙박 또는 투어를 마친 여행자만 평가할 수 있습니다!",
+    "TOO_MANY_LOGIN_ATTEMPTS": "로그인 실패가 너무 많습니다. 15분 후에 다시 시도해 주세요."
   },
   "errors": {
     "somethingWentWrong": "문제가 발생했습니다.",
@@ -739,7 +744,8 @@
       "BOOKING": "예약",
       "REVIEW": "리뷰",
       "MESSAGE": "메시지",
-      "SYSTEM": "시스템"
+      "SYSTEM": "시스템",
+      "SUPPORT": "고객 지원"
     },
     "supportCategory": {
       "BOOKING": "예약",
@@ -776,7 +782,7 @@
     },
     "comments": {
       "emptyComment": "댓글을 입력한 후 등록해 주세요.",
-      "commentTooLong": "댓글은 500자를 넘을 수 없습니다.",
+      "commentTooLong": "댓글은 {{max}}자를 넘을 수 없습니다.",
       "failedToPostComment": "댓글을 등록하지 못했습니다.",
       "guestComments": "투숙객 댓글",
       "mostRecent": "최신순",
@@ -790,7 +796,7 @@
       "formIntro": "직접 경험한 숙소 이야기를 다음 여행자들과 나눠 보세요",
       "currentUser": "현재 사용자",
       "placeholder": "경험을 공유해 주세요 (예: 전망, 체크인, 조식, 스파 온도)...",
-      "characterCount": "{{count}} / 500자",
+      "characterCount": "{{count}} / {{max}}자",
       "evaluationsFor": "{{name}}에 대한 후기 {{count}}개",
       "evaluationsFor_one": "{{name}}에 대한 후기 {{count}}개"
     },
@@ -881,6 +887,8 @@
       "priceLowToHigh": "가격: 낮은 순",
       "priceHighToLow": "가격: 높은 순",
       "noStaysFound": "숙소를 찾을 수 없습니다",
+      "loadingHotels": "호텔을 불러오는 중...",
+      "updatingHotels": "숙소를 업데이트하는 중...",
       "adjustFilters": "검색 필터나 여행지 조건을 조정해 보세요.",
       "totalAvailable": "총 {{count}}개 숙소 예약 가능",
       "totalAvailable_one": "총 {{count}}개 숙소 예약 가능",
@@ -946,7 +954,7 @@
     },
     "comments": {
       "emptyComment": "후기를 입력한 후 등록해 주세요.",
-      "commentTooLong": "댓글은 500자를 넘을 수 없습니다.",
+      "commentTooLong": "댓글은 {{max}}자를 넘을 수 없습니다.",
       "failedToPostComment": "댓글을 등록하지 못했습니다.",
       "travelerComments": "여행자 댓글",
       "mostRecent": "최신순",
@@ -959,7 +967,7 @@
       "formIntro": "직접 경험한 여행 이야기를 다음 여행자들과 나눠 보세요",
       "currentUser": "현재 사용자",
       "placeholder": "경험을 공유해 주세요 (예: 전망, 체크인, 조식, 스파 온도)...",
-      "characterCount": "{{count}} / 500자",
+      "characterCount": "{{count}} / {{max}}자",
       "evaluationsFor": "{{name}}에 대한 후기 {{count}}개",
       "evaluationsFor_one": "{{name}}에 대한 후기 {{count}}개"
     },
@@ -1039,6 +1047,8 @@
       "departureDate": "출발일순",
       "mostPopular": "인기순",
       "noJourneysFound": "여정을 찾을 수 없습니다",
+      "loadingTours": "투어를 불러오는 중...",
+      "updatingTours": "투어를 업데이트하는 중...",
       "adjustFilters": "검색 필터나 여행지 조건을 조정해 보세요.",
       "totalAvailable": "총 {{count}}개 여정 예약 가능",
       "totalAvailable_one": "총 {{count}}개 여정 예약 가능"
@@ -1286,7 +1296,7 @@
       "userProfile": "사용자 프로필",
       "joinTheConversation": "대화에 참여하세요",
       "placeholder": "이 게시글에 대한 생각, 경험 또는 질문을 남겨 주세요...",
-      "characterCount": "{{count}} / 500자"
+      "characterCount": "{{count}} / {{max}}자"
     },
     "detailEngagementBar": {
       "comments": "댓글 {{commentsCount}}개",
@@ -1601,7 +1611,18 @@
       "awaitingPayment": "결제 대기",
       "loadMore": "더 보기",
       "cancelReason": "취소 사유:",
-      "cancelWindowClosed": "무료 취소는 시작 48시간 전에 마감되었습니다. 변경이 필요하면 고객센터에 문의하세요."
+      "cancelWindowClosed": "무료 취소는 시작 48시간 전에 마감되었습니다. 변경이 필요하면 고객센터에 문의하세요.",
+      "rate": "평가하기",
+      "yourRating": "내 평점",
+      "yourRatingValue": "내 평점: 5점 중 {{rating}}점",
+      "rateYourStay": "숙박 평가하기",
+      "rateYourTour": "투어 평가하기",
+      "starsLabel": "{{count}}점",
+      "starsLabel_one": "{{count}}점",
+      "ratingOnce": "평점은 한 번만 남길 수 있으며 다른 여행자의 선택에 도움이 됩니다.",
+      "submitRating": "평점 등록",
+      "ratingSaved": "평가해 주셔서 감사합니다!",
+      "ratingFailed": "평점을 저장하지 못했습니다."
     },
     "operationFailed": "작업에 실패했습니다.",
     "followers": {
@@ -1711,7 +1732,8 @@
       "conciergeText": "일정 변경, 전용 헬기 이동, 맞춤 식단이 필요하신가요?",
       "chatWithCurator": "큐레이터와 채팅",
       "activeCount": "진행 중 {{count}}건",
-      "unreadCount": "읽지 않음 {{count}}개"
+      "unreadCount": "읽지 않음 {{count}}개",
+      "myRequests": "내 문의"
     },
     "visitedTours": {
       "title": "방문한 투어",
@@ -1752,7 +1774,27 @@
       "titleMyTours": "내 투어 — AURORA 에이전트",
       "titleReservations": "예약 관리 — AURORA 에이전트",
       "titleDefault": "내 프로필 — AURORA Travel",
-      "metaDescription": "AURORA Travel 프로필, 예약, 게시글, 위시리스트를 관리하세요."
+      "metaDescription": "AURORA Travel 프로필, 예약, 게시글, 위시리스트를 관리하세요.",
+      "titleRequests": "내 문의 — AURORA 프로필"
+    },
+    "requests": {
+      "myRequests": "내 문의",
+      "summary": "문의 {{count}}건",
+      "summary_one": "문의 {{count}}건",
+      "intro": "AURORA 고객 지원팀에 보낸 모든 문의와 답변을 확인하세요.",
+      "newRequest": "새 문의",
+      "statusAll": "전체",
+      "loading": "문의를 불러오는 중...",
+      "unavailable": "문의를 불러올 수 없습니다",
+      "sentOn": "{{date}} 접수",
+      "viewAttachment": "첨부 파일 보기",
+      "replyFrom": "AURORA 고객 지원팀 답변",
+      "awaitingReply": "문의가 접수되었습니다. 답변은 이곳에 표시됩니다.",
+      "loadMore": "더 보기",
+      "emptyTitle": "아직 문의가 없습니다",
+      "emptyFilteredTitle": "이 상태의 문의가 없습니다",
+      "emptyText": "예약, 결제 또는 계정에 관해 궁금한 점이 있으신가요? 문의를 보내고 이곳에서 답변을 확인하세요.",
+      "contactSupport": "고객 지원 문의하기"
     }
   },
   "agent": {
@@ -1898,7 +1940,20 @@
       "members": "회원",
       "agentVerification": "에이전트 인증",
       "notices": "공지사항",
-      "administrationPortal": "관리 포털"
+      "administrationPortal": "관리 포털",
+      "reviews": "댓글 및 리뷰"
+    },
+    "mobileRestricted": {
+      "badge": "PC 전용 안내",
+      "title": "관리자 대시보드는 PC에서만 이용 가능합니다",
+      "description": "관리자 포털의 대용량 데이터 표, 심층 분석 통계 및 보안 관리 도구는 화면이 넓은 데스크톱/랩톱 브라우저에 최적화되어 있습니다.",
+      "switchNotice": "원활하고 안전한 업무를 위해 PC 브라우저로 접속해 주시기 바랍니다.",
+      "featureLargeScreens": "고밀도 데이터 테이블 및 다중 열 뷰",
+      "featureSecurity": "강화된 관리자 보안 및 권한 제어",
+      "featureAnalytics": "종합 통계 분석 및 데이터 내보내기",
+      "currentDevice": "현재 모바일 기기로 접속 중입니다",
+      "backToHome": "홈으로 돌아가기",
+      "myPage": "내 프로필로 이동"
     },
     "agentVerification": {
       "approveTitle": "인증을 승인할까요?",
@@ -2015,7 +2070,23 @@
       "noDestinationsFound": "여행지가 없습니다.",
       "hotels": "호텔: {{destinationProperties}}",
       "tours": "투어: {{destinationTours}}",
-      "moderateTitle": "여행지 관리"
+      "moderateTitle": "여행지 관리",
+      "addDestination": "여행지 추가",
+      "createTitle": "새 여행지",
+      "namePlaceholder": "예: 부산",
+      "countryPlaceholder": "예: 대한민국",
+      "descPlaceholder": "이 도시를 여행할 만한 이유는 무엇인가요?",
+      "latitude": "위도",
+      "longitude": "경도",
+      "photos": "사진",
+      "photosHint": "JPG 또는 PNG 사진을 최대 {{max}}장까지 올릴 수 있습니다.",
+      "addPhoto": "사진 추가",
+      "removePhoto": "사진 삭제",
+      "uploading": "업로드 중...",
+      "requiredFields": "여행지 이름과 국가를 입력하세요.",
+      "invalidCoordinates": "위도는 -90에서 90, 경도는 -180에서 180 사이여야 합니다.",
+      "destinationCreated": "여행지가 생성되었습니다!",
+      "createDestination": "여행지 생성"
     },
     "dashboard": {
       "systemOverview": "시스템 개요",
@@ -2102,10 +2173,8 @@
       "verifiedAgent": "인증 에이전트"
     },
     "reviews": {
-      "commentsApiUnsupported": "전체 댓글 API는 백엔드에서 지원되지 않습니다.",
-      "actionUnsupported": "이 작업은 백엔드 API에서 지원되지 않습니다.",
       "commentsReviewsManagement": "댓글 및 리뷰 관리",
-      "intro": "사용자 피드백, 숙소 리뷰, 커뮤니티 댓글을 관리합니다.",
+      "intro": "호텔, 투어, 여행지, 스토리에 달린 댓글과 여행지 리뷰를 관리합니다.",
       "reviews": "리뷰",
       "allContexts": "전체 대상",
       "author": "작성자",
@@ -2113,8 +2182,15 @@
       "rating": "평점",
       "searchComments": "댓글 검색...",
       "searchReviews": "리뷰 검색...",
-      "unsupportedComments": "백엔드는 특정 대상 ID 없이 전체 댓글을 조회하는 기능을 지원하지 않습니다.",
-      "unsupportedReviews": "백엔드는 특정 대상 ID 없이 전체 리뷰를 조회하는 기능을 지원하지 않습니다."
+      "deleteCommentConfirm": "이 댓글을 영구적으로 삭제하시겠습니까?",
+      "commentDeleted": "댓글이 삭제되었습니다!",
+      "removeReviewConfirm": "이 리뷰를 여행지 페이지에서 내리시겠습니까?",
+      "reviewRemoved": "리뷰가 삭제되었습니다!",
+      "noCommentsFound": "댓글이 없습니다.",
+      "noReviewsFound": "리뷰가 없습니다.",
+      "openTarget": "새 탭에서 열기",
+      "noContent": "평점만 있고 내용은 없습니다",
+      "delete": "삭제"
     },
     "unsupportedFeature": "지원되지 않는 기능",
     "settings": {

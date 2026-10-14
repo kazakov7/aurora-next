@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { NextPage } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import useDeviceDetect from "../../libs/hooks/useDeviceDetect";
 import withLayoutBasic from "../../libs/components/layout/LayoutBasic";
 import CsContactForm from "../../libs/components/cs/CsContactForm";
@@ -254,7 +255,7 @@ const CS: NextPage = () => {
                     </span>
                   </summary>
                   <div className="faq-content">
-                    {tx("support.page.faq1Answer", { link: <a href="#">{t("support.page.faq1Link")}</a> })}
+                    {tx("support.page.faq1Answer", { link: <Link href="/property">{t("support.page.faq1Link")}</Link> })}
                   </div>
                 </details>
                 <details className="faq-item">
@@ -289,7 +290,7 @@ const CS: NextPage = () => {
                     </span>
                   </summary>
                   <div className="faq-content">
-                    {tx("support.page.faq4Answer", { link: <a href="#">{t("support.page.faq4Link")}</a> })}
+                    {tx("support.page.faq4Answer", { link: <Link href="/chat">{t("support.page.faq4Link")}</Link> })}
                   </div>
                 </details>
                 <details className="faq-item">
@@ -302,7 +303,7 @@ const CS: NextPage = () => {
                     </span>
                   </summary>
                   <div className="faq-content">
-                    {tx("support.page.faq5Answer", { link: <a href="#">{t("support.page.faq5Link")}</a> })}
+                    {tx("support.page.faq5Answer", { link: <Link href="/tour">{t("support.page.faq5Link")}</Link> })}
                   </div>
                 </details>
                 <details className="faq-item">
@@ -315,7 +316,7 @@ const CS: NextPage = () => {
                     </span>
                   </summary>
                   <div className="faq-content">
-                    {tx("support.page.faq6Answer", { link: <a href="#">{t("support.page.myPageBookings")}</a> })}
+                    {tx("support.page.faq6Answer", { link: <Link href="/mypage?category=bookings">{t("support.page.myPageBookings")}</Link> })}
                   </div>
                 </details>
                 <details className="faq-item">

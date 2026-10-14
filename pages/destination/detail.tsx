@@ -13,6 +13,7 @@ import DestinationPopularTours from '../../libs/components/destination/detail/De
 import DestinationTravelers from '../../libs/components/destination/detail/DestinationTravelers';
 import DestinationReviews from '../../libs/components/destination/detail/DestinationReviews';
 import DestinationContinueExploring from '../../libs/components/destination/detail/DestinationContinueExploring';
+import LoadingSpinner from '../../libs/components/common/LoadingSpinner';
 
 import { Destination } from '../../libs/types/destination/destination';
 import { Property } from '../../libs/types/property/property';
@@ -247,27 +248,8 @@ const DestinationDetail: NextPage = () => {
 	if (destinationLoading || !destination) {
 		return (
 			<div className="destination-detail-page-wrapper">
-				<div
-					style={{
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'center',
-						minHeight: '60vh',
-						gap: '12px',
-						fontSize: '16px',
-						color: '#545c72',
-					}}
-				>
-					<span
-						className="material-symbols-outlined"
-						style={{
-							fontSize: '32px',
-							color: '#006194',
-						}}
-					>
-						sync
-					</span>
-					<span>{t('destinations.detail.loading')}</span>
+				<div className="listing-loader-wrapper" style={{ minHeight: '60vh' }}>
+					<LoadingSpinner size="xl" label={t('destinations.detail.loading')} />
 				</div>
 			</div>
 		);

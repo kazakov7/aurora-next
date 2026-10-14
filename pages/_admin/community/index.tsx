@@ -388,25 +388,28 @@ const AdminCommunityPage: NextPage = () => {
                             visibility
                           </span>
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(article._id)}
-                          style={{
-                            padding: "6px",
-                            borderRadius: "6px",
-                            border: "none",
-                            background: "#ffdad6",
-                            color: "#ba1a1a",
-                            cursor: "pointer",
-                          }}
-                        >
-                          <span
-                            className="material-symbols-outlined"
-                            style={{ fontSize: 18 }}
+                        {/* Purging is the second step: only a story already set to DELETED can be removed for good */}
+                        {article.articleStatus === BoardArticleStatus.DELETED && (
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(article._id)}
+                            style={{
+                              padding: "6px",
+                              borderRadius: "6px",
+                              border: "none",
+                              background: "#ffdad6",
+                              color: "#ba1a1a",
+                              cursor: "pointer",
+                            }}
                           >
-                            delete
-                          </span>
-                        </button>
+                            <span
+                              className="material-symbols-outlined"
+                              style={{ fontSize: 18 }}
+                            >
+                              delete
+                            </span>
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

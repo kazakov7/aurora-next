@@ -6,6 +6,7 @@ import { DEFAULT_USER_AVATAR, getImageUrl } from '../../config';
 import { useI18n } from '../../i18n';
 import { RevealOnScroll } from '../motion/RevealOnScroll';
 import { HoverLift } from '../motion/HoverLift';
+import useDeviceDetect from '../../hooks/useDeviceDetect';
 
 interface TravelPartnersProps {
 	hotelAgents: RankingAgent[];
@@ -56,6 +57,10 @@ const PartnerRow = ({ agents, reverse }: { agents: RankingAgent[]; reverse?: boo
 
 const TravelPartners = ({ hotelAgents, tourAgents, loading, error }: TravelPartnersProps) => {
 	const { t } = useI18n();
+	const device = useDeviceDetect();
+	const isMobile = device === 'mobile';
+	const topPartners = [...hotelAgents.slice(0, 2), ...tourAgents.slice(0, 2)];
+
 	return (
 		<section className="travel-partners-section">
 			<div className="section-container">
@@ -67,21 +72,58 @@ const TravelPartners = ({ hotelAgents, tourAgents, loading, error }: TravelPartn
 					</div>
 				</RevealOnScroll>
 
-				<div className="partners-marquee-area">
-					<div className="marquee-fade-left" />
-					{loading ? <p className="partners-empty-state">{t('home.partners.loading')}</p> : null}
-					{!loading && error ? <p className="partners-empty-state">{t('home.partners.unavailable')}</p> : null}
-					{!loading && !error ? (
-						<>
-							<PartnerRow agents={hotelAgents} />
-							<PartnerRow agents={tourAgents} reverse />
-						</>
-					) : null}
-					{!loading && !error && hotelAgents.length + tourAgents.length === 0 ? (
-						<p className="partners-empty-state">{t('home.partners.empty')}</p>
-					) : null}
-					<div className="marquee-fade-right" />
-				</div>
+				{loading ? <p className="partners-empty-state">{t('home.partners.loading')}</p> : null}
+				{!loading && error ? <p className="partners-empty-state">{t('home.partners.unavailable')}</p> : null}
+
+				{!loading && !error && isMobile ? (
+					<div className="partners-mobile-list">
+						{topPartners.map((agent) => {
+							const member = agent.memberData;
+							const name = agent.companyName || member?.memberFullName || member?.memberNick;
+							return (
+								<Link
+									key={agent._id}
+									href={`/member?memberId=${agent.memberId}`}
+									className="partner-mobile-card"
+								>
+									<div className="partner-mobile-left">
+										<img
+											className="partner-avatar"
+											src={getImageUrl(member?.memberImage, DEFAULT_USER_AVATAR)}
+											alt={name}
+										/>
+										<div className="partner-identity">
+											<div className="name-wrapper">
+												<span className="partner-name">{name}</span>
+												<span className="verified-check">✓</span>
+											</div>
+											<span className="partner-handle">
+												{agent.agentType === 'HOTEL'
+													? t('home.partners.hotelPartner')
+													: t('home.partners.tourPartner')}
+											</span>
+										</div>
+									</div>
+									<span className="approved-pill">
+										{t('home.partners.approvedShort') || 'Approved'}
+									</span>
+								</Link>
+							);
+						})}
+					</div>
+				) : null}
+
+				{!loading && !error && !isMobile ? (
+					<div className="partners-marquee-area">
+						<div className="marquee-fade-left" />
+						<PartnerRow agents={hotelAgents} />
+						<PartnerRow agents={tourAgents} reverse />
+						{hotelAgents.length + tourAgents.length === 0 ? (
+							<p className="partners-empty-state">{t('home.partners.empty')}</p>
+						) : null}
+						<div className="marquee-fade-right" />
+					</div>
+				) : null}
 			</div>
 		</section>
 	);

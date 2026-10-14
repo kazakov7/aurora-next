@@ -17,6 +17,7 @@ import { userVar } from '../../apollo/store';
 import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
 import { useI18n } from '../../libs/i18n';
 import MobileFilterPanel from '../../libs/components/common/MobileFilterPanel';
+import LoadingSpinner from '../../libs/components/common/LoadingSpinner';
 
 const defaultInput: ToursInquiry = {
 	page: 1,
@@ -244,14 +245,21 @@ const TourList: NextPage = ({ initialInput = defaultInput }: any) => {
 						</div>
 
 						{/* Tours Grid */}
-						{tours.length === 0 && !loading ? (
+						{loading && tours.length === 0 ? (
+							<div className="listing-loader-wrapper">
+								<LoadingSpinner size="lg" label={t('tours.list.loadingTours')} />
+							</div>
+						) : tours.length === 0 ? (
 							<div className="no-data-box">
 								<span className="material-symbols-outlined no-data-icon">travel_explore</span>
 								<h3>{t('tours.list.noJourneysFound')}</h3>
 								<p>{t('tours.list.adjustFilters')}</p>
 							</div>
 						) : (
-							<div className="tours-grid">
+							<div className="tours-grid" style={{ position: 'relative' }}>
+								{loading && (
+									<LoadingSpinner overlay size="md" label={t('tours.list.updatingTours')} />
+								)}
 								{tours.map((tour) => (
 									<TourCard
 										key={tour._id}

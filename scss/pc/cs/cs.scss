@@ -706,6 +706,30 @@
                 }
               }
 
+              .success-actions {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+              }
+
+              .view-requests-btn {
+                padding: 10px 24px;
+                background: transparent;
+                color: $on-surface;
+                border-radius: 9999px;
+                font-size: 14px;
+                font-weight: 500;
+                border: 1px solid $outline-variant;
+                cursor: pointer;
+                transition: border-color 0.2s, color 0.2s;
+
+                &:hover {
+                  border-color: $primary;
+                  color: $primary;
+                }
+              }
+
               .submit-another-btn {
                 padding: 10px 24px;
                 background: $on-surface;

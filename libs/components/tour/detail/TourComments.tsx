@@ -7,11 +7,12 @@ import { Tour } from "../../../types/tour/tour";
 import { Comment } from "../../../types/comment/comment";
 import { CommentGroup } from "../../../enums/comment.enum";
 import { Direction, Message } from "../../../enums/common.enum";
-import { DEFAULT_USER_AVATAR, getImageUrl } from "../../../config";
+import { COMMENT_MAX_LENGTH, DEFAULT_USER_AVATAR, getImageUrl } from "../../../config";
 import {
   sweetErrorAlert,
 } from "../../../sweetAlert";
 import { useI18n } from "../../../i18n";
+import LoadingSpinner from "../../common/LoadingSpinner";
 
 interface TourCommentsProps {
   tour: Tour;
@@ -67,8 +68,8 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
       await sweetErrorAlert(t("tours.comments.emptyComment"));
       return;
     }
-    if (commentText.length > 500) {
-      await sweetErrorAlert(t("tours.comments.commentTooLong"));
+    if (commentText.length > COMMENT_MAX_LENGTH) {
+      await sweetErrorAlert(t("tours.comments.commentTooLong", { max: COMMENT_MAX_LENGTH }));
       return;
     }
 
@@ -132,9 +133,8 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
       {/* Reviews List */}
       <div className="reviews-list-stack">
         {loading ? (
-          <div className="comments-loading">
-            <span className="material-symbols-outlined animate-spin">sync</span>
-            <p>{t("tours.comments.loadingEvaluations")}</p>
+          <div className="comments-loading" style={{ padding: '32px 0', display: 'flex', justifyContent: 'center' }}>
+            <LoadingSpinner size="md" label={t("tours.comments.loadingEvaluations")} />
           </div>
         ) : commentsList.length > 0 ? (
           commentsList.map((comment: Comment, idx: number) => {
@@ -249,11 +249,11 @@ const TourComments = ({ tour, refetchTour }: TourCommentsProps) => {
               className="comment-textarea"
               placeholder={t("tours.comments.placeholder")}
               value={commentText}
-              onChange={(e) => setCommentText(e.target.value.slice(0, 500))}
+              onChange={(e) => setCommentText(e.target.value.slice(0, COMMENT_MAX_LENGTH))}
             ></textarea>
             <div className="form-actions-row">
               <span className="char-count">
-                {t("tours.comments.characterCount", { count: commentText.length })}
+                {t("tours.comments.characterCount", { count: commentText.length, max: COMMENT_MAX_LENGTH })}
               </span>
               <div className="buttons-group">
                 <button

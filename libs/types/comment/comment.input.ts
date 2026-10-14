@@ -19,3 +19,16 @@ export interface CommentInput {
 	commentContent: string;
 	commentRefId: string;
 }
+
+export interface AllCommentsSearch {
+	commentGroup?: CommentGroup;
+	text?: string;
+}
+
+export interface AllCommentsInquiry {
+	page: number;
+	limit: number;
+	sort?: string;
+	direction?: Direction;
+	search: AllCommentsSearch;
+}

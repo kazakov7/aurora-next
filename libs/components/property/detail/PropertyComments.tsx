@@ -7,11 +7,12 @@ import { Property } from "../../../types/property/property";
 import { Comment, Comments } from "../../../types/comment/comment";
 import { CommentGroup } from "../../../enums/comment.enum";
 import { Direction, Message } from "../../../enums/common.enum";
-import { DEFAULT_USER_AVATAR, getImageUrl } from "../../../config";
+import { COMMENT_MAX_LENGTH, DEFAULT_USER_AVATAR, getImageUrl } from "../../../config";
 import {
   sweetErrorAlert,
 } from "../../../sweetAlert";
 import { useI18n } from "../../../i18n";
+import LoadingSpinner from "../../common/LoadingSpinner";
 
 interface PropertyCommentsProps {
   property: Property;
@@ -69,8 +70,8 @@ const PropertyComments = ({
       await sweetErrorAlert(t("hotels.comments.emptyComment"));
       return;
     }
-    if (commentText.length > 500) {
-      await sweetErrorAlert(t("hotels.comments.commentTooLong"));
+    if (commentText.length > COMMENT_MAX_LENGTH) {
+      await sweetErrorAlert(t("hotels.comments.commentTooLong", { max: COMMENT_MAX_LENGTH }));
       return;
     }
 
@@ -136,9 +137,8 @@ const PropertyComments = ({
       {/* Reviews List */}
       <div className="reviews-list-stack">
         {loading ? (
-          <div className="comments-loading">
-            <span className="material-symbols-outlined animate-spin">sync</span>
-            <p>{t("hotels.comments.loadingEvaluations")}</p>
+          <div className="comments-loading" style={{ padding: '32px 0', display: 'flex', justifyContent: 'center' }}>
+            <LoadingSpinner size="md" label={t("hotels.comments.loadingEvaluations")} />
           </div>
         ) : commentsList.length > 0 ? (
           commentsList.map((comment: Comment, idx: number) => {
@@ -239,11 +239,11 @@ const PropertyComments = ({
               className="comment-textarea"
               placeholder={t("hotels.comments.placeholder")}
               value={commentText}
-              onChange={(e) => setCommentText(e.target.value.slice(0, 500))}
+              onChange={(e) => setCommentText(e.target.value.slice(0, COMMENT_MAX_LENGTH))}
             ></textarea>
             <div className="form-actions-row">
               <span className="char-count">
-                {t("hotels.comments.characterCount", { count: commentText.length })}
+                {t("hotels.comments.characterCount", { count: commentText.length, max: COMMENT_MAX_LENGTH })}
               </span>
               <div className="buttons-group">
                 <button

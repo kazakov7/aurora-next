@@ -22,6 +22,7 @@ export const SERVER_MESSAGE_IDS: Record<string, string> = {
 	'You are not authenticated, please login first!': 'NOT_AUTHENTICATED',
 	'Bearer token is not provided!': 'TOKEN_NOT_EXIST',
 	'Your session has expired, please login again!': 'TOKEN_EXPIRED',
+	'Too many failed logins, please try again in 15 minutes!': 'TOO_MANY_LOGIN_ATTEMPTS',
 	'You are not authorized to perform this action!': 'NOT_AUTHORIZED',
 	'Google authentication is not configured!': 'GOOGLE_AUTH_NOT_CONFIGURED',
 	'Google authentication failed. Please try again.': 'INVALID_GOOGLE_CREDENTIAL',

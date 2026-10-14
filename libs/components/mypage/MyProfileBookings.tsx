@@ -2,24 +2,23 @@ import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery, useMutation, useReactiveVar } from '@apollo/client';
 import { GET_MY_BOOKING_COUNTS, GET_MY_BOOKINGS } from '../../../apollo/user/query';
-import { CANCEL_BOOKING, CANCEL_TOUR_BOOKING } from '../../../apollo/user/mutation';
+import { CANCEL_BOOKING, CANCEL_TOUR_BOOKING, SUBMIT_RATING } from '../../../apollo/user/mutation';
 import { userVar } from '../../../apollo/store';
 import { BookingCategory, BookingStatus } from '../../enums/booking.enum';
+import { ReviewGroup } from '../../enums/review.enum';
 import { Booking } from '../../types/booking/booking';
 import { BISearch } from '../../types/booking/booking.input';
 import { DEFAULT_PROPERTY_IMAGE, DEFAULT_TOUR_IMAGE, getImageUrl } from '../../config';
 import { sweetConfirmAlert, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import { useI18n } from '../../i18n';
+import LoadingSpinner from '../common/LoadingSpinner';
+import BookingRatingAction from './BookingRatingAction';
 
 const PAGE_LIMIT = 20;
 // Same rule as the API: a paid booking is cancelled online until 48 hours before it starts
 const GUEST_CANCEL_WINDOW_MS = 48 * 60 * 60 * 1000;
 
-const CATEGORY_SEARCH: Record<'ALL' | 'HOTEL' | 'TOUR', BISearch> = {
-	ALL: {},
-	HOTEL: { bookingCategory: BookingCategory.PROPERTY },
-	TOUR: { bookingCategory: BookingCategory.TOUR },
-};
+
 const STATUS_SEARCH: Record<'ALL' | 'UPCOMING' | 'COMPLETED' | 'CANCELLED', BISearch> = {
 	ALL: {},
 	UPCOMING: { bookingStatusList: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
@@ -27,6 +26,7 @@ const STATUS_SEARCH: Record<'ALL' | 'UPCOMING' | 'COMPLETED' | 'CANCELLED', BISe
 	CANCELLED: { bookingStatusList: [BookingStatus.CANCELLED] },
 };
 const countInput = (search: BISearch) => ({ page: 1, limit: 1, search });
+const RATING_VALUES = [1, 2, 3, 4, 5];
 
 const MyProfileBookings: React.FC = () => {
 	const { t, tEnum, tError, formatDate } = useI18n();
@@ -35,15 +35,21 @@ const MyProfileBookings: React.FC = () => {
 	const [activeCategory, setActiveCategory] = useState<'ALL' | 'HOTEL' | 'TOUR'>('ALL');
 	const [activeStatus, setActiveStatus] = useState<'ALL' | 'UPCOMING' | 'COMPLETED' | 'CANCELLED'>('ALL');
 	const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+	const [ratingBooking, setRatingBooking] = useState<Booking | null>(null);
+	const [ratingValue, setRatingValue] = useState<number>(0);
+	const [ratingHover, setRatingHover] = useState<number>(0);
+	const [ratingSubmitting, setRatingSubmitting] = useState<boolean>(false);
+	const [ratingRefreshKey, setRatingRefreshKey] = useState<number>(0);
 
 	/** APOLLO REQUESTS **/
 	const [cancelBookingMutation] = useMutation(CANCEL_BOOKING);
 	const [cancelTourBookingMutation] = useMutation(CANCEL_TOUR_BOOKING);
+	const [submitRatingMutation] = useMutation(SUBMIT_RATING);
 
-	// The API filters and pages, so a member with many bookings sees all of them
+	// The remote backend BookingSearch only accepts bookingStatusList
 	const search = useMemo(
-		() => ({ ...CATEGORY_SEARCH[activeCategory], ...STATUS_SEARCH[activeStatus] }),
-		[activeCategory, activeStatus],
+		() => ({ ...STATUS_SEARCH[activeStatus] }),
+		[activeStatus],
 	);
 	const { data, loading, error, refetch, fetchMore } = useQuery(GET_MY_BOOKINGS, {
 		fetchPolicy: 'network-only',
@@ -56,23 +62,40 @@ const MyProfileBookings: React.FC = () => {
 		variables: {
 			all: countInput({}),
 			active: countInput(STATUS_SEARCH.UPCOMING),
-			hotels: countInput(CATEGORY_SEARCH.HOTEL),
-			tours: countInput(CATEGORY_SEARCH.TOUR),
 		},
 		skip: !user?._id,
 	});
 
-	const bookings: Booking[] = data?.getMyBookings?.list || [];
-	const filteredTotal = data?.getMyBookings?.metaCounter?.[0]?.total ?? 0;
-	const countOf = (key: 'all' | 'active' | 'hotels' | 'tours') => countData?.[key]?.metaCounter?.[0]?.total ?? 0;
-	const total = countOf('all');
-	const activeCount = countOf('active');
-	const hotelCount = countOf('hotels');
-	const tourCount = countOf('tours');
+	const rawBookings: Booking[] = data?.getMyBookings?.list || [];
+
+	// Client-side category filtering since backend returns all booking categories
+	const bookings = useMemo(() => {
+		if (activeCategory === 'HOTEL') {
+			return rawBookings.filter((b) => b.bookingCategory === BookingCategory.PROPERTY);
+		}
+		if (activeCategory === 'TOUR') {
+			return rawBookings.filter((b) => b.bookingCategory === BookingCategory.TOUR);
+		}
+		return rawBookings;
+	}, [rawBookings, activeCategory]);
+
+	const total = countData?.all?.metaCounter?.[0]?.total ?? rawBookings.length;
+	const activeCount = countData?.active?.metaCounter?.[0]?.total ?? 0;
+	const hotelCount = useMemo(
+		() => rawBookings.filter((b) => b.bookingCategory === BookingCategory.PROPERTY).length,
+		[rawBookings],
+	);
+	const tourCount = useMemo(
+		() => rawBookings.filter((b) => b.bookingCategory === BookingCategory.TOUR).length,
+		[rawBookings],
+	);
+	const filteredTotal = activeCategory === 'ALL'
+		? (data?.getMyBookings?.metaCounter?.[0]?.total ?? rawBookings.length)
+		: bookings.length;
 
 	const handleLoadMore = async () => {
 		await fetchMore({
-			variables: { input: { page: Math.floor(bookings.length / PAGE_LIMIT) + 1, limit: PAGE_LIMIT, search } },
+			variables: { input: { page: Math.floor(rawBookings.length / PAGE_LIMIT) + 1, limit: PAGE_LIMIT, search } },
 			updateQuery: (previous, { fetchMoreResult }) => ({
 				getMyBookings: {
 					...fetchMoreResult.getMyBookings,
@@ -85,11 +108,46 @@ const MyProfileBookings: React.FC = () => {
 	/** A paid booking can be cancelled online until 48 hours before it starts, a payment hold any time **/
 	const canCancel = (booking: Booking) => {
 		if (booking.bookingStatus === BookingStatus.PENDING) return true;
-		if (booking.bookingStatus !== BookingStatus.CONFIRMED || !booking.bookingStartDate) return false;
-		return new Date(booking.bookingStartDate).getTime() - Date.now() >= GUEST_CANCEL_WINDOW_MS;
+		if (booking.bookingStatus !== BookingStatus.CONFIRMED || !booking.checkIn) return false;
+		return new Date(booking.checkIn).getTime() - Date.now() >= GUEST_CANCEL_WINDOW_MS;
 	};
 
 	/** HANDLERS **/
+	const openRating = (booking: Booking) => {
+		setRatingBooking(booking);
+		setRatingValue(0);
+		setRatingHover(0);
+	};
+
+	const closeRating = () => {
+		if (ratingSubmitting) return;
+		setRatingBooking(null);
+	};
+
+	const handleSubmitRating = async () => {
+		if (!ratingBooking || !ratingValue) return;
+		try {
+			setRatingSubmitting(true);
+			await submitRatingMutation({
+				variables: {
+					input: {
+						reviewGroup: ratingBooking.bookingCategory === BookingCategory.TOUR ? ReviewGroup.TOUR : ReviewGroup.PROPERTY,
+						reviewRefId: ratingBooking.bookingRefId,
+						reviewRating: ratingValue,
+					},
+				},
+			});
+			setRatingBooking(null);
+			setRatingRefreshKey((current) => current + 1);
+			sweetTopSmallSuccessAlert(t('profile.bookings.ratingSaved'), 1500);
+			await refetch();
+		} catch (err: any) {
+			sweetMixinErrorAlert(tError(err, 'profile.bookings.ratingFailed'));
+		} finally {
+			setRatingSubmitting(false);
+		}
+	};
+
 	const handleCancel = async (booking: Booking) => {
 		const isPaid = booking.bookingStatus === BookingStatus.CONFIRMED;
 		const confirmed = await sweetConfirmAlert(
@@ -110,8 +168,7 @@ const MyProfileBookings: React.FC = () => {
 	};
 
 	const handleExportCalendar = () => {
-		// Tours carry their dates in bookingStartDate too, so they are exported next to the stays
-		const calendarBookings = bookings.filter((booking) => booking.bookingStartDate);
+		const calendarBookings = bookings.filter((booking) => booking.checkIn);
 		if (!calendarBookings.length) {
 			sweetMixinErrorAlert(t('profile.bookings.nothingToExport'));
 			return;
@@ -121,7 +178,7 @@ const MyProfileBookings: React.FC = () => {
 			: '';
 		const events = calendarBookings.map((booking) => {
 			const title = booking.propertyData?.propertyName || booking.tourData?.tourName || t('profile.bookings.auroraBooking');
-			return ['BEGIN:VEVENT', `UID:${booking._id}@aurora.travel`, `DTSTART:${toDate(booking.bookingStartDate)}`, `DTEND:${toDate(booking.bookingEndDate || booking.bookingStartDate)}`, `SUMMARY:${title.replace(/[;,]/g, ' ')}`, `DESCRIPTION:Booking ${booking.bookingRefId} — ${booking.bookingStatus}`, 'END:VEVENT'].join('\r\n');
+			return ['BEGIN:VEVENT', `UID:${booking._id}@aurora.travel`, `DTSTART:${toDate(booking.checkIn)}`, `DTEND:${toDate(booking.checkOut || booking.checkIn)}`, `SUMMARY:${title.replace(/[;,]/g, ' ')}`, `DESCRIPTION:Booking ${booking.bookingRefId} — ${booking.bookingStatus}`, 'END:VEVENT'].join('\r\n');
 		});
 		const blob = new Blob([['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//AURA Travel//Bookings//EN', ...events, 'END:VCALENDAR'].join('\r\n')], { type: 'text/calendar;charset=utf-8' });
 		const url = URL.createObjectURL(blob);
@@ -240,7 +297,8 @@ const MyProfileBookings: React.FC = () => {
 			) : error ? (
 				<div className="profile-empty-state"><h3>{t('profile.bookings.unavailable')}</h3><p>{error.message}</p></div>
 			) : bookings.length > 0 ? (
-				<div className="booking-cards-stack">
+				<div className="booking-cards-stack" style={{ position: 'relative' }}>
+					{loading && <LoadingSpinner overlay size="md" label={t('common.updating')} />}
 					{bookings.map((booking: Booking) => {
 						const isHotel = booking.bookingCategory === BookingCategory.PROPERTY;
 						const title = isHotel
@@ -281,7 +339,7 @@ const MyProfileBookings: React.FC = () => {
 									<div className="date-guests-line">
 										<span>
 											<span className="material-symbols-outlined">calendar_today</span>
-											{formatDateRange(booking.bookingStartDate, booking.bookingEndDate)}
+											{formatDateRange(booking.checkIn, booking.checkOut)}
 										</span>
 										<span>·</span>
 										<span>
@@ -331,6 +389,11 @@ const MyProfileBookings: React.FC = () => {
 												{t('common.cancel')}
 											</button>
 										)}
+										<BookingRatingAction
+											key={`${booking._id}-${ratingRefreshKey}`}
+											booking={booking}
+											onRate={openRating}
+										/>
 									</div>
 								</div>
 							</article>
@@ -355,6 +418,66 @@ const MyProfileBookings: React.FC = () => {
 					</div>
 					<h3>{t('profile.bookings.noReservationsFound')}</h3>
 					<p>{t('profile.bookings.emptyText')}</p>
+				</div>
+			)}
+
+			{/* Rating Modal */}
+			{ratingBooking && (
+				<div className="rating-modal-backdrop" onClick={closeRating}>
+					<div
+						className="rating-modal"
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby="rating-modal-title"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<div className="rating-modal-head">
+							<div>
+								<span className="rating-modal-eyebrow">
+									{t(ratingBooking.bookingCategory === BookingCategory.TOUR ? 'profile.bookings.rateYourTour' : 'profile.bookings.rateYourStay')}
+								</span>
+								<h3 id="rating-modal-title">
+									{ratingBooking.propertyData?.propertyName || ratingBooking.tourData?.tourName}
+								</h3>
+							</div>
+							<button type="button" className="rating-modal-close" onClick={closeRating} aria-label={t('common.close')}>
+								<span className="material-symbols-outlined">close</span>
+							</button>
+						</div>
+
+						<div className="rating-stars" onMouseLeave={() => setRatingHover(0)}>
+							{RATING_VALUES.map((value) => (
+								<button
+									key={value}
+									type="button"
+									className={value <= (ratingHover || ratingValue) ? 'active' : ''}
+									aria-label={t('profile.bookings.starsLabel', { count: value })}
+									aria-pressed={value === ratingValue}
+									onMouseEnter={() => setRatingHover(value)}
+									onFocus={() => setRatingHover(value)}
+									onBlur={() => setRatingHover(0)}
+									onClick={() => setRatingValue(value)}
+								>
+									<span className="material-symbols-outlined">star</span>
+								</button>
+							))}
+						</div>
+						<p className="rating-modal-note">{t('profile.bookings.ratingOnce')}</p>
+
+						<div className="rating-modal-actions">
+							<button type="button" className="rating-cancel-btn" onClick={closeRating} disabled={ratingSubmitting}>
+								{t('common.cancel')}
+							</button>
+							<button
+								type="button"
+								className="rating-submit-btn"
+								onClick={() => void handleSubmitRating()}
+								disabled={!ratingValue || ratingSubmitting}
+							>
+								{t('profile.bookings.submitRating')}
+							</button>
+						</div>
+					</div>
 				</div>
 			)}
 
@@ -410,7 +533,7 @@ const MyProfileBookings: React.FC = () => {
 								{selectedBooking.propertyData?.propertyName || selectedBooking.tourData?.tourName || t('profile.bookings.listingUnavailable')}
 							</div>
 							<div>
-								<strong>{t('profile.bookings.stayTourDates')}</strong> {formatDateRange(selectedBooking.bookingStartDate, selectedBooking.bookingEndDate)}
+								<strong>{t('profile.bookings.stayTourDates')}</strong> {formatDateRange(selectedBooking.checkIn, selectedBooking.checkOut)}
 							</div>
 							<div>
 								<strong>{t('profile.bookings.registeredGuests')}</strong> {t('profile.bookings.persons', { bookingGuests: selectedBooking.bookingGuests })}
@@ -422,11 +545,6 @@ const MyProfileBookings: React.FC = () => {
 								<strong>{t('profile.bookings.status')}</strong>{' '}
 								<span style={{ color: '#137333', fontWeight: 600 }}>{tEnum('bookingStatus', selectedBooking.bookingStatus)}</span>
 							</div>
-							{selectedBooking.cancelReason && (
-								<div>
-									<strong>{t('profile.bookings.cancelReason')}</strong> {selectedBooking.cancelReason}
-								</div>
-							)}
 							{selectedBooking.bookingStatus === BookingStatus.CONFIRMED && !canCancel(selectedBooking) && (
 								<div style={{ fontSize: '13px', color: '#545c72' }}>{t('profile.bookings.cancelWindowClosed')}</div>
 							)}

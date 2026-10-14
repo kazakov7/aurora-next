@@ -77,6 +77,12 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
       return;
     }
 
+    // A longer password is refused, never cut silently: the login form sends it whole
+    if (password.length > 12) {
+      sweetMixinErrorAlert(t("profile.settings.password.policy"));
+      return;
+    }
+
     if (password !== confirmPassword) {
       sweetMixinErrorAlert(t("auth.signUp.passwordsDoNotMatch"));
       return;
@@ -282,7 +288,6 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
                     id="pass-input"
                     type={showPassword ? "text" : "password"}
                     required
-                    maxLength={12}
                     autoComplete="new-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -319,7 +324,6 @@ const SignUp: React.FC<SignUpProps> = ({ onSwitchToSignIn }) => {
                     id="confirm-pass-input"
                     type={showConfirmPassword ? "text" : "password"}
                     required
-                    maxLength={12}
                     autoComplete="new-password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}

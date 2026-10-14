@@ -16,6 +16,7 @@ import { useI18n } from "../../i18n";
 import { motion, AnimatePresence } from "framer-motion";
 import { FadeIn } from "../motion/FadeIn";
 import { appleEase } from "../../motion/transitions";
+import useDeviceDetect from "../../hooks/useDeviceDetect";
 
 interface HeroProps {
   destinations: Destination[];
@@ -31,6 +32,7 @@ const STAY_TYPES: PropertyType[] = [
 
 const Hero = ({ destinations }: HeroProps) => {
   const router = useRouter();
+  const device = useDeviceDetect();
   const { t, tEnum } = useI18n();
   const [type, setType] = useState("");
   const [location, setLocation] = useState("");
@@ -129,6 +131,22 @@ const Hero = ({ destinations }: HeroProps) => {
               <FadeIn delay={0.26} distance={14}>
                 <p className="hero-subtitle">{t("home.hero.description")}</p>
               </FadeIn>
+
+              {/* MOBILE HERO VISUAL BANNER WITH CURATED BADGE */}
+              {device === "mobile" && (
+                <div className="hero-mobile-visual">
+                  <img
+                    src="https://images.pexels.com/photos/11417276/pexels-photo-11417276.jpeg"
+                    alt={t("home.hero.imageAlt")}
+                    className="hero-mobile-img"
+                  />
+                  <div className="mobile-scrim" />
+                  <div className="mobile-curated-badge">
+                    <span className="pulsing-dot" />
+                    <span>{t("home.hero.curatedGuide")}</span>
+                  </div>
+                </div>
+              )}
 
               <FadeIn delay={0.34} distance={10}>
                 <div className="hero-divider"></div>
@@ -339,39 +357,73 @@ const Hero = ({ destinations }: HeroProps) => {
                 <CalendarMonthIcon className="item-icon" />
                 <div className="item-text">
                   <span className="label">{t("home.hero.dates")}</span>
-                  <div className="date-inputs">
-                    <input
-                      type="date"
-                      value={checkIn}
-                      onClick={(e) => {
-                        try {
-                          e.currentTarget.showPicker?.();
-                        } catch {}
-                      }}
-                      onChange={(e) => {
-                        setCheckIn(e.target.value);
-                        if (checkOut && e.target.value > checkOut) {
-                          setCheckOut("");
-                        }
-                      }}
-                      className="date-input"
-                      aria-label={t("home.hero.checkIn")}
-                    />
-                    <span className="date-separator">—</span>
-                    <input
-                      type="date"
-                      value={checkOut}
-                      min={checkIn || undefined}
-                      onClick={(e) => {
-                        try {
-                          e.currentTarget.showPicker?.();
-                        } catch {}
-                      }}
-                      onChange={(e) => setCheckOut(e.target.value)}
-                      className="date-input"
-                      aria-label={t("home.hero.checkOut")}
-                    />
-                  </div>
+                  {device === "mobile" ? (
+                    <div className="date-inputs">
+                      {checkIn || checkOut ? (
+                        <span className="value">
+                          {checkIn ? checkIn.slice(5) : "—"} to {checkOut ? checkOut.slice(5) : "—"}
+                        </span>
+                      ) : (
+                        <span className="value placeholder">
+                          {t("home.hero.addDates")}
+                        </span>
+                      )}
+                      <input
+                        type="date"
+                        value={checkIn}
+                        onChange={(e) => {
+                          setCheckIn(e.target.value);
+                          if (checkOut && e.target.value > checkOut) {
+                            setCheckOut("");
+                          }
+                        }}
+                        className="date-input-overlay checkin-overlay"
+                        aria-label={t("home.hero.checkIn")}
+                      />
+                      <input
+                        type="date"
+                        value={checkOut}
+                        min={checkIn || undefined}
+                        onChange={(e) => setCheckOut(e.target.value)}
+                        className="date-input-overlay checkout-overlay"
+                        aria-label={t("home.hero.checkOut")}
+                      />
+                    </div>
+                  ) : (
+                    <div className="date-inputs">
+                      <input
+                        type="date"
+                        value={checkIn}
+                        onClick={(e) => {
+                          try {
+                            e.currentTarget.showPicker?.();
+                          } catch {}
+                        }}
+                        onChange={(e) => {
+                          setCheckIn(e.target.value);
+                          if (checkOut && e.target.value > checkOut) {
+                            setCheckOut("");
+                          }
+                        }}
+                        className="date-input"
+                        aria-label={t("home.hero.checkIn")}
+                      />
+                      <span className="date-separator">—</span>
+                      <input
+                        type="date"
+                        value={checkOut}
+                        min={checkIn || undefined}
+                        onClick={(e) => {
+                          try {
+                            e.currentTarget.showPicker?.();
+                          } catch {}
+                        }}
+                        onChange={(e) => setCheckOut(e.target.value)}
+                        className="date-input"
+                        aria-label={t("home.hero.checkOut")}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -445,7 +497,9 @@ const Hero = ({ destinations }: HeroProps) => {
                 transition={{ duration: 0.18, ease: appleEase }}
               >
                 <SearchIcon />
-                <span className="search-btn-text">{t("common.search")}</span>
+                <span className="search-btn-text">
+                  {t("home.hero.searchExperiences")}
+                </span>
               </motion.button>
             </div>
           </FadeIn>

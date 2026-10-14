@@ -194,9 +194,19 @@ const CsContactForm = () => {
 						<h4>{t('support.ticketSubmitted', { id: createdTicket._id.slice(-8).toUpperCase() })}</h4>
 						<p>{t('support.ticketSuccess')}</p>
 					</div>
-					<button className="submit-another-btn" type="button" onClick={handleReset}>
-						{t('support.submitAnother')}
-					</button>
+					<div className="success-actions">
+						{/* The reply is read in My Page, under My Requests */}
+						<button
+							className="view-requests-btn"
+							type="button"
+							onClick={() => router.push(`/mypage?category=requests&ticket=${createdTicket._id}`)}
+						>
+							{t('support.viewMyRequests')}
+						</button>
+						<button className="submit-another-btn" type="button" onClick={handleReset}>
+							{t('support.submitAnother')}
+						</button>
+					</div>
 				</div>
 			</div>
 		);

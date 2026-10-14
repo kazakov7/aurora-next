@@ -7,16 +7,44 @@ import {
   UPDATE_DESTINATION_BY_ADMIN,
   REMOVE_DESTINATION_BY_ADMIN,
 } from "../../../apollo/admin/mutation";
-import { AdminDestinationsInquiry } from "../../../libs/types/destination/destination.input";
+import {
+  CREATE_DESTINATION,
+  IMAGES_UPLOADER,
+} from "../../../apollo/user/mutation";
+import {
+  AdminDestinationsInquiry,
+  DestinationInput,
+} from "../../../libs/types/destination/destination.input";
 import { Destination } from "../../../libs/types/destination/destination";
 import { DestinationStatus } from "../../../libs/enums/destination.enum";
 import { Direction } from "../../../libs/enums/common.enum";
+import { getImageUrl } from "../../../libs/config";
 import {
   sweetTopSmallSuccessAlert,
   sweetMixinErrorAlert,
   sweetConfirmAlert,
 } from "../../../libs/sweetAlert";
 import { useI18n } from "../../../libs/i18n";
+import LoadingSpinner from "../../../libs/components/common/LoadingSpinner";
+
+/** The API keeps at most ten photos per city **/
+const MAX_IMAGES = 10;
+const EMPTY_CREATE_FORM = {
+  destinationName: "",
+  destinationCountry: "",
+  destinationDesc: "",
+  latitude: "",
+  longitude: "",
+};
+
+/** An empty coordinate is left out; anything else must be a number in range **/
+const toCoordinate = (value: string, limit: number): number | undefined | null => {
+  if (value.trim() === "") return undefined;
+  const coordinate = Number(value);
+  return Number.isFinite(coordinate) && Math.abs(coordinate) <= limit
+    ? coordinate
+    : null;
+};
 
 const AdminDestinationsPage: NextPage = () => {
   const { t, tEnum, tError, formatDate } = useI18n();
@@ -29,6 +57,13 @@ const AdminDestinationsPage: NextPage = () => {
   const [formStatus, setFormStatus] = useState<DestinationStatus>(
     DestinationStatus.ACTIVE,
   );
+
+  // Create Drawer state
+  const [isCreateOpen, setIsCreateOpen] = useState<boolean>(false);
+  const [createForm, setCreateForm] = useState(EMPTY_CREATE_FORM);
+  const [createImages, setCreateImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [creating, setCreating] = useState<boolean>(false);
 
   const [searchFilter, setSearchFilter] = useState<AdminDestinationsInquiry>({
     page: 1,
@@ -52,6 +87,8 @@ const AdminDestinationsPage: NextPage = () => {
 
   const [updateDestinationByAdmin] = useMutation(UPDATE_DESTINATION_BY_ADMIN);
   const [removeDestinationByAdmin] = useMutation(REMOVE_DESTINATION_BY_ADMIN);
+  const [createDestination] = useMutation(CREATE_DESTINATION);
+  const [imagesUploader] = useMutation(IMAGES_UPLOADER);
 
   /** The API removes only an INACTIVE city without hotels or tours **/
   const canDelete = (destination: Destination) =>
@@ -120,6 +157,81 @@ const AdminDestinationsPage: NextPage = () => {
     }
   };
 
+  const openCreateDrawer = () => {
+    setCreateForm(EMPTY_CREATE_FORM);
+    setCreateImages([]);
+    setIsCreateOpen(true);
+  };
+
+  const closeCreateDrawer = () => {
+    if (creating) return;
+    setIsCreateOpen(false);
+  };
+
+  const handleCreateImages = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = Array.from(event.target.files ?? []).slice(
+      0,
+      MAX_IMAGES - createImages.length,
+    );
+    event.target.value = "";
+    if (!files.length) return;
+    try {
+      setUploading(true);
+      const { data } = await imagesUploader({
+        variables: { files, target: "destination" },
+      });
+      const uploaded: string[] = (data?.imagesUploader ?? []).filter(Boolean);
+      if (!uploaded.length) throw new Error(t("common.imageUploadFailed"));
+      setCreateImages((previous) =>
+        [...previous, ...uploaded].slice(0, MAX_IMAGES),
+      );
+    } catch (err: any) {
+      sweetMixinErrorAlert(tError(err, "common.imageUploadFailed"));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleCreate = async () => {
+    const destinationName = createForm.destinationName.trim();
+    const destinationCountry = createForm.destinationCountry.trim();
+    if (!destinationName || !destinationCountry) {
+      sweetMixinErrorAlert(t("admin.destinations.requiredFields"));
+      return;
+    }
+    const latitude = toCoordinate(createForm.latitude, 90);
+    const longitude = toCoordinate(createForm.longitude, 180);
+    if (latitude === null || longitude === null) {
+      sweetMixinErrorAlert(t("admin.destinations.invalidCoordinates"));
+      return;
+    }
+
+    const input: DestinationInput = {
+      destinationName,
+      destinationCountry,
+      destinationImages: createImages,
+      destinationDesc: createForm.destinationDesc.trim() || undefined,
+      latitude,
+      longitude,
+    };
+    try {
+      setCreating(true);
+      await createDestination({ variables: { input } });
+      sweetTopSmallSuccessAlert(
+        t("admin.destinations.destinationCreated"),
+        800,
+      );
+      setIsCreateOpen(false);
+      refetch();
+    } catch (err: any) {
+      sweetMixinErrorAlert(tError(err));
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (
       await sweetConfirmAlert(
@@ -184,6 +296,26 @@ const AdminDestinationsPage: NextPage = () => {
           <h1>{t("admin.destinations.destinationsManagement")}</h1>
           <p>{t("admin.destinations.intro")}</p>
         </div>
+        <div className="header-actions">
+          <button
+            className="export-btn"
+            type="button"
+            onClick={openCreateDrawer}
+            style={{
+              backgroundColor: "#006194",
+              color: "#fff",
+              border: "none",
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ color: "#fff" }}
+            >
+              add
+            </span>
+            {t("admin.destinations.addDestination")}
+          </button>
+        </div>
       </div>
 
       <section className="admin-table-section">
@@ -241,9 +373,9 @@ const AdminDestinationsPage: NextPage = () => {
                 <tr>
                   <td
                     colSpan={6}
-                    style={{ textAlign: "center", padding: "40px" }}
+                    className="table-loading-cell"
                   >
-                    {t("common.loading")}
+                    <LoadingSpinner size="md" label={t("common.loading")} />
                   </td>
                 </tr>
               ) : destinations.length === 0 ? (
@@ -512,6 +644,183 @@ const AdminDestinationsPage: NextPage = () => {
                 onClick={handleSave}
               >
                 {t("common.saveChanges")}
+              </button>
+            </div>
+          </aside>
+        </>
+      )}
+
+      {isCreateOpen && (
+        <>
+          <div className="admin-drawer-backdrop" onClick={closeCreateDrawer} />
+          <aside className="admin-drawer">
+            <div className="drawer-header">
+              <div className="header-title">
+                <span className="material-symbols-outlined">
+                  add_location_alt
+                </span>
+                <span>{t("admin.destinations.createTitle")}</span>
+              </div>
+              <button
+                className="close-btn"
+                type="button"
+                onClick={closeCreateDrawer}
+                aria-label={t("common.close")}
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div className="drawer-body">
+              <div className="admin-form-group">
+                <label>
+                  {t("admin.destinations.destinationName")}{" "}
+                  <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="admin-form-control"
+                  maxLength={100}
+                  placeholder={t("admin.destinations.namePlaceholder")}
+                  value={createForm.destinationName}
+                  onChange={(e) =>
+                    setCreateForm({
+                      ...createForm,
+                      destinationName: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="admin-form-group">
+                <label>
+                  {t("admin.destinations.country")}{" "}
+                  <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="admin-form-control"
+                  maxLength={100}
+                  placeholder={t("admin.destinations.countryPlaceholder")}
+                  value={createForm.destinationCountry}
+                  onChange={(e) =>
+                    setCreateForm({
+                      ...createForm,
+                      destinationCountry: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="admin-form-group">
+                <label>{t("common.description")}</label>
+                <textarea
+                  className="admin-form-control textarea"
+                  maxLength={2000}
+                  placeholder={t("admin.destinations.descPlaceholder")}
+                  value={createForm.destinationDesc}
+                  onChange={(e) =>
+                    setCreateForm({
+                      ...createForm,
+                      destinationDesc: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="grid-2-col">
+                <div className="admin-form-group">
+                  <label>{t("admin.destinations.latitude")}</label>
+                  <input
+                    type="number"
+                    step="any"
+                    min={-90}
+                    max={90}
+                    className="admin-form-control"
+                    placeholder="35.1796"
+                    value={createForm.latitude}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, latitude: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="admin-form-group">
+                  <label>{t("admin.destinations.longitude")}</label>
+                  <input
+                    type="number"
+                    step="any"
+                    min={-180}
+                    max={180}
+                    className="admin-form-control"
+                    placeholder="129.0756"
+                    value={createForm.longitude}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, longitude: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="admin-form-group">
+                <label>{t("admin.destinations.photos")}</label>
+                <div className="admin-image-grid">
+                  {createImages.map((image) => (
+                    <div key={image} className="image-thumb">
+                      <img src={getImageUrl(image)} alt="" />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCreateImages((previous) =>
+                            previous.filter((item) => item !== image),
+                          )
+                        }
+                        aria-label={t("admin.destinations.removePhoto")}
+                      >
+                        <span className="material-symbols-outlined">close</span>
+                      </button>
+                    </div>
+                  ))}
+                  {createImages.length < MAX_IMAGES && (
+                    <label className={`image-add ${uploading ? "disabled" : ""}`}>
+                      <span className="material-symbols-outlined">
+                        {uploading ? "hourglass_top" : "add_photo_alternate"}
+                      </span>
+                      {uploading
+                        ? t("admin.destinations.uploading")
+                        : t("admin.destinations.addPhoto")}
+                      <input
+                        type="file"
+                        accept="image/jpeg, image/png"
+                        multiple
+                        hidden
+                        disabled={uploading}
+                        onChange={handleCreateImages}
+                      />
+                    </label>
+                  )}
+                </div>
+                <span style={{ fontSize: 12, color: "#707881" }}>
+                  {t("admin.destinations.photosHint", { max: MAX_IMAGES })}
+                </span>
+              </div>
+            </div>
+
+            <div className="drawer-footer">
+              <button
+                className="btn secondary"
+                type="button"
+                onClick={closeCreateDrawer}
+                disabled={creating}
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                className="btn primary"
+                type="button"
+                onClick={() => void handleCreate()}
+                disabled={creating || uploading}
+              >
+                {t("admin.destinations.createDestination")}
               </button>
             </div>
           </aside>

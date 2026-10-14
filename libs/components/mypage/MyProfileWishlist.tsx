@@ -19,6 +19,7 @@ import { Property } from "../../types/property/property";
 import { Tour } from "../../types/tour/tour";
 
 import WishlistPlaceCard from "./WishlistPlaceCard";
+import LoadingSpinner from "../common/LoadingSpinner";
 import { useI18n } from "../../i18n";
 
 const MyProfileWishlist: React.FC = () => {
@@ -175,7 +176,10 @@ const MyProfileWishlist: React.FC = () => {
           <p>{propertiesError?.message || toursError?.message}</p>
         </div>
       ) : displayList.length > 0 ? (
-        <div className="wishlist-cards-grid">
+        <div className="wishlist-cards-grid" style={{ position: "relative" }}>
+          {(propertiesLoading || toursLoading) && (
+            <LoadingSpinner overlay size="md" label={t("common.updating")} />
+          )}
           {displayList.map((item) => {
             const isTour = item.isTour;
             const title = isTour ? item.tourName : item.propertyName;

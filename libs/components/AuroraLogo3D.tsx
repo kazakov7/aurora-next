@@ -8,7 +8,7 @@
  * Komponent ota-elementning to‘liq o‘lchamini egallaydi, foni shaffof.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
@@ -103,6 +103,7 @@ export default function AuroraLogo3D({
   align = "center",
   shadow = false,
 }: Props) {
+  const [webglSupported, setWebglSupported] = useState(true);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const apiRef = useRef<Api | null>(null);
   const nightRef = useRef(night);
@@ -127,7 +128,8 @@ export default function AuroraLogo3D({
         powerPreference: "high-performance",
       });
     } catch {
-      return; // WebGL yo‘q: komponent bo‘sh qoladi
+      setWebglSupported(false);
+      return; // WebGL yo‘q: fallback render qilinadi
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setClearColor(0x000000, 0);
@@ -707,6 +709,30 @@ export default function AuroraLogo3D({
     }
     apiRef.current?.replay();
   }, [replayKey]);
+
+  if (!webglSupported) {
+    return (
+      <div
+        className={className}
+        role="img"
+        aria-label="AURORA"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: align === "left" ? "flex-start" : "center",
+          width: "100%",
+          height: "100%",
+          fontWeight: 800,
+          fontSize: 22,
+          letterSpacing: "0.15em",
+          color: night ? "#ffffff" : "#0f766e",
+          userSelect: "none",
+        }}
+      >
+        <span>AURORA</span>
+      </div>
+    );
+  }
 
   return (
     <canvas

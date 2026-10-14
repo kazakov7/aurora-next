@@ -236,22 +236,12 @@ const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps
         {!loading && error ? <p className="curators-empty-state">{t("home.community.unavailable")}</p> : null}
 
         {isMobile ? (
-          <div className="curators-mobile-swiper">
-            <Swiper
-              modules={[A11y, Keyboard]}
-              keyboard={{ enabled: true }}
-              spaceBetween={14}
-              slidesPerView={1.22}
-              slidesOffsetBefore={16}
-              slidesOffsetAfter={16}
-              className="curators-swiper"
-            >
-              {curators.map((curator: Member, index: number) => (
-                <SwiperSlide key={curator._id}>
-                  {renderCuratorCard(curator, index)}
-                </SwiperSlide>
-              ))}
-            </Swiper>
+          <div className="curators-mobile-grid">
+            {curators.slice(0, 4).map((curator: Member, index: number) => (
+              <div key={curator._id} className="curator-grid-col">
+                {renderCuratorCard(curator, index)}
+              </div>
+            ))}
           </div>
         ) : (
           <StaggerContainer className="curators-grid">

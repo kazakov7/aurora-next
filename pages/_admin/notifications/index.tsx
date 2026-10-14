@@ -28,6 +28,7 @@ const PAGE_LIMIT = 10;
 const getAdminLink = (notification: Notification): string | null => {
 	if (notification.notificationType === NotificationType.BOOKING) return '/_admin/bookings';
 	if (notification.notificationType === NotificationType.SYSTEM) return '/_admin/agent-verification';
+	if (notification.notificationType === NotificationType.SUPPORT) return '/_admin/support';
 	return null;
 };
 

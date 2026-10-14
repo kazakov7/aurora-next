@@ -8,6 +8,7 @@ import { userVar } from '../../../apollo/store';
 import { getImageUrl, DEFAULT_USER_AVATAR } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 import FollowButton from '../common/FollowButton';
+import LoadingSpinner from '../common/LoadingSpinner';
 import { useI18n } from '../../i18n';
 
 export interface HostItem {
@@ -171,13 +172,13 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
 							);
 						})}
 					</ul>
+				) : isLoading ? (
+					<div style={{ padding: '24px 0', display: 'flex', justifyContent: 'center' }}>
+						<LoadingSpinner size="sm" label={t('community.sidebar.loadingHosts')} labelPlacement="right" />
+					</div>
 				) : (
 					<p className="section-subtitle">
-						{isLoading
-							? t('community.sidebar.loadingHosts')
-							: hasError
-							? t('community.sidebar.hostsError')
-							: t('community.sidebar.hostsEmpty')}
+						{hasError ? t('community.sidebar.hostsError') : t('community.sidebar.hostsEmpty')}
 					</p>
 				)}
 			</div>
@@ -240,13 +241,13 @@ const CommunitySidebar: React.FC<CommunitySidebarProps> = ({
 							);
 						})}
 					</ul>
+				) : isLoading ? (
+					<div style={{ padding: '24px 0', display: 'flex', justifyContent: 'center' }}>
+						<LoadingSpinner size="sm" label={t('community.sidebar.loadingOrganizers')} labelPlacement="right" />
+					</div>
 				) : (
 					<p className="section-subtitle">
-						{isLoading
-							? t('community.sidebar.loadingOrganizers')
-							: hasError
-							? t('community.sidebar.organizersError')
-							: t('community.sidebar.organizersEmpty')}
+						{hasError ? t('community.sidebar.organizersError') : t('community.sidebar.organizersEmpty')}
 					</p>
 				)}
 			</div>

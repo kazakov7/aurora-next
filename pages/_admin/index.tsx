@@ -19,6 +19,7 @@ import { TourStatus } from "../../libs/enums/tour.enum";
 import { AgentVerificationStatus } from "../../libs/enums/agent.enum";
 import moment from "moment";
 import { useI18n } from "../../libs/i18n";
+import LoadingSpinner from "../../libs/components/common/LoadingSpinner";
 
 const AdminDashboardOverview: NextPage = () => {
   // Stat states
@@ -234,11 +235,9 @@ const AdminDashboardOverview: NextPage = () => {
                 <tr>
                   <td
                     colSpan={8}
-                    style={{ textAlign: "center", padding: "24px" }}
+                    className="table-loading-cell"
                   >
-                    <span style={{ color: "#707881" }}>
-                      {t("admin.dashboard.loadingBookings")}
-                    </span>
+                    <LoadingSpinner size="md" label={t("admin.dashboard.loadingBookings")} />
                   </td>
                 </tr>
               ) : recentBookingsData.length === 0 ? (

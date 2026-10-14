@@ -736,9 +736,6 @@ export const GET_MY_BOOKINGS = gql`
 				memberId
 				bookingCategory
 				bookingStatus
-				bookingStartDate
-				bookingEndDate
-				cancelReason
 				bookingRefId
 				checkIn
 				checkOut
@@ -776,25 +773,26 @@ export const GET_MY_BOOKINGS = gql`
 	}
 `;
 
+export const GET_MY_RATING = gql`
+	query GetMyRating($reviewGroup: ReviewGroup!, $reviewRefId: String!) {
+		getMyRating(reviewGroup: $reviewGroup, reviewRefId: $reviewRefId) {
+			_id
+			reviewGroup
+			reviewRefId
+			reviewRating
+		}
+	}
+`;
+
 /** Tab counters of My Bookings: totals only, one round trip **/
 export const GET_MY_BOOKING_COUNTS = gql`
-	query GetMyBookingCounts($all: BookingsInquiry!, $active: BookingsInquiry!, $hotels: BookingsInquiry!, $tours: BookingsInquiry!) {
+	query GetMyBookingCounts($all: BookingsInquiry!, $active: BookingsInquiry!) {
 		all: getMyBookings(input: $all) {
 			metaCounter {
 				total
 			}
 		}
 		active: getMyBookings(input: $active) {
-			metaCounter {
-				total
-			}
-		}
-		hotels: getMyBookings(input: $hotels) {
-			metaCounter {
-				total
-			}
-		}
-		tours: getMyBookings(input: $tours) {
 			metaCounter {
 				total
 			}
@@ -810,9 +808,6 @@ export const GET_AGENT_PROPERTY_BOOKINGS = gql`
 				memberId
 				bookingCategory
 				bookingStatus
-				bookingStartDate
-				bookingEndDate
-				cancelReason
 				bookingRefId
 				checkIn
 				checkOut
@@ -847,9 +842,6 @@ export const GET_MY_TOUR_BOOKINGS = gql`
 				memberId
 				bookingCategory
 				bookingStatus
-				bookingStartDate
-				bookingEndDate
-				cancelReason
 				bookingRefId
 				checkIn
 				checkOut
@@ -879,9 +871,6 @@ export const GET_AGENT_TOUR_BOOKINGS = gql`
 				memberId
 				bookingCategory
 				bookingStatus
-				bookingStartDate
-				bookingEndDate
-				cancelReason
 				bookingRefId
 				checkIn
 				checkOut
@@ -1168,6 +1157,32 @@ export const GET_MEMBER_AGENT = gql`
 			companyDesc
 			verificationStatus
 			verifiedAt
+		}
+	}
+`;
+
+/**************************
+ *     SUPPORT TICKET     *
+ *************************/
+
+export const GET_MY_SUPPORT_TICKETS = gql`
+	query GetMySupportTickets($input: SupportTicketsInquiry!) {
+		getMySupportTickets(input: $input) {
+			list {
+				_id
+				ticketCategory
+				ticketStatus
+				ticketSubject
+				ticketMessage
+				ticketAttachment
+				ticketReply
+				repliedAt
+				createdAt
+				updatedAt
+			}
+			metaCounter {
+				total
+			}
 		}
 	}
 `;

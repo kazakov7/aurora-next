@@ -1,8 +1,7 @@
-import { BookingCategory, BookingStatus } from '../../enums/booking.enum';
+import { BookingStatus } from '../../enums/booking.enum';
 
 export interface BISearch {
 	bookingStatusList?: BookingStatus[];
-	bookingCategory?: BookingCategory;
 }
 
 export interface BookingsInquiry {

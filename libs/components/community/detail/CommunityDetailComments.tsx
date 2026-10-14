@@ -6,7 +6,7 @@ import { userVar } from "../../../../apollo/store";
 import { Comment } from "../../../types/comment/comment";
 import { CommentGroup } from "../../../enums/comment.enum";
 import { Direction, Message } from "../../../enums/common.enum";
-import { DEFAULT_USER_AVATAR, getImageUrl, Messages } from "../../../config";
+import { COMMENT_MAX_LENGTH, DEFAULT_USER_AVATAR, getImageUrl, Messages } from "../../../config";
 import {
   sweetMixinErrorAlert,
   sweetTopSmallSuccessAlert,
@@ -266,7 +266,7 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
           <textarea
             className="comment-textarea"
             rows={4}
-            maxLength={500}
+            maxLength={COMMENT_MAX_LENGTH}
             placeholder={t("community.detailComments.placeholder")}
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
@@ -276,10 +276,10 @@ const CommunityDetailComments: React.FC<CommunityDetailCommentsProps> = ({
         <div className="form-footer-row">
           <span
             className={`char-counter ${
-              commentText.length >= 480 ? "warning" : ""
+              commentText.length >= COMMENT_MAX_LENGTH - 10 ? "warning" : ""
             }`}
           >
-            {t("community.detailComments.characterCount", { count: commentText.length })}
+            {t("community.detailComments.characterCount", { count: commentText.length, max: COMMENT_MAX_LENGTH })}
           </span>
 
           <button

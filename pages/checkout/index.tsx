@@ -150,8 +150,9 @@ const CheckoutPage = () => {
             variables: {
               input: {
                 propertyId: item._id,
-                checkIn: new Date(`${checkIn}T00:00:00`).toISOString(),
-                checkOut: new Date(`${checkOut}T00:00:00`).toISOString(),
+                // The calendar works in UTC days, so the stay is sent as UTC midnights in every time zone
+                checkIn: new Date(`${checkIn}T00:00:00.000Z`).toISOString(),
+                checkOut: new Date(`${checkOut}T00:00:00.000Z`).toISOString(),
                 bookingGuests: Number(guests) || 1,
                 idempotencyKey
               }

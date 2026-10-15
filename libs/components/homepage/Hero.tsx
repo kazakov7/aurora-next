@@ -132,22 +132,6 @@ const Hero = ({ destinations }: HeroProps) => {
                 <p className="hero-subtitle">{t("home.hero.description")}</p>
               </FadeIn>
 
-              {/* MOBILE HERO VISUAL BANNER WITH CURATED BADGE */}
-              {device === "mobile" && (
-                <div className="hero-mobile-visual">
-                  <img
-                    src="https://images.pexels.com/photos/11417276/pexels-photo-11417276.jpeg"
-                    alt={t("home.hero.imageAlt")}
-                    className="hero-mobile-img"
-                  />
-                  <div className="mobile-scrim" />
-                  <div className="mobile-curated-badge">
-                    <span className="pulsing-dot" />
-                    <span>{t("home.hero.curatedGuide")}</span>
-                  </div>
-                </div>
-              )}
-
               <FadeIn delay={0.34} distance={10}>
                 <div className="hero-divider"></div>
               </FadeIn>
@@ -196,28 +180,6 @@ const Hero = ({ destinations }: HeroProps) => {
             </div>
 
             {/* RIGHT COLUMN */}
-            <div className="hero-right">
-              <FadeIn delay={0.22} distance={20}>
-                <div className="hero-img-box">
-                  <img
-                    src="https://images.pexels.com/photos/11417276/pexels-photo-11417276.jpeg"
-                    alt={t("home.hero.imageAlt")}
-                    className="hero-img"
-                  />
-
-                  <motion.div
-                    className="curated-badge"
-                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ delay: 0.45, duration: 0.4, ease: appleEase }}
-                    whileHover={{ scale: 1.04, y: -2 }}
-                  >
-                    <VerifiedUserIcon className="badge-check" />
-                    <span>{t("home.hero.curatedGuide")}</span>
-                  </motion.div>
-                </div>
-              </FadeIn>
-            </div>
           </div>
 
           {/* BOTTOM SEARCH FILTER BAR */}
@@ -361,7 +323,8 @@ const Hero = ({ destinations }: HeroProps) => {
                     <div className="date-inputs">
                       {checkIn || checkOut ? (
                         <span className="value">
-                          {checkIn ? checkIn.slice(5) : "—"} to {checkOut ? checkOut.slice(5) : "—"}
+                          {checkIn ? checkIn.slice(5) : "—"} to{" "}
+                          {checkOut ? checkOut.slice(5) : "—"}
                         </span>
                       ) : (
                         <span className="value placeholder">

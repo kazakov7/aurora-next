@@ -198,7 +198,7 @@
       "validNickname": "Valid Nickname",
       "missingCredentials": "Please enter your nickname and password.",
       "welcomeBackUser": "Welcome back, {{memberNick}}!",
-      "loginFailed": "Login failed. Please check your credentials.",
+      "loginFailed": "The nickname or password does not match.",
       "welcome": "Welcome, {{memberNick}}!",
       "accountAccess": "Account Access",
       "authPortalV24": "Auth Portal v2.4",

@@ -265,9 +265,9 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 			</div>
 
 			{/* Property Type */}
-			<div className="filter-section">
+			<div className="filter-section expandable-filter-section">
 				<label className="section-label">{t('common.propertyType')}</label>
-				<div className="checkbox-list">
+				<div className="checkbox-list collapsible-checkbox-list">
 					{propertyTypes.map((item) => (
 						<label key={item.value} className="checkbox-item">
 							<div className="checkbox-left">
@@ -285,9 +285,9 @@ const Filter = ({ searchFilter, setSearchFilter, initialInput }: FilterProps) =>
 			</div>
 
 			{/* Amenities */}
-			<div className="filter-section">
+			<div className="filter-section expandable-filter-section">
 				<label className="section-label">{t('common.amenities')}</label>
-				<div className="checkbox-list">
+				<div className="checkbox-list collapsible-checkbox-list">
 					{amenitiesList.map((item) => (
 						<label key={item.value} className="checkbox-item">
 							<div className="checkbox-left">

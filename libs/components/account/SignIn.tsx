@@ -26,7 +26,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 	const [password, setPassword] = useState<string>('');
 	const [showPassword, setShowPassword] = useState<boolean>(false);
 	const [rememberMe, setRememberMe] = useState<boolean>(true);
-	const [identifierHint, setIdentifierHint] = useState<string>('');
+	const [credentialsInvalid, setCredentialsInvalid] = useState<boolean>(false);
 	const googleButtonRef = useRef<HTMLDivElement>(null);
 
 	/** APOLLO REQUESTS **/
@@ -48,14 +48,18 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 	/** HANDLERS **/
 	const handleIdentifierChange = (val: string) => {
 		setIdentifier(val);
-		// The API signs in by nickname only (3+ characters); email is not a login identifier
-		setIdentifierHint(val.trim().length >= 3 ? t('auth.signIn.validNickname') : '');
+		setCredentialsInvalid(false);
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!identifier.trim() || !password) {
 			sweetMixinErrorAlert(t('auth.signIn.missingCredentials'));
+			return;
+		}
+		if (identifier.trim().length < 3 || password.length < 5 || password.length > 12) {
+			setCredentialsInvalid(true);
+			sweetMixinErrorAlert(t('auth.signIn.loginFailed'));
 			return;
 		}
 
@@ -82,6 +86,7 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 			const refused = err?.graphQLErrors?.some((e: any) =>
 				['UNAUTHENTICATED', 'BAD_REQUEST'].includes(e?.extensions?.code),
 			);
+			if (refused) setCredentialsInvalid(true);
 			sweetMixinErrorAlert(refused ? t('auth.signIn.loginFailed') : tError(err, 'auth.signIn.loginFailed'));
 		}
 	};
@@ -169,18 +174,17 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 						<div className="field-group">
 							<div className="field-header">
 								<label htmlFor="identifier">{t('auth.signIn.nickname')}</label>
-								{identifierHint && (
-									<span className="field-hint" style={{ opacity: 1 }}>
-										{identifierHint}
-									</span>
-								)}
+								{credentialsInvalid && <span className="field-hint is-error">{t('auth.signIn.loginFailed')}</span>}
 							</div>
-							<div className="input-wrapper">
+							<div className={`input-wrapper ${credentialsInvalid ? 'is-error' : ''}`}>
 								<input
 									id="identifier"
 									name="identifier"
 									type="text"
 									required
+									minLength={3}
+									autoComplete="username"
+									aria-invalid={credentialsInvalid}
 									value={identifier}
 									onChange={(e) => handleIdentifierChange(e.target.value)}
 									placeholder={t('auth.signIn.identifierPlaceholder')}
@@ -195,14 +199,21 @@ const SignIn: React.FC<SignInProps> = ({ onSwitchToSignUp }) => {
 							<div className="field-header">
 								<label htmlFor="password">{t('auth.signIn.password')}</label>
 							</div>
-							<div className="input-wrapper">
+							<div className={`input-wrapper ${credentialsInvalid ? 'is-error' : ''}`}>
 								<input
 									id="password"
 									name="password"
 									type={showPassword ? 'text' : 'password'}
 									required
+									minLength={5}
+									maxLength={12}
+									autoComplete="current-password"
+									aria-invalid={credentialsInvalid}
 									value={password}
-									onChange={(e) => setPassword(e.target.value)}
+									onChange={(e) => {
+										setPassword(e.target.value);
+										setCredentialsInvalid(false);
+									}}
 									placeholder="••••••••••••"
 									className="with-suffix"
 								/>

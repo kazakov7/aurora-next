@@ -11,7 +11,7 @@ const withLayoutMain = (Component: any) => {
 	return (props: any) => {
 		const device = useDeviceDetect();
 		const { t } = useI18n();
-		useAuthSession();
+		const authChecked = useAuthSession();
 
 		if (device === 'mobile') {
 			return (
@@ -23,7 +23,7 @@ const withLayoutMain = (Component: any) => {
 					<div id="mobile-wrap">
 						<Top />
 						<main id="main">
-							<Component {...props} />
+							<Component {...props} authChecked={authChecked} />
 						</main>
 						<Footer />
 						<MobileBottomNav />
@@ -40,7 +40,7 @@ const withLayoutMain = (Component: any) => {
 					<div id="pc-wrap">
 						<Top />
 						<main id="main">
-							<Component {...props} />
+							<Component {...props} authChecked={authChecked} />
 						</main>
 						<Footer />
 					</div>

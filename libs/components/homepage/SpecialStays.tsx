@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useReactiveVar } from '@apollo/client';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, A11y, Keyboard } from 'swiper';
+import { A11y, Keyboard, Swiper as SwiperInstance } from 'swiper';
 import { LIKE_TARGET_PROPERTY } from '../../../apollo/user/mutation';
 import { userVar } from '../../../apollo/store';
 import { Property } from '../../types/property/property';
@@ -28,13 +28,28 @@ const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
 	const user = useReactiveVar(userVar);
 	const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
 	const [updatingFavoriteIds, setUpdatingFavoriteIds] = useState<Record<string, boolean>>({});
-	const [prevEl, setPrevEl] = useState<HTMLElement | null>(null);
-	const [nextEl, setNextEl] = useState<HTMLElement | null>(null);
+	const swiperRef = useRef<SwiperInstance | null>(null);
+	const [navigationState, setNavigationState] = useState({ isBeginning: true, isEnd: false });
 
 	/** APOLLO REQUESTS **/
 	const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
 
 	/** HANDLERS **/
+	const updateNavigationState = (swiper: SwiperInstance) => {
+		setNavigationState({
+			isBeginning: swiper.isBeginning,
+			isEnd: swiper.isEnd,
+		});
+	};
+
+	const previousSlideHandler = () => {
+		swiperRef.current?.slidePrev();
+	};
+
+	const nextSlideHandler = () => {
+		swiperRef.current?.slideNext();
+	};
+
 	const likePropertyHandler = async (event: React.MouseEvent, propertyId: string, wasLiked: boolean) => {
 		event.preventDefault();
 		event.stopPropagation();
@@ -65,22 +80,26 @@ const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
 							<p className="section-subtitle">{t('home.stays.description')}</p>
 						</div>
 
-						<div className="section-header-controls">
+						<div className="section-header-controls stays-carousel-controls">
 							{properties.length > 2 ? (
 								<>
 									<button
-										ref={(node) => setPrevEl(node)}
 										className="carousel-control-btn prev"
 										type="button"
+										onClick={previousSlideHandler}
+										disabled={navigationState.isBeginning}
 										aria-label={t('common.pagination.previous')}
+										aria-controls="special-stays-carousel"
 									>
 										<span className="material-symbols-outlined">chevron_left</span>
 									</button>
 									<button
-										ref={(node) => setNextEl(node)}
 										className="carousel-control-btn next"
 										type="button"
+										onClick={nextSlideHandler}
+										disabled={navigationState.isEnd}
 										aria-label={t('common.pagination.next')}
+										aria-controls="special-stays-carousel"
 									>
 										<span className="material-symbols-outlined">chevron_right</span>
 									</button>
@@ -102,14 +121,17 @@ const SpecialStays = ({ properties, loading, error }: SpecialStaysProps) => {
 				) : null}
 
 				{properties.length > 0 ? (
-					<div className="aurora-swiper-container">
+					<div id="special-stays-carousel" className="aurora-swiper-container">
 						<Swiper
-							modules={[Navigation, A11y, Keyboard]}
-							navigation={{
-								prevEl,
-								nextEl,
+							modules={[A11y, Keyboard]}
+							onSwiper={(swiper) => {
+								swiperRef.current = swiper;
+								updateNavigationState(swiper);
 							}}
+							onSlideChange={updateNavigationState}
+							onResize={updateNavigationState}
 							keyboard={{ enabled: true }}
+							watchOverflow
 							spaceBetween={12}
 							slidesPerView="auto"
 							slidesOffsetBefore={16}

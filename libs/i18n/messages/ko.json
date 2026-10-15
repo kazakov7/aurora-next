@@ -198,7 +198,7 @@
       "validNickname": "유효한 닉네임",
       "missingCredentials": "닉네임과 비밀번호를 입력해 주세요.",
       "welcomeBackUser": "{{memberNick}}님, 다시 오신 것을 환영합니다!",
-      "loginFailed": "로그인에 실패했습니다. 입력한 정보를 확인해 주세요.",
+      "loginFailed": "닉네임 또는 비밀번호가 일치하지 않습니다.",
       "welcome": "{{memberNick}}님, 환영합니다!",
       "accountAccess": "계정 접속",
       "authPortalV24": "인증 포털 v2.4",

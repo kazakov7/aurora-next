@@ -1,0 +1,22 @@
+services:
+  aurora-next:
+    container_name: aurora-next
+    restart: always
+    image: node:22
+    ports:
+      - "4000:3000"
+    environment:
+      - PORT=3000
+    volumes:
+      - ./:/usr/src/aurora-next
+
+    working_dir: /usr/src/aurora-next
+
+    networks:
+      - client-network
+
+    command: bash -c "yarn && yarn run build && yarn run start"
+
+networks:
+  client-network:
+    driver: bridge

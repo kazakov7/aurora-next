@@ -31,7 +31,11 @@ const rankingOptions = {
   ssr: false,
 };
 
-const Home: NextPage = () => {
+interface HomeProps {
+  authChecked: boolean;
+}
+
+const Home: NextPage<HomeProps> = ({ authChecked }) => {
   /** APOLLO REQUESTS **/
   const trending = useQuery<{
     getTrendingDestinations?: RankingList<Destination>;
@@ -72,6 +76,11 @@ const Home: NextPage = () => {
     variables: { input: { limit: 5 } },
   });
 
+  /** HANDLERS **/
+  const refetchCurators = async (): Promise<void> => {
+    await travelers.refetch();
+  };
+
   return (
     <div className="home-page-container">
       <Hero destinations={trending.data?.getTrendingDestinations?.list ?? []} />
@@ -94,6 +103,8 @@ const Home: NextPage = () => {
         travelers={travelers.data?.getTopTravelers?.list ?? []}
         loading={travelers.loading}
         error={travelers.error}
+        refetchCurators={refetchCurators}
+        authChecked={authChecked}
       />
       <TravelPartners
         hotelAgents={hotelAgents.data?.getTopAgents?.list ?? []}

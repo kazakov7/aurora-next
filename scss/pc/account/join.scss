@@ -137,6 +137,12 @@
 							font-weight: 600;
 							color: #006194;
 							transition: opacity 0.2s;
+
+							&.is-error {
+								max-width: 260px;
+								color: #c24141;
+								text-align: right;
+							}
 						}
 
 						.forgot-link {
@@ -153,6 +159,10 @@
 					}
 
 					.input-wrapper {
+						&.is-error input {
+							border-color: #d85b5b;
+							box-shadow: 0 0 0 3px rgba(216, 91, 91, 0.1);
+						}
 						position: relative;
 						display: flex;
 						align-items: center;

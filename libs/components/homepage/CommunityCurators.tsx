@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { A11y, Keyboard } from "swiper";
-import { ApolloError, useMutation, useReactiveVar } from "@apollo/client";
+import { ApolloError, useApolloClient, useMutation, useQuery, useReactiveVar } from "@apollo/client";
 import { SUBSCRIBE, UNSUBSCRIBE } from "../../../apollo/user/mutation";
+import { GET_MEMBER, GET_MY_FOLLOWING_IDS } from "../../../apollo/user/query";
 import { userVar } from "../../../apollo/store";
 import { getJwtToken } from "../../auth";
 import { Message } from "../../enums/common.enum";
@@ -44,26 +45,54 @@ interface CommunityCuratorsProps {
   travelers: Member[];
   loading?: boolean;
   error?: ApolloError;
+  refetchCurators: () => Promise<void>;
+  authChecked: boolean;
 }
 
-const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps) => {
+interface FollowingIdsResponse {
+  getMemberFollowings?: {
+    list: Array<{ followingId: string }>;
+  };
+}
+
+const CommunityCurators = ({ travelers, loading, error, refetchCurators, authChecked }: CommunityCuratorsProps) => {
 	const { t, tEnum, tError } = useI18n();
   const router = useRouter();
+  const apolloClient = useApolloClient();
   const user = useReactiveVar(userVar);
-  const [followOverrides, setFollowOverrides] = useState<
-    Record<string, boolean>
-  >({});
+  const [followOverrides, setFollowOverrides] = useState<Record<string, boolean>>({});
   const [updatingFollowIds, setUpdatingFollowIds] = useState<
     Record<string, boolean>
   >({});
-  const [followerDeltas, setFollowerDeltas] = useState<Record<string, number>>(
-    {},
-  );
   /** APOLLO REQUESTS **/
   const [subscribe] = useMutation(SUBSCRIBE);
   const [unsubscribe] = useMutation(UNSUBSCRIBE);
+  const {
+    data: followingData,
+    loading: followingLoading,
+    refetch: refetchFollowing,
+  } = useQuery<FollowingIdsResponse>(GET_MY_FOLLOWING_IDS, {
+    fetchPolicy: "network-only",
+    skip: !user?._id,
+    variables: {
+      input: {
+        page: 1,
+        limit: Math.max(user?.memberFollowings ?? 0, 100),
+        search: { followerId: user?._id },
+      },
+    },
+  });
+  const followingIds = useMemo(
+    () => new Set<string>((followingData?.getMemberFollowings?.list ?? []).map((follow) => follow.followingId)),
+    [followingData],
+  );
 
   const curators = travelers;
+
+  /** LIFECYCLES **/
+  useEffect(() => {
+    setFollowOverrides({});
+  }, [user?._id]);
 
   /** HANDLERS **/
   const followHandler = async (
@@ -84,11 +113,6 @@ const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps
         return;
       }
 
-      const nextFollowingStatus = !isFollowing;
-      setFollowOverrides((current) => ({
-        ...current,
-        [curatorId]: nextFollowingStatus,
-      }));
       setUpdatingFollowIds((current) => ({ ...current, [curatorId]: true }));
       const mutationOptions = { variables: { input: curatorId } };
 
@@ -98,16 +122,21 @@ const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps
         await subscribe(mutationOptions);
       }
 
-      // Update the card in place instead of refetching the whole section
-      setFollowerDeltas((current) => ({
-        ...current,
-        [curatorId]: (current[curatorId] ?? 0) + (nextFollowingStatus ? 1 : -1),
-      }));
+      const verification = await apolloClient.query<{ getMember: Member }>({
+        query: GET_MEMBER,
+        variables: { input: curatorId },
+        fetchPolicy: 'network-only',
+      });
+      const persistedFollowing = Boolean(verification.data.getMember?.meFollowed?.[0]?.myFollowing);
+
+      if (persistedFollowing === isFollowing) {
+        throw new Error(t('common.followUpdateFailed'));
+      }
+
+      await Promise.all([refetchCurators(), refetchFollowing()]);
+      setFollowOverrides((current) => ({ ...current, [curatorId]: persistedFollowing }));
     } catch (err: unknown) {
-      setFollowOverrides((current) => ({
-        ...current,
-        [curatorId]: isFollowing,
-      }));
+      setFollowOverrides((current) => ({ ...current, [curatorId]: isFollowing }));
       const errorMessage =
         tError(err, "common.followUpdateFailed");
       console.log("ERROR, followHandler:", errorMessage);
@@ -121,23 +150,18 @@ const CommunityCurators = ({ travelers, loading, error }: CommunityCuratorsProps
   const isMobile = device === "mobile";
 
   const renderCuratorCard = (curator: Member, index: number) => {
-    const backendFollowing = Boolean(
-      curator.meFollowed?.[0]?.myFollowing,
-    );
-    const isFollowing =
-      followOverrides[curator._id] ?? backendFollowing;
-    const isUpdatingFollow = Boolean(updatingFollowIds[curator._id]);
+    const hasFollowingSnapshot = Boolean(followingData?.getMemberFollowings);
+    const rankingFollowing = Boolean(curator.meFollowed?.[0]?.myFollowing);
+    const persistedFollowing = user?._id && hasFollowingSnapshot ? followingIds.has(curator._id) : rankingFollowing;
+    const isFollowing = followOverrides[curator._id] ?? persistedFollowing;
+    const isInitialFollowSync = !authChecked || Boolean(user?._id && followingLoading && !hasFollowingSnapshot);
+    const isUpdatingFollow = Boolean(updatingFollowIds[curator._id]) || isInitialFollowSync;
     const avatarUrl = getImageUrl(
       curator.memberImage,
       DEFAULT_USER_AVATAR,
     );
     const isSelf = curator._id === user?._id;
-    const stats = buildStats({
-      ...curator,
-      memberFollowers:
-        (curator.memberFollowers ?? 0) +
-        (followerDeltas[curator._id] ?? 0),
-    }, {
+    const stats = buildStats(curator, {
       followers: t("home.community.followers"),
       stays: t("home.community.stays"),
       tours: t("home.community.tours"),

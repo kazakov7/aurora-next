@@ -198,7 +198,7 @@
       "validNickname": "Yaroqli taxallus",
       "missingCredentials": "Taxallus va parolni kiriting.",
       "welcomeBackUser": "Xush kelibsiz, {{memberNick}}!",
-      "loginFailed": "Kirib bo‘lmadi. Ma’lumotlaringizni tekshiring.",
+      "loginFailed": "Taxallus yoki parol mos emas.",
       "welcome": "Xush kelibsiz, {{memberNick}}!",
       "accountAccess": "Akkauntga kirish",
       "authPortalV24": "Kirish portali v2.4",

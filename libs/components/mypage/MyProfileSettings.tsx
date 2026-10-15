@@ -130,19 +130,12 @@ const MyProfileSettings: React.FC = () => {
         </div>
       </div>
 
-      <div
-        style={{
-          background: "#ffffff",
-          borderRadius: "16px",
-          padding: "32px",
-          border: "1px solid #dce2f7",
-          maxWidth: "640px",
-        }}
-      >
-        <form
-          onSubmit={handleSave}
-          style={{ display: "flex", flexDirection: "column", gap: "18px" }}
-        >
+      <div className="settings-cards-grid">
+        <div className="profile-settings-card">
+          <form
+            onSubmit={handleSave}
+            style={{ display: "flex", flexDirection: "column", gap: "18px" }}
+          >
           {/* Avatar Upload */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '10px' }}>
              <img 
@@ -365,10 +358,11 @@ const MyProfileSettings: React.FC = () => {
               {loading ? t("profile.settings.saving") : t("profile.settings.saveProfileChanges")}
             </button>
           </div>
-        </form>
-      </div>
+          </form>
+        </div>
 
-      <ChangePasswordSection />
+        <ChangePasswordSection />
+      </div>
     </div>
   );
 };
